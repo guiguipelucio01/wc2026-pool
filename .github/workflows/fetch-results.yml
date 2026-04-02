@@ -1,0 +1,26 @@
+name: Fetch WC 2026 Results
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes (GitHub Actions minimum — cannot go faster)
+  workflow_dispatch:          # manual trigger: GitHub -> Actions -> Run workflow
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Supabase client
+        run: npm install @supabase/supabase-js
+
+      - name: Fetch results and update database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+        run: node fetch-results.js
