@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>WC 2026 Prediction Pool</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#c9a84c;--dark:#0a0f1e;--mid:#111827;--card:#1a2235;--border:#2a3550;--text:#e8eaf0;--muted:#8090b0;--green:#22c55e;--red:#ef4444;--blue:#3b82f6}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -83,7 +85,32 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0}
   .score-input{width:40px;font-size:1rem}
   nav button{padding:6px 10px;font-size:.8rem}
   .award-grid{grid-template-columns:1fr}
+  .mf{font-size:1.4rem}
+  .hero-title{font-size:2rem}
+  .hero-hosts{font-size:1.4rem}
 }
+/* ── ENHANCED VISUALS ─────────────────────────────────────────── */
+body{background-image:radial-gradient(ellipse at 20% 50%,rgba(26,45,90,.35) 0%,transparent 55%),radial-gradient(ellipse at 80% 10%,rgba(201,168,76,.07) 0%,transparent 45%)}
+header{box-shadow:0 2px 24px rgba(201,168,76,.18)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;text-shadow:0 0 20px rgba(201,168,76,.4)}
+nav{scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.hero{background:linear-gradient(160deg,#060d1f 0%,#0d1f4a 40%,#1a2d5a 70%,#0a1628 100%);border:2px solid var(--gold);border-radius:16px;padding:36px 24px 28px;text-align:center;position:relative;overflow:hidden;margin-bottom:16px}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(201,168,76,.15) 0%,transparent 65%);pointer-events:none}
+.hero-trophy{font-size:4rem;filter:drop-shadow(0 0 24px rgba(201,168,76,.7));animation:float 3s ease-in-out infinite;display:block;margin-bottom:10px;position:relative}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.6rem);color:var(--gold);letter-spacing:4px;line-height:1;text-shadow:0 0 40px rgba(201,168,76,.55);margin-bottom:4px;position:relative}
+.hero-hosts{font-size:1.9rem;letter-spacing:8px;margin:10px 0 6px;position:relative}
+.hero-divider{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:12px auto}
+.hero-sub{color:var(--muted);font-size:.82rem;letter-spacing:1.5px;text-transform:uppercase;position:relative}
+.match-card{transition:transform .15s,box-shadow .15s}
+.match-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(201,168,76,.12)}
+.mf{font-size:1.9rem;line-height:1;display:block}
+.team-block{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.team-block.away{align-items:flex-start}
+.r1{box-shadow:0 0 14px rgba(255,215,0,.45)}
+.r2{box-shadow:0 0 12px rgba(192,192,192,.35)}
+.r3{box-shadow:0 0 10px rgba(205,127,50,.3)}
 </style>
 </head>
 <body>
@@ -112,11 +139,12 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
 <div class="container">
 
 <div id="page-home" class="page active">
-  <div class="card" style="text-align:center;background:linear-gradient(135deg,#0a1628,#1a2d5a);border-color:var(--gold)">
-    <div style="font-size:3rem;margin-bottom:8px">⚽🏆⚽</div>
-    <h2 style="font-size:1.8rem;justify-content:center" data-en="FIFA World Cup 2026" data-pt="Copa do Mundo FIFA 2026">FIFA World Cup 2026</h2>
-    <p style="color:var(--muted);margin-bottom:4px" data-en="Canada · Mexico · USA" data-pt="Canadá · México · EUA">Canada · Mexico · USA</p>
-    <p style="color:var(--muted);font-size:.85rem">June 11 – July 19, 2026</p>
+  <div class="hero">
+    <span class="hero-trophy">🏆</span>
+    <div class="hero-title" data-en="FIFA World Cup 2026" data-pt="Copa do Mundo FIFA 2026">FIFA World Cup 2026</div>
+    <div class="hero-hosts">🇨🇦 🇲🇽 🇺🇸</div>
+    <div class="hero-divider"></div>
+    <div class="hero-sub" data-en="June 11 – July 19, 2026 · 48 Teams · 104 Matches" data-pt="11 junho – 19 julho 2026 · 48 seleções · 104 jogos">June 11 – July 19, 2026 · 48 Teams · 104 Matches</div>
   </div>
   <div id="homeStatus"></div>
   <div class="stat-grid" id="homeStats"></div>
@@ -460,19 +488,21 @@ function renderGroupMatches() {
     const done=m.home_goals!=null;
     const pts=done&&pred!=null?calcGrpPts(pred.home_goals,pred.away_goals,m.home_goals,m.away_goals):null;
     const ds=m.d?new Date(m.d).toLocaleString(lang==='pt'?'pt-PT':'en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',timeZoneName:'short'}):'';
-    const hn=h?`${h.f} ${lang==='pt'?h.pt:h.en}`:T('TBD','A definir');
-    const an=a?`${a.f} ${lang==='pt'?a.pt:a.en}`:T('TBD','A definir');
+    const hn=h?(lang==='pt'?h.pt:h.en):T('TBD','A definir');
+    const an=a?(lang==='pt'?a.pt:a.en):T('TBD','A definir');
+    const hf=h?h.f:'🏳';
+    const af=a?a.f:'🏳';
     return `<div class="match-card">
       <div class="match-header"><span>${ds}</span><span style="color:${done?'var(--green)':'var(--muted)'}">${done?T('FINAL','FINAL'):T('Upcoming','Próximo')}</span></div>
       <div class="match-teams">
-        <div class="team-name home">${hn}</div>
+        <div class="team-block"><span class="mf">${hf}</span><span class="team-name">${hn}</span></div>
         <div class="score-inputs">
           ${open&&!done
             ?`<input class="score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="—"/>`
             :`<span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.home_goals:(hg!==''?hg:'?')}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.away_goals:(ag!==''?ag:'?')}</span>`
           }
         </div>
-        <div class="team-name">${an}</div>
+        <div class="team-block away"><span class="mf">${af}</span><span class="team-name">${an}</span></div>
       </div>
       ${pts!=null?`<div class="match-pts">+${pts} ${T('pts','pts')} 🎯</div>`:''}
       <span class="saved-dot" id="sd${m.id}"></span>
@@ -531,17 +561,19 @@ function renderKOPage() {
       const hg=pred!=null?pred.home_goals:'',ag=pred!=null?pred.away_goals:'';
       const done=m.home_goals!=null;
       const ds=m.d?new Date(m.d).toLocaleDateString(lang==='pt'?'pt-PT':'en-GB',{day:'2-digit',month:'short'}):'TBD';
-      const hn=h?`${h.f} ${lang==='pt'?h.pt:h.en}`:T('TBD','A definir');
-      const an=a?`${a.f} ${lang==='pt'?a.pt:a.en}`:T('TBD','A definir');
+      const hn=h?(lang==='pt'?h.pt:h.en):T('TBD','A definir');
+      const an=a?(lang==='pt'?a.pt:a.en):T('TBD','A definir');
+      const hf=h?h.f:'🏳';
+      const af=a?a.f:'🏳';
       html+=`<div class="match-card">
         <div class="match-header"><span>${ds}</span><span style="color:${done?'var(--green)':'var(--muted)'}">${done?T('FINAL','FINAL'):''}</span></div>
         <div class="match-teams">
-          <div class="team-name home">${hn}</div>
+          <div class="team-block"><span class="mf">${hf}</span><span class="team-name">${hn}</span></div>
           <div class="score-inputs">
             ${!done?`<input class="score-input" type="number" min="0" max="20" id="k${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="k${m.id}a" value="${ag}" placeholder="—"/>`:
             `<span style="font-size:1.1rem;font-weight:700;color:var(--gold);padding:0 8px">${m.home_goals}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:var(--gold);padding:0 8px">${m.away_goals}</span>`}
           </div>
-          <div class="team-name">${an}</div>
+          <div class="team-block away"><span class="mf">${af}</span><span class="team-name">${an}</span></div>
         </div>
         <span class="saved-dot" id="ksd${m.id}"></span>
       </div>`;
