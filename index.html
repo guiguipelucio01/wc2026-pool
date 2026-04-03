@@ -219,6 +219,19 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
     <button class="btn btn-outline" onclick="loginByEmail()">
       <span data-en="Load My Predictions" data-pt="Carregar As Minhas Previsões">Load My Predictions</span>
     </button>
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="toggleForgot()" style="background:none;border:none;color:var(--muted);font-size:.84rem;cursor:pointer;text-decoration:underline" data-en="Forgot password?" data-pt="Esqueceu a palavra-passe?">Forgot password?</button>
+    </div>
+    <div id="forgotSection" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <div id="forgotAlert"></div>
+      <div class="form-group">
+        <label data-en="Your Email" data-pt="O Seu E-mail">Your Email</label>
+        <input type="email" id="forgotEmail" placeholder="joao@email.com" onkeydown="if(event.key==='Enter')forgotPassword()"/>
+      </div>
+      <button class="btn btn-outline" onclick="forgotPassword()">
+        <span data-en="Request Password Reset" data-pt="Pedir Redefinição de Palavra-passe">Request Password Reset</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -703,6 +716,18 @@ function loginPrompt(){
 function logout(){
   currentUser=null; localStorage.removeItem('wc2026_user');
   groupPreds={}; koPreds={}; awardPreds={}; renderActive();
+}
+function toggleForgot(){
+  const s=document.getElementById('forgotSection');
+  s.style.display=s.style.display==='none'?'block':'none';
+}
+async function forgotPassword(){
+  const email=document.getElementById('forgotEmail').value.trim().toLowerCase();
+  const alertEl=document.getElementById('forgotAlert');
+  if(!email){showAlert(alertEl,T('Enter your email.','Insira o seu e-mail.'),'error');return;}
+  const {data,error}=await db.from('participants').select('id').eq('email',email).single();
+  if(error||!data){showAlert(alertEl,T('Email not found.','E-mail não encontrado.'),'error');return;}
+  showAlert(alertEl,T('Email found! Please contact the admin to reset your password.','E-mail encontrado! Por favor contacte o administrador para redefinir a sua palavra-passe.'),'success');
 }
 function showAlert(el,msg,type){
   el.innerHTML=`<div class="alert alert-${type}">${msg}</div>`;
