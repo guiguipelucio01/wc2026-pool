@@ -148,6 +148,10 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
         <label data-en="Email Address" data-pt="Endereço de E-mail">Email Address</label>
         <input type="email" id="regEmail" placeholder="joao@email.com"/>
       </div>
+      <div class="form-group">
+        <label data-en="Password" data-pt="Palavra-passe">Password</label>
+        <input type="password" id="regPassword" placeholder="Choose a password"/>
+      </div>
       <button class="btn" id="regBtn" onclick="register()">
         <span data-en="Create My Account" data-pt="Criar A Minha Conta">Create My Account</span>
       </button>
@@ -159,7 +163,11 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
     <div id="loginAlert"></div>
     <div class="form-group">
       <label data-en="Your Email" data-pt="O Seu E-mail">Your Email</label>
-      <input type="email" id="loginEmail" placeholder="joao@email.com" onkeydown="if(event.key==='Enter')loginByEmail()"/>
+      <input type="email" id="loginEmail" placeholder="joao@email.com"/>
+    </div>
+    <div class="form-group">
+      <label data-en="Password" data-pt="Palavra-passe">Password</label>
+      <input type="password" id="loginPassword" placeholder="Your password" onkeydown="if(event.key==='Enter')loginByEmail()"/>
     </div>
     <button class="btn btn-outline" onclick="loginByEmail()">
       <span data-en="Load My Predictions" data-pt="Carregar As Minhas Previsões">Load My Predictions</span>
@@ -372,14 +380,16 @@ function renderHome() {
 
 // ── REGISTER ───────────────────────────────────────────────────
 async function register() {
-  const name  = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim().toLowerCase();
-  const alertEl = document.getElementById('regAlert');
-  if (!name||!email) { showAlert(alertEl,T('Please fill in all fields.','Por favor preencha todos os campos.'),'error'); return; }
+  const name     = document.getElementById('regName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim().toLowerCase();
+  const password = document.getElementById('regPassword').value;
+  const alertEl  = document.getElementById('regAlert');
+  if (!name||!email||!password) { showAlert(alertEl,T('Please fill in all fields.','Por favor preencha todos os campos.'),'error'); return; }
   if (!email.includes('@')) { showAlert(alertEl,T('Enter a valid email.','Insira um e-mail válido.'),'error'); return; }
+  if (password.length < 4) { showAlert(alertEl,T('Password must be at least 4 characters.','A palavra-passe deve ter pelo menos 4 caracteres.'),'error'); return; }
   const btn = document.getElementById('regBtn');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
-  const {data,error} = await db.from('participants').insert({name,email}).select().single();
+  const {data,error} = await db.from('participants').insert({name,email,password}).select().single();
   btn.disabled=false; btn.innerHTML=T('Create My Account','Criar A Minha Conta');
   if (error) {
     if (error.code==='23505') showAlert(alertEl,T('Email already registered. Use login below.','E-mail já registado. Use o login abaixo.'),'error');
@@ -393,17 +403,19 @@ async function register() {
   document.getElementById('regSuccess').style.display='block';
   document.getElementById('regSuccess').innerHTML=`
     <div class="alert alert-success"><strong>🎉 ${T('Welcome','Bem-vindo(a)')}, ${name}!</strong><br/>
-    ${T('Registered! You can log in any time with just your email.','Registado! Pode entrar a qualquer momento com o seu e-mail.')}</div>
+    ${T('Registered! You can log in any time with your email and password.','Registado! Pode entrar a qualquer momento com o seu e-mail e palavra-passe.')}</div>
     <button class="btn" onclick="showPage('groups',document.querySelector('nav button[data-page=groups]'))">
       ${T('▶ Start Predicting','▶ Começar a Prever')}</button>`;
 }
 
 async function loginByEmail() {
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const alertEl = document.getElementById('loginAlert');
-  if (!email) { showAlert(alertEl,T('Enter your email.','Insira o seu e-mail.'),'error'); return; }
+  const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const alertEl  = document.getElementById('loginAlert');
+  if (!email||!password) { showAlert(alertEl,T('Enter your email and password.','Insira o seu e-mail e palavra-passe.'),'error'); return; }
   const {data,error} = await db.from('participants').select('*').eq('email',email).single();
   if (error||!data) { showAlert(alertEl,T('Email not found. Please register first.','E-mail não encontrado. Registe-se primeiro.'),'error'); return; }
+  if (data.password !== password) { showAlert(alertEl,T('Incorrect password.','Palavra-passe incorreta.'),'error'); return; }
   currentUser=data;
   localStorage.setItem('wc2026_user',JSON.stringify(data));
   await loadUserPredictions();
