@@ -407,6 +407,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <button class="active" data-page="home"       onclick="showPage('home',this)"       data-en="🏠 Home"        data-pt="🏠 Início">🏠 Home</button>
   <button               data-page="register"    onclick="showPage('register',this)"   data-en="🔑 Login / Register"   data-pt="🔑 Login / Registar">🔑 Login / Register</button>
   <button               data-page="groups"      onclick="showPage('groups',this)"     data-en="⚽ Groups"      data-pt="⚽ Grupos">⚽ Groups</button>
+  <button               data-page="tables"      onclick="showPage('tables',this)"     data-en="📋 Tables"     data-pt="📋 Tabelas">📋 Tables</button>
   <button               data-page="knockout"    onclick="showPage('knockout',this)"   data-en="🏆 Knockout"   data-pt="🏆 Eliminatórias">🏆 Knockout</button>
   <button               data-page="awards"      onclick="showPage('awards',this)"     data-en="🥇 Awards"     data-pt="🥇 Prémios">🥇 Awards</button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"data-en="📊 Standings"  data-pt="📊 Classificação">📊 Standings</button>
@@ -417,6 +418,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <button class="active" data-page="home"       onclick="showPage('home',this)">       <span class="bn-icon">🏠</span><span data-en="Home"      data-pt="Início">Home</span></button>
   <button               data-page="register"    onclick="showPage('register',this)">   <span class="bn-icon">🔑</span><span data-en="Login"  data-pt="Entrar">Login</span></button>
   <button               data-page="groups"      onclick="showPage('groups',this)">     <span class="bn-icon">⚽</span><span data-en="Groups"    data-pt="Grupos">Groups</span></button>
+  <button               data-page="tables"      onclick="showPage('tables',this)">     <span class="bn-icon">📋</span><span data-en="Tables"    data-pt="Tabelas">Tables</span></button>
   <button               data-page="knockout"    onclick="showPage('knockout',this)">   <span class="bn-icon">🏆</span><span data-en="Knockout"  data-pt="Elim.">Knockout</span></button>
   <button               data-page="awards"      onclick="showPage('awards',this)">     <span class="bn-icon">🥇</span><span data-en="Awards"    data-pt="Prémios">Awards</span></button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"><span class="bn-icon">📊</span><span data-en="Standings" data-pt="Classif.">Standings</span></button>
@@ -519,9 +521,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <div class="card" style="padding:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button id="viewByGroup"     class="group-tab active" onclick="setGroupView('group')"     data-en="By Group"      data-pt="Por Grupo">By Group</button>
-        <button id="viewByDate"      class="group-tab"        onclick="setGroupView('date')"      data-en="📅 By Date"    data-pt="📅 Por Data">📅 By Date</button>
-        <button id="viewStandings"   class="group-tab"        onclick="setGroupView('standings')" data-en="🏆 Standings"  data-pt="🏆 Classificação">🏆 Standings</button>
+        <button id="viewByGroup" class="group-tab active" onclick="setGroupView('group')" data-en="By Group"   data-pt="Por Grupo">By Group</button>
+        <button id="viewByDate"  class="group-tab"        onclick="setGroupView('date')"  data-en="📅 By Date" data-pt="📅 Por Data">📅 By Date</button>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span id="grpProgress" style="font-size:.85rem;color:var(--muted)"></span>
@@ -537,6 +538,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <button class="btn" id="saveGrpBtn" onclick="saveDateViewPredictions()" style="display:none;margin-top:4px">
     <span id="saveGrpBtnLabel" data-en="💾 Save Predictions" data-pt="💾 Guardar Previsões">💾 Save Predictions</span>
   </button>
+</div>
+
+<div id="page-tables" class="page">
+  <div class="card" style="padding:14px;margin-bottom:10px">
+    <h2 style="margin:0;font-size:1.1rem" data-en="📋 WC 2026 Group Tables" data-pt="📋 Tabelas da Fase de Grupos">📋 WC 2026 Group Tables</h2>
+  </div>
+  <div id="tablesContainer"></div>
 </div>
 
 <div id="page-knockout" class="page">
@@ -713,6 +721,7 @@ function renderActive(name) {
   const n = name || document.querySelector('.page.active')?.id?.replace('page-','');
   if (n==='home')        renderHome();
   if (n==='groups')      renderGroupPage();
+  if (n==='tables')      renderTablesPage();
   if (n==='knockout')    renderKOPage();
   if (n==='awards')      renderAwardsPage();
   if (n==='leaderboard') loadLeaderboard();
@@ -877,18 +886,6 @@ function renderGroupPage() {
   const open = settings.group_phase_open==='true';
   document.getElementById('grpBanner').innerHTML = phaseBanner(T('Group stage predictions','Previsões fase de grupos'),open);
 
-  // Standings are public — no login required
-  if (groupViewMode === 'standings') {
-    document.getElementById('grpUserBar').innerHTML = '';
-    document.getElementById('grpProgress').textContent = '';
-    document.getElementById('grpProgFill').style.width = '0%';
-    document.getElementById('grpTabs').style.display = 'none';
-    document.getElementById('datePicker').style.display = 'none';
-    document.getElementById('saveGrpBtn').style.display = 'none';
-    renderGroupStandings();
-    return;
-  }
-
   if (!currentUser) {
     document.getElementById('grpMatches').innerHTML=loginPrompt();
     document.getElementById('saveGrpBtn').style.display='none';
@@ -913,21 +910,15 @@ function renderGroupPage() {
   }
 }
 
-let groupViewMode = 'group'; // 'group', 'date', or 'standings'
+let groupViewMode = 'group'; // 'group' or 'date'
 
 function setGroupView(mode) {
   groupViewMode = mode;
   document.getElementById('viewByGroup').classList.toggle('active', mode==='group');
   document.getElementById('viewByDate').classList.toggle('active', mode==='date');
-  document.getElementById('viewStandings').classList.toggle('active', mode==='standings');
   document.getElementById('grpTabs').style.display = mode==='group' ? '' : 'none';
   document.getElementById('datePicker').style.display = mode==='date' ? '' : 'none';
-  if (mode==='standings') {
-    document.getElementById('grpProgress').textContent = '';
-    document.getElementById('grpProgFill').style.width = '0%';
-    document.getElementById('saveGrpBtn').style.display = 'none';
-    renderGroupStandings();
-  } else if (mode==='date') {
+  if (mode==='date') {
     // Default to today if within tournament, else first match day
     const today = new Date().toISOString().slice(0,10);
     const matchDays = getMatchDays();
@@ -942,7 +933,12 @@ function setGroupView(mode) {
   }
 }
 
-function renderGroupStandings() {
+function renderTablesPage() {
+  renderGroupStandings('tablesContainer');
+}
+
+function renderGroupStandings(containerId) {
+  containerId = containerId || 'grpMatches';
   // Build per-group stats from actual match results
   const stats = {};
   GROUPS.forEach(g => { stats[g] = {}; });
@@ -1011,7 +1007,7 @@ function renderGroupStandings() {
     </div>`;
   }).join('');
 
-  document.getElementById('grpMatches').innerHTML = `
+  document.getElementById(containerId).innerHTML = `
     <div class="alert alert-info" style="margin-bottom:10px;font-size:.8rem">
       🏆 ${T('Official WC 2026 group standings — updated as admin enters match results. ▲ = qualified zone.','Classificação oficial da fase de grupos — atualizada com os resultados. ▲ = zona de apuramento.')}
     </div>${html}`;
