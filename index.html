@@ -6,122 +6,384 @@
 <title>WC 2026 Prediction Pool</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#c9a84c;--dark:#0a0f1e;--mid:#111827;--card:#1a2235;--border:#2a3550;--text:#e8eaf0;--muted:#8090b0;--green:#22c55e;--red:#ef4444;--blue:#3b82f6}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--dark);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
-header{background:linear-gradient(135deg,#0a1628,#1a2d5a);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:100}
-.logo{font-size:1.3rem;font-weight:700;color:var(--gold)}
-.lang-btn{background:var(--border);border:1px solid var(--gold);color:var(--gold);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s}
-.lang-btn:hover{background:var(--gold);color:var(--dark)}
-nav{display:flex;gap:4px;background:var(--mid);padding:10px 20px;border-bottom:1px solid var(--border);overflow-x:auto}
-nav button{background:none;border:none;color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.88rem;white-space:nowrap;transition:all .2s}
-nav button.active,nav button:hover{background:var(--card);color:var(--gold)}
-.container{max-width:900px;margin:0 auto;padding:20px}
-.page{display:none}.page.active{display:block}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
-h2{font-size:1.4rem;color:var(--gold);margin-bottom:16px}
-h3{font-size:1.05rem;color:var(--text);margin-bottom:10px}
-.form-group{margin-bottom:14px}
-label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:5px;font-weight:500}
-input,select{width:100%;background:var(--mid);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:.95rem;outline:none;transition:border .2s}
-input:focus,select:focus{border-color:var(--gold)}
-select option{background:var(--mid)}
-.btn{background:linear-gradient(135deg,var(--gold),#e8b84b);color:var(--dark);border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.95rem;transition:all .2s;width:100%;touch-action:manipulation}
-.btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(201,168,76,.35)}
-.btn:active{transform:scale(.97);opacity:.9}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-outline{background:none;border:1px solid var(--gold);color:var(--gold)}
-.btn-outline:hover{background:var(--gold);color:var(--dark)}
-.alert{padding:12px 16px;border-radius:8px;margin-bottom:14px;font-size:.9rem;line-height:1.5}
-.alert-success{background:rgba(34,197,94,.15);border:1px solid var(--green);color:var(--green)}
-.alert-error{background:rgba(239,68,68,.15);border:1px solid var(--red);color:var(--red)}
-.alert-info{background:rgba(59,130,246,.15);border:1px solid var(--blue);color:var(--blue)}
-.match-card{background:var(--mid);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
-.match-header{font-size:.76rem;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
-.match-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
-.team-name{font-size:.88rem;font-weight:600}
+/* ── DESIGN TOKENS ───────────────────────────────────────────── */
+:root{
+  --gold:#c9a84c;--gold2:#e8c96a;
+  --dark:#000;
+  --mid:#1c1c1e;
+  --card:rgba(255,255,255,0.05);
+  --card-solid:#1c1c1e;
+  --border:rgba(255,255,255,0.09);
+  --text:#f5f5f7;--text2:#d1d1d6;
+  --muted:#8e8e93;
+  --green:#30d158;--red:#ff453a;--blue:#0a84ff;
+  --bg:#000;
+  --input-bg:rgba(255,255,255,0.07);
+  --glass:rgba(255,255,255,0.04);
+  --nav-bg:rgba(0,0,0,0.75);
+  --shadow:0 4px 24px rgba(0,0,0,0.5);
+  --shadow-lg:0 16px 64px rgba(0,0,0,0.7);
+  --radius:20px;--radius-sm:12px;
+}
+[data-theme="light"]{
+  --dark:#fff;
+  --mid:#f2f2f7;
+  --card:rgba(255,255,255,0.75);
+  --card-solid:#fff;
+  --border:rgba(0,0,0,0.08);
+  --text:#1d1d1f;--text2:#3a3a3c;
+  --muted:#6e6e73;
+  --green:#34c759;--red:#ff3b30;--blue:#007aff;
+  --bg:#f5f5f7;
+  --input-bg:rgba(0,0,0,0.05);
+  --glass:rgba(255,255,255,0.7);
+  --nav-bg:rgba(245,245,247,0.82);
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg:0 16px 64px rgba(0,0,0,0.14);
+}
+
+/* ── RESET ───────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;
+  font-size:16px;line-height:1.5;min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  transition:background .35s,color .35s;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 10% 40%,rgba(201,168,76,.07) 0%,transparent 50%),
+    radial-gradient(ellipse at 90% 10%,rgba(10,132,255,.04) 0%,transparent 50%),
+    radial-gradient(ellipse at 50% 90%,rgba(201,168,76,.04) 0%,transparent 50%);
+}
+
+/* ── HEADER ──────────────────────────────────────────────────── */
+header{
+  position:sticky;top:0;z-index:200;
+  background:var(--nav-bg);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  padding:13px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background .35s;
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;font-size:1.65rem;
+  letter-spacing:3px;color:var(--gold);
+  text-shadow:0 0 24px rgba(201,168,76,.35);
+}
+.header-actions{display:flex;gap:8px;align-items:center}
+.lang-btn,.theme-btn{
+  background:var(--input-bg);
+  border:1px solid var(--border);
+  color:var(--text2);
+  padding:7px 14px;border-radius:20px;
+  cursor:pointer;font-size:.8rem;font-weight:600;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  font-family:inherit;
+}
+.lang-btn:hover,.theme-btn:hover{background:var(--gold);color:#000;border-color:var(--gold);transform:scale(1.05)}
+
+/* ── TOP NAV ─────────────────────────────────────────────────── */
+nav.top-nav{
+  background:var(--nav-bg);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  padding:8px 20px;display:flex;gap:2px;overflow-x:auto;
+  scrollbar-width:none;transition:background .35s;position:relative;z-index:100;
+}
+nav.top-nav::-webkit-scrollbar{display:none}
+nav.top-nav button{
+  background:none;border:none;color:var(--muted);
+  padding:8px 16px;border-radius:10px;
+  cursor:pointer;font-size:.85rem;font-weight:500;white-space:nowrap;
+  transition:all .22s cubic-bezier(.34,1.56,.64,1);font-family:inherit;letter-spacing:-.01em;
+}
+nav.top-nav button:hover{color:var(--text);background:var(--glass)}
+nav.top-nav button.active{
+  background:var(--gold);color:#000;font-weight:700;
+  box-shadow:0 2px 14px rgba(201,168,76,.3);
+}
+
+/* ── BOTTOM NAV (iOS style) ──────────────────────────────────── */
+.bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--nav-bg);
+  backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+  border-top:1px solid var(--border);z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);transition:background .35s;
+}
+.bottom-nav button{
+  flex:1;background:none;border:none;color:var(--muted);
+  padding:10px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:.55rem;font-weight:600;cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  text-transform:uppercase;letter-spacing:.4px;touch-action:manipulation;font-family:inherit;
+}
+.bottom-nav button .bn-icon{font-size:1.3rem;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.bottom-nav button.active{color:var(--gold)}
+.bottom-nav button.active .bn-icon{transform:scale(1.2)}
+.bottom-nav button:active{opacity:.55}
+
+/* ── CONTAINER ───────────────────────────────────────────────── */
+.container{max-width:900px;margin:0 auto;padding:24px 20px;position:relative;z-index:1}
+
+/* ── PAGE TRANSITIONS ────────────────────────────────────────── */
+.page{display:none}
+.page.active{display:block;animation:pageIn .28s cubic-bezier(.25,.46,.45,.94) both}
+@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CARDS ───────────────────────────────────────────────────── */
+.card{
+  background:var(--card);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;margin-bottom:16px;
+  box-shadow:var(--shadow);
+  transition:background .35s,border .35s,box-shadow .3s;
+}
+
+/* ── TYPOGRAPHY ──────────────────────────────────────────────── */
+h2{font-size:1.45rem;font-weight:700;color:var(--gold);margin-bottom:18px;letter-spacing:-.025em}
+h3{font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:12px;letter-spacing:-.01em}
+
+/* ── FORMS ───────────────────────────────────────────────────── */
+.form-group{margin-bottom:16px}
+label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:6px;font-weight:500;letter-spacing:.01em}
+input,select{
+  width:100%;background:var(--input-bg);border:1px solid var(--border);
+  color:var(--text);padding:13px 16px;border-radius:var(--radius-sm);
+  font-size:.95rem;outline:none;transition:all .2s;font-family:inherit;
+}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+select option{background:var(--card-solid)}
+
+/* ── BUTTONS ─────────────────────────────────────────────────── */
+.btn{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#000;border:none;padding:14px 24px;border-radius:var(--radius-sm);
+  cursor:pointer;font-weight:700;font-size:.95rem;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  width:100%;touch-action:manipulation;font-family:inherit;letter-spacing:-.01em;
+  box-shadow:0 2px 14px rgba(201,168,76,.25);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,168,76,.4)}
+.btn:active{transform:scale(.96);box-shadow:0 1px 6px rgba(201,168,76,.2)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-outline{background:none;border:1.5px solid var(--gold);color:var(--gold);box-shadow:none}
+.btn-outline:hover{background:var(--gold);color:#000}
+.btn-sm{padding:7px 14px;font-size:.8rem;border-radius:10px;width:auto}
+.btn-green{background:linear-gradient(135deg,var(--green),#1a9e3f);color:#fff;box-shadow:0 2px 14px rgba(48,209,88,.25)}
+
+/* ── ALERTS ──────────────────────────────────────────────────── */
+.alert{padding:14px 16px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:.88rem;line-height:1.55}
+.alert-success{background:rgba(48,209,88,.1);border:1px solid rgba(48,209,88,.3);color:var(--green)}
+.alert-error{background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.3);color:var(--red)}
+.alert-info{background:rgba(10,132,255,.1);border:1px solid rgba(10,132,255,.3);color:var(--blue)}
+.alert-warn{background:rgba(255,214,10,.1);border:1px solid rgba(255,214,10,.3);color:#ffd60a}
+
+/* ── MATCH CARDS ─────────────────────────────────────────────── */
+.match-card{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:10px;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+}
+.match-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(201,168,76,.1);border-color:rgba(201,168,76,.2)}
+.match-header{font-size:.74rem;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;font-weight:500}
+.match-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.team-name{font-size:.88rem;font-weight:600;letter-spacing:-.01em}
 .team-name.home{text-align:right}
-.score-inputs{display:flex;align-items:center;gap:5px}
-.score-input{width:46px;text-align:center;font-size:1.1rem;font-weight:700;padding:6px;border-radius:6px}
+.score-inputs{display:flex;align-items:center;gap:6px}
+.score-input{
+  width:48px;text-align:center;font-size:1.1rem;font-weight:700;
+  padding:8px 4px;border-radius:10px;background:var(--input-bg);
+  border:1px solid var(--border);color:var(--text);font-family:inherit;transition:all .2s;
+}
+.score-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15);outline:none}
 .score-sep{font-size:1.2rem;color:var(--muted);font-weight:700}
-.match-pts{font-size:.75rem;color:var(--green);text-align:center;margin-top:5px;font-weight:600}
-.saved-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:6px;opacity:0;transition:opacity .3s;vertical-align:middle}
+.match-pts{font-size:.75rem;color:var(--green);text-align:center;margin-top:6px;font-weight:600}
+.saved-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:6px;opacity:0;transition:opacity .35s;vertical-align:middle}
 .saved-dot.show{opacity:1}
+.mf{font-size:2rem;line-height:1;display:block}
+.team-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.team-block.away{align-items:flex-start}
+
+/* ── LEADERBOARD ─────────────────────────────────────────────── */
 .lb-table{width:100%;border-collapse:collapse}
-.lb-table th{text-align:left;padding:10px 12px;font-size:.77rem;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em}
-.lb-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:.9rem}
-.lb-table tr:hover td{background:rgba(255,255,255,.02)}
-.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-weight:700;font-size:.85rem}
-.r1{background:linear-gradient(135deg,#ffd700,#c9a84c);color:#000}
-.r2{background:linear-gradient(135deg,#c0c0c0,#909090);color:#000}
-.r3{background:linear-gradient(135deg,#cd7f32,#a05a20);color:#fff}
-.rN{background:var(--border);color:var(--muted)}
-.pts-total{font-weight:700;color:var(--gold)}
-.group-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.group-tab{background:var(--border);border:none;color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.84rem;font-weight:600;transition:all .2s}
-.group-tab.active{background:var(--gold);color:var(--dark)}
-.phase-banner{background:linear-gradient(135deg,#1a2d5a,#2a1a5a);border:1px solid var(--gold);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:.9rem}
-.phase-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0}
-.phase-dot.off{background:var(--red);box-shadow:0 0 8px var(--red)}
-.prog-bar{background:var(--border);border-radius:4px;height:6px;margin-top:6px}
-.prog-fill{background:linear-gradient(90deg,var(--gold),#e8b84b);height:100%;border-radius:4px;transition:width .4s}
-.user-bar{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
-.user-bar strong{color:var(--gold)}
-.award-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.award-card{background:var(--mid);border:1px solid var(--border);border-radius:10px;padding:16px}
-.award-icon{font-size:1.8rem;margin-bottom:6px}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}
-.stat-card{background:var(--mid);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
-.stat-num{font-size:1.5rem;font-weight:700;color:var(--gold);margin:4px 0}
-.stat-lbl{font-size:.76rem;color:var(--muted)}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+.lb-table th{text-align:left;padding:10px 14px;font-size:.7rem;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.lb-table td{padding:14px;border-bottom:1px solid var(--border);font-size:.9rem;transition:background .15s}
+.lb-table tr:last-child td{border-bottom:none}
+.lb-table tr:hover td{background:rgba(201,168,76,.04)}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;font-weight:800;font-size:.82rem}
+.r1{background:linear-gradient(135deg,#ffd700,#c9a84c);color:#000;box-shadow:0 0 18px rgba(255,215,0,.5)}
+.r2{background:linear-gradient(135deg,#e8e8e8,#a0a0a0);color:#000;box-shadow:0 0 12px rgba(192,192,192,.4)}
+.r3{background:linear-gradient(135deg,#e8a060,#a05a20);color:#fff;box-shadow:0 0 12px rgba(205,127,50,.4)}
+.rN{background:var(--input-bg);color:var(--muted)}
+.pts-total{font-weight:800;color:var(--gold);font-size:1rem}
+
+/* ── GROUP TABS ──────────────────────────────────────────────── */
+.group-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.group-tab{
+  background:var(--input-bg);border:1px solid var(--border);color:var(--muted);
+  padding:7px 14px;border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:600;
+  transition:all .22s cubic-bezier(.34,1.56,.64,1);font-family:inherit;
+}
+.group-tab:hover{color:var(--text);border-color:rgba(201,168,76,.4)}
+.group-tab.active{background:var(--gold);color:#000;border-color:var(--gold);box-shadow:0 2px 12px rgba(201,168,76,.3)}
+
+/* ── PHASE BANNER ────────────────────────────────────────────── */
+.phase-banner{
+  background:var(--glass);border:1px solid var(--border);border-radius:14px;
+  padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px;font-size:.88rem;
+  backdrop-filter:blur(10px);
+}
+.phase-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0;animation:pulse 2s infinite}
+.phase-dot.off{background:var(--red);box-shadow:0 0 8px var(--red);animation:none}
+@keyframes pulse{0%,100%{box-shadow:0 0 6px var(--green)}50%{box-shadow:0 0 16px var(--green),0 0 28px rgba(48,209,88,.3)}}
+
+/* ── PROGRESS ────────────────────────────────────────────────── */
+.prog-bar{background:var(--input-bg);border-radius:6px;height:6px;margin-top:8px;overflow:hidden}
+.prog-fill{background:linear-gradient(90deg,var(--gold),var(--gold2));height:100%;border-radius:6px;transition:width .6s cubic-bezier(.25,.46,.45,.94)}
+
+/* ── USER BAR ────────────────────────────────────────────────── */
+.user-bar{
+  background:var(--glass);border:1px solid var(--border);border-radius:16px;
+  padding:12px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;
+  font-size:.9rem;backdrop-filter:blur(10px);
+}
+.user-bar strong{color:var(--gold);font-weight:700}
+
+/* ── AWARDS ──────────────────────────────────────────────────── */
+.award-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.award-card{
+  background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:18px;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+}
+.award-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:rgba(201,168,76,.2)}
+.award-icon{font-size:2rem;margin-bottom:8px;display:block}
+
+/* ── STATS ───────────────────────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat-card{
+  background:var(--glass);border:1px solid var(--border);border-radius:16px;
+  padding:18px 14px;text-align:center;transition:all .22s cubic-bezier(.34,1.56,.64,1);
+}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat-num{font-size:1.65rem;font-weight:800;color:var(--gold);margin:4px 0;letter-spacing:-.03em}
+.stat-lbl{font-size:.7rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.07em}
+
+/* ── SPINNER ─────────────────────────────────────────────────── */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
-.empty-state .icon{font-size:2.5rem;margin-bottom:12px}
-hr.div{border:none;border-top:1px solid var(--border);margin:18px 0}
-@media(max-width:580px){
-  .team-name{font-size:.8rem}
-  .score-input{width:44px;font-size:1.05rem;padding:8px 4px}
-  .award-grid{grid-template-columns:1fr}
-  .mf{font-size:1.5rem}
-  .hero-title{font-size:2.2rem}
-  .hero-hosts{font-size:1.5rem}
-  .hero{padding:28px 16px 22px}
-  .container{padding:14px 12px;padding-bottom:80px}
+
+/* ── EMPTY STATE ─────────────────────────────────────────────── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-state .icon{font-size:3rem;margin-bottom:14px;display:block}
+hr.div{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+/* ── HERO ────────────────────────────────────────────────────── */
+.hero{
+  background:linear-gradient(160deg,rgba(201,168,76,.07) 0%,rgba(10,132,255,.04) 50%,transparent 100%);
+  border:1px solid var(--border);border-radius:24px;
+  padding:32px 28px 26px;text-align:center;position:relative;overflow:hidden;margin-bottom:16px;
+  backdrop-filter:blur(20px);
+}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(201,168,76,.12) 0%,transparent 65%);pointer-events:none}
+.hero-trophy{font-size:3.8rem;filter:drop-shadow(0 0 28px rgba(201,168,76,.65));animation:float 3s ease-in-out infinite;display:block;margin-bottom:8px;position:relative}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,7vw,4rem);color:var(--gold);letter-spacing:4px;line-height:1;text-shadow:0 0 40px rgba(201,168,76,.45);margin-bottom:6px;position:relative}
+.hero-hosts{font-size:2rem;letter-spacing:8px;margin:12px 0 8px;position:relative}
+.hero-divider{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto}
+.hero-sub{color:var(--muted);font-size:.78rem;letter-spacing:2px;text-transform:uppercase;position:relative;font-weight:500}
+
+/* ── AVATAR ──────────────────────────────────────────────────── */
+.av{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;overflow:hidden;border:2px solid var(--gold);vertical-align:middle;box-shadow:0 0 0 2px rgba(201,168,76,.2)}
+.av img{width:100%;height:100%;object-fit:cover}
+.av-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:999;align-items:center;justify-content:center}
+.av-overlay.open{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.av-box{background:var(--card-solid);border:1px solid var(--border);border-radius:24px;padding:28px;max-width:520px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:12px 0}
+.emoji-opt{background:var(--input-bg);border:2px solid transparent;border-radius:12px;padding:12px 6px;font-size:2.2rem;cursor:pointer;text-align:center;transition:all .2s cubic-bezier(.34,1.56,.64,1);line-height:1}
+.emoji-opt:hover{transform:scale(1.1);border-color:var(--gold);background:rgba(201,168,76,.1)}
+.emoji-opt.sel{border-color:var(--gold);background:rgba(201,168,76,.15);transform:scale(1.05)}
+
+/* ── TRIVIA ──────────────────────────────────────────────────── */
+.mascot-wrap{text-align:center;padding:10px 0 4px}
+.mascot{font-size:5rem;display:inline-block;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 4px 16px rgba(201,168,76,.3));cursor:pointer;transition:transform .15s}
+.mascot:active{transform:scale(.88)}
+.speech-bubble{
+  position:relative;background:var(--glass);border:1px solid var(--border);
+  border-radius:20px;padding:22px 24px;margin:16px 0 8px;
+  backdrop-filter:blur(12px);min-height:90px;
+  animation:fadeSlide .4s cubic-bezier(.25,.46,.45,.94);
+}
+.speech-bubble::before{
+  content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  border:10px solid transparent;border-bottom-color:var(--border);border-top:none;
+}
+.speech-bubble::after{
+  content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  border:9px solid transparent;border-bottom-color:var(--card-solid);border-top:none;
+}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fact-text{font-size:1rem;line-height:1.65;color:var(--text);font-weight:400}
+.fact-category{display:inline-block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);border-radius:20px;padding:3px 10px;margin-bottom:10px}
+.trivia-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:16px}
+.trivia-chip{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:.82rem;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);line-height:1.45;color:var(--text2)}
+.trivia-chip:hover{border-color:var(--gold);background:rgba(201,168,76,.08);transform:translateY(-2px)}
+/* ── QUIZ ────────────────────────────────────────────────────── */
+.quiz-progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:18px}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f59e0b);border-radius:3px;transition:width .4s ease}
+.quiz-q{font-size:1.1rem;font-weight:600;line-height:1.55;color:var(--text);margin-bottom:20px}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.quiz-opts{grid-template-columns:1fr}}
+.quiz-opt{background:var(--glass);border:2px solid var(--border);border-radius:14px;padding:14px 16px;font-size:.92rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:left;color:var(--text);line-height:1.35}
+.quiz-opt:hover:not(:disabled){border-color:var(--gold);background:rgba(201,168,76,.08);transform:translateY(-2px)}
+.quiz-opt.correct{border-color:#30d158;background:rgba(48,209,88,.12);color:#30d158}
+.quiz-opt.wrong{border-color:#ff453a;background:rgba(255,69,58,.1);color:#ff453a}
+.quiz-opt:disabled{cursor:default;transform:none}
+.quiz-score-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);border-radius:20px;padding:5px 14px;font-size:.85rem;font-weight:700;color:var(--gold)}
+.quiz-result-card{text-align:center;padding:24px 16px}
+.quiz-result-score{font-size:3rem;font-weight:800;color:var(--gold)}
+.quiz-result-label{font-size:1rem;color:var(--text2);margin-top:6px}
+/* ── CHAT ────────────────────────────────────────────────────── */
+.msg-row{display:flex;gap:10px;align-items:flex-start}
+.msg-bubble{max-width:75%;min-width:60px;background:var(--glass);border:1px solid var(--border);border-radius:18px;border-top-left-radius:4px;padding:10px 16px;font-size:.9rem;line-height:1.55;word-break:break-word;backdrop-filter:blur(10px);white-space:pre-wrap}
+.msg-row.mine .msg-bubble{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.25);border-top-left-radius:18px}
+.msg-name{font-size:.72rem;color:var(--muted);margin-bottom:3px;font-weight:600}
+.msg-time{font-size:.66rem;color:var(--muted);margin-top:4px}
+
+/* ── MOBILE ──────────────────────────────────────────────────── */
+@media(max-width:600px){
+  .container{padding:16px 14px;padding-bottom:92px}
   nav.top-nav{display:none}
   .bottom-nav{display:flex}
   header{padding:12px 16px}
+  .hero{padding:32px 18px 26px}
+  .hero-title{font-size:2.4rem}
+  .hero-hosts{font-size:1.6rem;letter-spacing:5px}
+  .team-name{font-size:.82rem}
+  .score-input{width:44px}
+  .award-grid{grid-template-columns:1fr 1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .mf{font-size:1.7rem}
+  .card{padding:18px 16px;border-radius:18px}
+  .emoji-grid{grid-template-columns:repeat(6,1fr)}
 }
-/* ── BOTTOM NAV (mobile) ──────────────────────────────────────── */
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--mid);border-top:1px solid var(--border);z-index:200;padding-bottom:env(safe-area-inset-bottom)}
-.bottom-nav button{flex:1;background:none;border:none;color:var(--muted);padding:9px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.58rem;font-weight:600;cursor:pointer;transition:color .15s;text-transform:uppercase;letter-spacing:.5px;touch-action:manipulation}
-.bottom-nav button .bn-icon{font-size:1.25rem;line-height:1}
-.bottom-nav button.active{color:var(--gold)}
-.bottom-nav button:active{opacity:.7}
-/* ── ENHANCED VISUALS ─────────────────────────────────────────── */
-body{background-image:radial-gradient(ellipse at 20% 50%,rgba(26,45,90,.35) 0%,transparent 55%),radial-gradient(ellipse at 80% 10%,rgba(201,168,76,.07) 0%,transparent 45%)}
-header{box-shadow:0 2px 24px rgba(201,168,76,.18)}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;text-shadow:0 0 20px rgba(201,168,76,.4)}
-nav{scrollbar-width:none}
-nav::-webkit-scrollbar{display:none}
-.hero{background:linear-gradient(160deg,#060d1f 0%,#0d1f4a 40%,#1a2d5a 70%,#0a1628 100%);border:2px solid var(--gold);border-radius:16px;padding:36px 24px 28px;text-align:center;position:relative;overflow:hidden;margin-bottom:16px}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(201,168,76,.15) 0%,transparent 65%);pointer-events:none}
-.hero-trophy{font-size:4rem;filter:drop-shadow(0 0 24px rgba(201,168,76,.7));animation:float 3s ease-in-out infinite;display:block;margin-bottom:10px;position:relative}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.6rem);color:var(--gold);letter-spacing:4px;line-height:1;text-shadow:0 0 40px rgba(201,168,76,.55);margin-bottom:4px;position:relative}
-.hero-hosts{font-size:1.9rem;letter-spacing:8px;margin:10px 0 6px;position:relative}
-.hero-divider{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:12px auto}
-.hero-sub{color:var(--muted);font-size:.82rem;letter-spacing:1.5px;text-transform:uppercase;position:relative}
-.match-card{transition:transform .15s,box-shadow .15s}
-.match-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(201,168,76,.12)}
-.mf{font-size:1.9rem;line-height:1;display:block}
-.team-block{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
-.team-block.away{align-items:flex-start}
-.r1{box-shadow:0 0 14px rgba(255,215,0,.45)}
-.r2{box-shadow:0 0 12px rgba(192,192,192,.35)}
-.r3{box-shadow:0 0 10px rgba(205,127,50,.3)}
+/* Hide bottom nav text labels on very small phones — icons only */
+@media(max-width:380px){
+  .bottom-nav button{font-size:0;padding:12px 2px 8px}
+  .bottom-nav button .bn-icon{font-size:1.45rem}
+}
 </style>
 </head>
 <body>
@@ -135,25 +397,37 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
 
 <header>
   <div class="logo">⚽ WC 2026 Pool</div>
-  <button class="lang-btn" id="langBtn" onclick="toggleLang()">🇵🇹 PT</button>
+  <div class="header-actions">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🇵🇹 PT</button>
+  </div>
 </header>
 
 <nav class="top-nav">
   <button class="active" data-page="home"       onclick="showPage('home',this)"       data-en="🏠 Home"        data-pt="🏠 Início">🏠 Home</button>
-  <button               data-page="register"    onclick="showPage('register',this)"   data-en="📝 Register"   data-pt="📝 Registar">📝 Register</button>
+  <button               data-page="register"    onclick="showPage('register',this)"   data-en="🔑 Login / Register"   data-pt="🔑 Login / Registar">🔑 Login / Register</button>
   <button               data-page="groups"      onclick="showPage('groups',this)"     data-en="⚽ Groups"      data-pt="⚽ Grupos">⚽ Groups</button>
   <button               data-page="knockout"    onclick="showPage('knockout',this)"   data-en="🏆 Knockout"   data-pt="🏆 Eliminatórias">🏆 Knockout</button>
   <button               data-page="awards"      onclick="showPage('awards',this)"     data-en="🥇 Awards"     data-pt="🥇 Prémios">🥇 Awards</button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"data-en="📊 Standings"  data-pt="📊 Classificação">📊 Standings</button>
+  <button               data-page="chat"        onclick="showPage('chat',this)"        data-en="💬 Chat"       data-pt="💬 Chat">💬 Chat</button>
+  <button               data-page="trivia"      onclick="showPage('trivia',this)"      data-en="🧠 Trivia"     data-pt="🧠 Curiosidades">🧠 Trivia</button>
 </nav>
 <nav class="bottom-nav">
   <button class="active" data-page="home"       onclick="showPage('home',this)">       <span class="bn-icon">🏠</span><span data-en="Home"      data-pt="Início">Home</span></button>
-  <button               data-page="register"    onclick="showPage('register',this)">   <span class="bn-icon">📝</span><span data-en="Register"  data-pt="Entrar">Register</span></button>
+  <button               data-page="register"    onclick="showPage('register',this)">   <span class="bn-icon">🔑</span><span data-en="Login"  data-pt="Entrar">Login</span></button>
   <button               data-page="groups"      onclick="showPage('groups',this)">     <span class="bn-icon">⚽</span><span data-en="Groups"    data-pt="Grupos">Groups</span></button>
   <button               data-page="knockout"    onclick="showPage('knockout',this)">   <span class="bn-icon">🏆</span><span data-en="Knockout"  data-pt="Elim.">Knockout</span></button>
   <button               data-page="awards"      onclick="showPage('awards',this)">     <span class="bn-icon">🥇</span><span data-en="Awards"    data-pt="Prémios">Awards</span></button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"><span class="bn-icon">📊</span><span data-en="Standings" data-pt="Classif.">Standings</span></button>
+  <button               data-page="chat"        onclick="showPage('chat',this)">        <span class="bn-icon">💬</span><span data-en="Chat"       data-pt="Chat">Chat</span></button>
+  <button               data-page="trivia"      onclick="showPage('trivia',this)">      <span class="bn-icon">🧠</span><span data-en="Trivia"     data-pt="Trivia">Trivia</span></button>
 </nav>
+
+<!-- Avatar picker modal -->
+<div class="av-overlay" id="avOverlay" onclick="if(event.target===this)closeAvPicker()">
+  <div class="av-box" id="avBox"></div>
+</div>
 
 <div class="container">
 
@@ -161,7 +435,11 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <div class="hero">
     <span class="hero-trophy">🏆</span>
     <div class="hero-title" data-en="FIFA World Cup 2026" data-pt="Copa do Mundo FIFA 2026">FIFA World Cup 2026</div>
-    <div class="hero-hosts">🇨🇦 🇲🇽 🇺🇸</div>
+    <div class="hero-hosts" style="display:flex;align-items:center;justify-content:center;gap:16px;margin:12px 0 8px">
+      <img src="https://flagcdn.com/48x36/ca.png" width="48" height="36" style="border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.4)" alt="Canada"/>
+      <img src="https://flagcdn.com/48x36/mx.png" width="48" height="36" style="border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.4)" alt="Mexico"/>
+      <img src="https://flagcdn.com/48x36/us.png" width="48" height="36" style="border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.4)" alt="USA"/>
+    </div>
     <div class="hero-divider"></div>
     <div class="hero-sub" data-en="June 11 – July 19, 2026 · 48 Teams · 104 Matches" data-pt="11 junho – 19 julho 2026 · 48 seleções · 104 jogos">June 11 – July 19, 2026 · 48 Teams · 104 Matches</div>
   </div>
@@ -240,14 +518,24 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <div id="grpUserBar"></div>
   <div class="card" style="padding:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-      <span id="grpProgress" style="font-size:.88rem;color:var(--muted)"></span>
-      <div class="prog-bar" style="width:130px"><div class="prog-fill" id="grpProgFill" style="width:0%"></div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button id="viewByGroup"     class="group-tab active" onclick="setGroupView('group')"     data-en="By Group"      data-pt="Por Grupo">By Group</button>
+        <button id="viewByDate"      class="group-tab"        onclick="setGroupView('date')"      data-en="📅 By Date"    data-pt="📅 Por Data">📅 By Date</button>
+        <button id="viewStandings"   class="group-tab"        onclick="setGroupView('standings')" data-en="🏆 Standings"  data-pt="🏆 Classificação">🏆 Standings</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="grpProgress" style="font-size:.85rem;color:var(--muted)"></span>
+        <div class="prog-bar" style="width:100px"><div class="prog-fill" id="grpProgFill" style="width:0%"></div></div>
+      </div>
     </div>
     <div class="group-tabs" id="grpTabs"></div>
+    <div id="datePicker" style="display:none;margin-top:4px">
+      <input type="date" id="matchDateInput" onchange="renderDateMatches()" style="max-width:220px"/>
+    </div>
   </div>
   <div id="grpMatches"></div>
-  <button class="btn" id="saveGrpBtn" onclick="saveGroupPredictions()" style="display:none;margin-top:4px">
-    <span data-en="💾 Save Group Predictions" data-pt="💾 Guardar Previsões dos Grupos">💾 Save Group Predictions</span>
+  <button class="btn" id="saveGrpBtn" onclick="saveDateViewPredictions()" style="display:none;margin-top:4px">
+    <span id="saveGrpBtnLabel" data-en="💾 Save Predictions" data-pt="💾 Guardar Previsões">💾 Save Predictions</span>
   </button>
 </div>
 
@@ -266,6 +554,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <div class="card">
     <h2 data-en="🥇 Tournament Awards" data-pt="🥇 Prémios do Torneio">🥇 Tournament Awards</h2>
     <p style="color:var(--muted);font-size:.84rem;margin-bottom:16px" data-en="Predict before the tournament. Points awarded after it ends." data-pt="Preveja antes do torneio. Pontos atribuídos no final.">Predict before the tournament.</p>
+    <div id="awdAlert"></div>
     <div class="award-grid" id="awdGrid"></div>
     <button class="btn" id="saveAwdBtn" onclick="saveAwardPredictions()" style="display:none;margin-top:16px">
       <span data-en="💾 Save Award Predictions" data-pt="💾 Guardar Previsões de Prémios">💾 Save Award Predictions</span>
@@ -280,6 +569,67 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
       <button class="btn btn-outline" style="width:auto;padding:6px 14px;font-size:.84rem" onclick="loadLeaderboard()">↻ <span data-en="Refresh" data-pt="Atualizar">Refresh</span></button>
     </div>
     <div id="lbContainer"><div class="empty-state"><span class="spinner"></span></div></div>
+  </div>
+  <div class="card" id="allPredsCard" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0" data-en="👁️ All Predictions" data-pt="👁️ Todas as Previsões">👁️ All Predictions</h2>
+      <select id="predViewUser" onchange="renderAllPreds()" style="width:auto;padding:6px 12px;font-size:.84rem"></select>
+    </div>
+    <div id="allPredsContainer"></div>
+  </div>
+</div>
+</div>
+
+<div id="page-trivia" class="page">
+  <!-- Sub-tabs -->
+  <div class="card" style="padding:10px 14px">
+    <div style="display:flex;gap:6px">
+      <button id="trivTab-facts" class="group-tab active" onclick="setTriviaTab('facts')" data-en="🧠 Curiosities" data-pt="🧠 Curiosidades">🧠 Curiosities</button>
+      <button id="trivTab-quiz"  class="group-tab"        onclick="setTriviaTab('quiz')"  data-en="❓ Quiz" data-pt="❓ Quiz">❓ Quiz</button>
+    </div>
+  </div>
+
+  <!-- Facts panel -->
+  <div id="trivia-facts">
+    <div class="card">
+      <div class="mascot-wrap">
+        <span class="mascot" id="mascot" onclick="nextFact()" title="Tap me for a new fact!">⚽</span>
+        <div style="color:var(--muted);font-size:.78rem;margin-top:4px" data-en="Tap the ball for a new fact!" data-pt="Toca na bola para uma nova curiosidade!">Tap the ball for a new fact!</div>
+      </div>
+      <div class="speech-bubble" id="factBubble">
+        <div class="fact-category" id="factCategory">Records</div>
+        <div class="fact-text" id="factText">Loading…</div>
+      </div>
+      <button class="btn btn-outline" style="margin-top:4px" onclick="nextFact()">
+        🎲 <span data-en="Another Fact" data-pt="Outra Curiosidade">Another Fact</span>
+      </button>
+    </div>
+    <div class="card">
+      <h3 data-en="⚡ Quick Facts" data-pt="⚡ Factos Rápidos">⚡ Quick Facts</h3>
+      <div class="trivia-grid" id="triviaGrid"></div>
+    </div>
+  </div>
+
+  <!-- Quiz panel -->
+  <div id="trivia-quiz" style="display:none">
+    <div class="card" id="quizCard">
+      <!-- rendered by renderQuiz() -->
+    </div>
+  </div>
+</div>
+
+<div id="page-chat" class="page">
+  <div class="card" style="padding:0;display:flex;flex-direction:column;height:70vh;min-height:400px">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <h2 style="margin:0" data-en="💬 Group Chat" data-pt="💬 Chat do Grupo">💬 Group Chat</h2>
+      <span id="chatStatus" style="font-size:.75rem;color:var(--green)">● live</span>
+    </div>
+    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px" id="chatInputArea">
+      <input id="chatInput" type="text" maxlength="500" placeholder="Type a message…" style="flex:1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"/>
+      <button class="btn" style="width:auto;padding:10px 20px" onclick="sendMessage()">➤</button>
+    </div>
   </div>
 </div>
 
@@ -326,6 +676,23 @@ const AWARDS = [
 
 function T(en,pt){ return lang==='pt'?pt:en; }
 
+// ── THEME ──────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙 Dark' : '☀️ Light';
+  localStorage.setItem('wc2026_theme', next);
+}
+(function initTheme() {
+  const saved = localStorage.getItem('wc2026_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  window.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = saved === 'light' ? '🌙 Dark' : '☀️ Light';
+  });
+})();
+
 // ── LANGUAGE ───────────────────────────────────────────────────
 function toggleLang() {
   lang = lang==='en'?'pt':'en';
@@ -349,6 +716,8 @@ function renderActive(name) {
   if (n==='knockout')    renderKOPage();
   if (n==='awards')      renderAwardsPage();
   if (n==='leaderboard') loadLeaderboard();
+  if (n==='chat')        initChat();
+  if (n==='trivia')      initTrivia();
 }
 
 // ── LOAD DATA ──────────────────────────────────────────────────
@@ -377,7 +746,15 @@ async function loadInitialData() {
       try { currentUser = JSON.parse(saved); await loadUserPredictions(); }
       catch(e) { localStorage.removeItem('wc2026_user'); currentUser = null; }
     }
-    renderHome();
+    // Auto-navigate to today's matches if any exist
+    const today = new Date().toISOString().slice(0,10);
+    const todayMatches = matches.filter(m=>m.d&&m.d.slice(0,10)===today);
+    if (currentUser && todayMatches.length) {
+      showPage('groups', document.querySelector('nav button[data-page=groups]'));
+      setTimeout(()=>{ setGroupView('date'); document.getElementById('matchDateInput').value=today; renderDateMatches(); }, 200);
+    } else {
+      renderHome();
+    }
   } catch(err) {
     console.error('DB error:', err);
     document.getElementById('homeStatus').innerHTML =
@@ -480,13 +857,38 @@ async function loginByEmail() {
   localStorage.setItem('wc2026_user',JSON.stringify(data));
   await loadUserPredictions();
   showAlert(alertEl,T('Welcome back, ','Bem-vindo(a) de volta, ')+data.name+'! ✅','success');
-  setTimeout(()=>renderActive(),1200);
+  setTimeout(()=>{
+    showPage('groups',document.querySelector('nav button[data-page=groups]'));
+    // If there are matches today, switch to date view on today
+    const today = new Date().toISOString().slice(0,10);
+    const todayMatches = matches.filter(m=>m.d&&m.d.slice(0,10)===today);
+    if (todayMatches.length) {
+      setTimeout(()=>{
+        setGroupView('date');
+        document.getElementById('matchDateInput').value = today;
+        renderDateMatches();
+      }, 100);
+    }
+  },1200);
 }
 
 // ── GROUP STAGE ────────────────────────────────────────────────
 function renderGroupPage() {
   const open = settings.group_phase_open==='true';
   document.getElementById('grpBanner').innerHTML = phaseBanner(T('Group stage predictions','Previsões fase de grupos'),open);
+
+  // Standings are public — no login required
+  if (groupViewMode === 'standings') {
+    document.getElementById('grpUserBar').innerHTML = '';
+    document.getElementById('grpProgress').textContent = '';
+    document.getElementById('grpProgFill').style.width = '0%';
+    document.getElementById('grpTabs').style.display = 'none';
+    document.getElementById('datePicker').style.display = 'none';
+    document.getElementById('saveGrpBtn').style.display = 'none';
+    renderGroupStandings();
+    return;
+  }
+
   if (!currentUser) {
     document.getElementById('grpMatches').innerHTML=loginPrompt();
     document.getElementById('saveGrpBtn').style.display='none';
@@ -499,8 +901,216 @@ function renderGroupPage() {
   document.getElementById('grpProgFill').style.width=(gMs.length?gDone/gMs.length*100:0)+'%';
   document.getElementById('grpTabs').innerHTML=GROUPS.map(g=>
     `<button class="group-tab${g===currentGroup?' active':''}" onclick="selectGroup('${g}')">${T('Group','Grupo')} ${g}</button>`).join('');
-  renderGroupMatches();
-  document.getElementById('saveGrpBtn').style.display=open?'block':'none';
+  const kOpen = settings.knockout_phase_open==='true';
+  if (groupViewMode==='date') {
+    renderDateMatches();
+    document.getElementById('saveGrpBtn').style.display=(open||kOpen)?'block':'none';
+    document.getElementById('saveGrpBtnLabel').textContent=T('💾 Save Predictions','💾 Guardar Previsões');
+  } else {
+    renderGroupMatches();
+    document.getElementById('saveGrpBtn').style.display=open?'block':'none';
+    document.getElementById('saveGrpBtnLabel').textContent=T('💾 Save Group Predictions','💾 Guardar Previsões dos Grupos');
+  }
+}
+
+let groupViewMode = 'group'; // 'group', 'date', or 'standings'
+
+function setGroupView(mode) {
+  groupViewMode = mode;
+  document.getElementById('viewByGroup').classList.toggle('active', mode==='group');
+  document.getElementById('viewByDate').classList.toggle('active', mode==='date');
+  document.getElementById('viewStandings').classList.toggle('active', mode==='standings');
+  document.getElementById('grpTabs').style.display = mode==='group' ? '' : 'none';
+  document.getElementById('datePicker').style.display = mode==='date' ? '' : 'none';
+  if (mode==='standings') {
+    document.getElementById('grpProgress').textContent = '';
+    document.getElementById('grpProgFill').style.width = '0%';
+    document.getElementById('saveGrpBtn').style.display = 'none';
+    renderGroupStandings();
+  } else if (mode==='date') {
+    // Default to today if within tournament, else first match day
+    const today = new Date().toISOString().slice(0,10);
+    const matchDays = getMatchDays();
+    const input = document.getElementById('matchDateInput');
+    if (!input.value) {
+      input.value = matchDays.includes(today) ? today : matchDays[0] || today;
+    }
+    input.min = matchDays[0]; input.max = matchDays[matchDays.length-1];
+    renderDateMatches();
+  } else {
+    renderGroupMatches();
+  }
+}
+
+function renderGroupStandings() {
+  // Build per-group stats from actual match results
+  const stats = {};
+  GROUPS.forEach(g => { stats[g] = {}; });
+  Object.values(teams).forEach(t => {
+    if (!t.g || !stats[t.g]) return;
+    stats[t.g][t.id] = { team:t, p:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, pts:0 };
+  });
+  matches.filter(m => m.r==='group' && m.home_goals!=null && m.away_goals!=null).forEach(m => {
+    const g = m.g, hid = m.h||m.home_team_id, aid = m.a||m.away_team_id;
+    if (!g || !stats[g] || !stats[g][hid] || !stats[g][aid]) return;
+    const hg = parseInt(m.home_goals), ag = parseInt(m.away_goals);
+    const hs = stats[g][hid], as_ = stats[g][aid];
+    hs.p++; as_.p++;
+    hs.gf+=hg; hs.ga+=ag; hs.gd=hs.gf-hs.ga;
+    as_.gf+=ag; as_.ga+=hg; as_.gd=as_.gf-as_.ga;
+    if (hg>ag)      { hs.w++;hs.pts+=3;as_.l++; }
+    else if (hg<ag) { as_.w++;as_.pts+=3;hs.l++; }
+    else            { hs.d++;hs.pts++;as_.d++;as_.pts++; }
+  });
+
+  const html = GROUPS.map(g => {
+    const rows = Object.values(stats[g]).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+    const hasResults = rows.some(r=>r.p>0);
+    const tRows = rows.map((r,i) => {
+      const nm = lang==='pt' ? (r.team.pt||r.team.en) : r.team.en;
+      const qualify = i<2 && hasResults && r.pts>0;
+      const gdStr = r.gd>0?'+'+r.gd : ''+r.gd;
+      const gdColor = r.gd>0?'var(--green)':r.gd<0?'var(--red)':'var(--muted)';
+      return `<tr style="border-bottom:1px solid var(--border)${i===1?';border-bottom:2px dashed rgba(201,168,76,.35)':''}">
+        <td style="padding:10px 8px 10px 14px">
+          <span style="font-size:1.05rem;vertical-align:middle">${r.team.f}</span>
+          <span style="margin-left:7px;font-weight:${qualify?700:400};color:${qualify?'var(--text)':'var(--text2)'};font-size:.85rem">${nm}</span>
+          ${qualify?'<span style="font-size:.6rem;color:var(--green);margin-left:4px;vertical-align:middle">▲</span>':''}
+        </td>
+        <td style="padding:10px 6px;text-align:center;color:var(--muted);font-size:.82rem">${r.p}</td>
+        <td style="padding:10px 6px;text-align:center;color:var(--green);font-size:.82rem">${r.w}</td>
+        <td style="padding:10px 6px;text-align:center;font-size:.82rem">${r.d}</td>
+        <td style="padding:10px 6px;text-align:center;color:var(--red);font-size:.82rem">${r.l}</td>
+        <td style="padding:10px 6px;text-align:center;font-size:.82rem">${r.gf}</td>
+        <td style="padding:10px 6px;text-align:center;font-size:.82rem">${r.ga}</td>
+        <td style="padding:10px 6px;text-align:center;color:${gdColor};font-size:.82rem">${gdStr}</td>
+        <td style="padding:10px 8px 10px 6px;text-align:center;font-weight:800;color:var(--gold);font-size:.9rem">${r.pts}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <strong style="color:var(--gold);font-size:.9rem;font-family:'Bebas Neue',sans-serif;letter-spacing:1px">${T('Group','Grupo')} ${g}</strong>
+        ${!hasResults?`<span style="font-size:.72rem;color:var(--muted)">${T('No results yet','Sem resultados')}</span>`:''}
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:360px">
+          <thead><tr style="color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;background:var(--glass)">
+            <th style="padding:7px 8px 7px 14px;text-align:left;font-weight:600">${T('Team','Equipa')}</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600">P</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600">W</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600">D</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600">L</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600">GF</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600">GA</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600">GD</th>
+            <th style="padding:7px 8px 7px 6px;text-align:center;font-weight:600;color:var(--gold)">${T('Pts','Pts')}</th>
+          </tr></thead>
+          <tbody>${tRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('grpMatches').innerHTML = `
+    <div class="alert alert-info" style="margin-bottom:10px;font-size:.8rem">
+      🏆 ${T('Official WC 2026 group standings — updated as admin enters match results. ▲ = qualified zone.','Classificação oficial da fase de grupos — atualizada com os resultados. ▲ = zona de apuramento.')}
+    </div>${html}`;
+}
+
+function getMatchDays() {
+  const days = [...new Set(matches.filter(m=>m.d).map(m=>m.d.slice(0,10)))].sort();
+  return days;
+}
+
+function renderDateMatches() {
+  const date = document.getElementById('matchDateInput').value;
+  if (!date) return;
+  const gOpen = settings.group_phase_open==='true';
+  const kOpen = settings.knockout_phase_open==='true';
+  const btn = document.getElementById('saveGrpBtn');
+  if (btn && currentUser) btn.style.display=(gOpen||kOpen)?'block':'none';
+  const userDate = new Date(date + 'T00:00:00');
+
+  const dayMatches = matches.filter(m => {
+    if (!m.d) return false;
+    const md = new Date(m.d);
+    // Compare in local date
+    return md.toLocaleDateString() === userDate.toLocaleDateString();
+  });
+
+  if (!dayMatches.length) {
+    document.getElementById('grpMatches').innerHTML = `<div class="card empty-state"><div class="icon">📅</div><p>${T('No matches on this date.','Sem jogos nesta data.')}</p></div>`;
+    return;
+  }
+
+  // Check if any match is live right now (within 2h window)
+  const now = Date.now();
+  document.getElementById('grpMatches').innerHTML = dayMatches.map(m => {
+    const h=teams[m.h], a=teams[m.a];
+    const pred=groupPreds[m.id]||koPreds[m.id];
+    const hg=pred!=null?pred.home_goals:'';
+    const ag=pred!=null?pred.away_goals:'';
+    const done=m.home_goals!=null;
+    const mTime = m.d ? new Date(m.d) : null;
+    const isLive = mTime && (now >= mTime.getTime() && now <= mTime.getTime()+7200000);
+    const ds=mTime?mTime.toLocaleTimeString(lang==='pt'?'pt-PT':'en-GB',{hour:'2-digit',minute:'2-digit',timeZoneName:'short'}):'';
+    const hn=h?(lang==='pt'?h.pt:h.en):T('TBD','A definir');
+    const an=a?(lang==='pt'?a.pt:a.en):T('TBD','A definir');
+    const roundLbl = m.r==='group'?`${T('Group','Grupo')} ${m.g||''}`:m.r?.toUpperCase()||'';
+    const isKO = m.r!=='group';
+    const canPredict = !done && ((isKO ? kOpen : gOpen));
+    return `<div class="match-card" ${isLive?'style="border-color:var(--green);box-shadow:0 0 0 2px rgba(48,209,88,.2)"':''}>
+      <div class="match-header">
+        <span style="display:flex;align-items:center;gap:6px">
+          ${isLive?'<span style="color:var(--green);font-weight:700;font-size:.8rem;animation:pulse 1.5s infinite">🔴 LIVE</span>':''}
+          <span>${ds} · ${roundLbl}</span>
+        </span>
+        <span style="color:${done?'var(--green)':'var(--muted)'}">${done?T('FINAL','FINAL'):T('Upcoming','Próximo')}</span>
+      </div>
+      <div class="match-teams">
+        <div class="team-block">${flagImg(h,40)}<span class="team-name">${hn}</span></div>
+        <div class="score-inputs">
+          ${canPredict
+            ?`<input class="score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="—"/>`
+            :`<span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.home_goals:(hg!==''?hg:'?')}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.away_goals:(ag!==''?ag:'?')}</span>`
+          }
+        </div>
+        <div class="team-block away">${flagImg(a,40)}<span class="team-name">${an}</span></div>
+      </div>
+      ${pred&&!done?`<div class="match-pts">${T('Your prediction:','A tua previsão:')} ${pred.home_goals} : ${pred.away_goals}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function saveDateViewPredictions() {
+  if (!currentUser) return;
+  const btn = document.getElementById('saveGrpBtn');
+  btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','A guardar…')}`;
+  const gOpen = settings.group_phase_open==='true';
+  const kOpen = settings.knockout_phase_open==='true';
+  const toGroup=[], toKO=[];
+  matches.forEach(m=>{
+    const isKO = m.r!=='group';
+    const hEl=document.getElementById('g'+m.id+'h'), aEl=document.getElementById('g'+m.id+'a');
+    if (!hEl||!aEl||hEl.value===''||aEl.value==='') return;
+    const entry={participant_id:currentUser.id,match_id:m.id,home_goals:parseInt(hEl.value),away_goals:parseInt(aEl.value)};
+    if (!isKO && gOpen) toGroup.push(entry);
+    if (isKO && kOpen) toKO.push(entry);
+  });
+  const errors=[];
+  if (toGroup.length) {
+    const {error}=await db.from('group_predictions').upsert(toGroup,{onConflict:'participant_id,match_id'});
+    if (error) errors.push(error.message);
+    else toGroup.forEach(p=>groupPreds[p.match_id]=p);
+  }
+  if (toKO.length) {
+    const {error}=await db.from('knockout_predictions').upsert(toKO,{onConflict:'participant_id,match_id'});
+    if (error) errors.push(error.message);
+    else toKO.forEach(p=>koPreds[p.match_id]=p);
+  }
+  if (errors.length) alert('Error: '+errors.join(', '));
+  btn.disabled=false; btn.innerHTML=`💾 ${T('Save Predictions','Guardar Previsões')}`;
+  renderDateMatches();
 }
 
 function selectGroup(g) {
@@ -527,14 +1137,14 @@ function renderGroupMatches() {
     return `<div class="match-card">
       <div class="match-header"><span>${ds}</span><span style="color:${done?'var(--green)':'var(--muted)'}">${done?T('FINAL','FINAL'):T('Upcoming','Próximo')}</span></div>
       <div class="match-teams">
-        <div class="team-block"><span class="mf">${hf}</span><span class="team-name">${hn}</span></div>
+        <div class="team-block">${flagImg(h,40)}<span class="team-name">${hn}</span></div>
         <div class="score-inputs">
           ${open&&!done
             ?`<input class="score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="—"/>`
             :`<span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.home_goals:(hg!==''?hg:'?')}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.away_goals:(ag!==''?ag:'?')}</span>`
           }
         </div>
-        <div class="team-block away"><span class="mf">${af}</span><span class="team-name">${an}</span></div>
+        <div class="team-block away">${flagImg(a,40)}<span class="team-name">${an}</span></div>
       </div>
       ${pts!=null?`<div class="match-pts">+${pts} ${T('pts','pts')} 🎯</div>`:''}
       <span class="saved-dot" id="sd${m.id}"></span>
@@ -600,12 +1210,12 @@ function renderKOPage() {
       html+=`<div class="match-card">
         <div class="match-header"><span>${ds}</span><span style="color:${done?'var(--green)':'var(--muted)'}">${done?T('FINAL','FINAL'):''}</span></div>
         <div class="match-teams">
-          <div class="team-block"><span class="mf">${hf}</span><span class="team-name">${hn}</span></div>
+          <div class="team-block">${flagImg(h,40)}<span class="team-name">${hn}</span></div>
           <div class="score-inputs">
             ${!done?`<input class="score-input" type="number" min="0" max="20" id="k${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="k${m.id}a" value="${ag}" placeholder="—"/>`:
             `<span style="font-size:1.1rem;font-weight:700;color:var(--gold);padding:0 8px">${m.home_goals}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:var(--gold);padding:0 8px">${m.away_goals}</span>`}
           </div>
-          <div class="team-block away"><span class="mf">${af}</span><span class="team-name">${an}</span></div>
+          <div class="team-block away">${flagImg(a,40)}<span class="team-name">${an}</span></div>
         </div>
         <span class="saved-dot" id="ksd${m.id}"></span>
       </div>`;
@@ -640,41 +1250,55 @@ function renderAwardsPage() {
   document.getElementById('awdBanner').innerHTML=phaseBanner(T('Award predictions','Previsões de prémios'),open);
   if (!currentUser){document.getElementById('awdGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1">${loginPrompt()}</div>`;document.getElementById('saveAwdBtn').style.display='none';document.getElementById('awdUserBar').innerHTML='';return;}
   document.getElementById('awdUserBar').innerHTML=userBar();
+  const alreadySubmitted = AWARDS.every(a => awardPreds[a.key]);
+  if (open && !alreadySubmitted) {
+    document.getElementById('awdAlert').innerHTML=`<div class="alert alert-warn" style="background:rgba(234,179,8,.15);border:1px solid #eab308;color:#eab308;margin-bottom:14px">
+      ⚠️ ${T('Choose carefully — once saved your award predictions are locked forever and cannot be changed.','Escolha com cuidado — depois de guardar as previsões de prémios ficam bloqueadas para sempre e não podem ser alteradas.')}
+    </div>`;
+  } else {
+    document.getElementById('awdAlert').innerHTML='';
+  }
   document.getElementById('awdGrid').innerHTML=AWARDS.map(a=>{
     const pred=awardPreds[a.key], val=pred?pred.prediction:'', pts=scoring['award_'+a.key]||5;
-    return `<div class="award-card">
+    const locked = !!pred;
+    return `<div class="award-card" style="${locked?'border-color:var(--gold);opacity:.9':''}">
       <div class="award-icon">${a.icon}</div>
       <div style="font-weight:600;margin-bottom:2px">${lang==='pt'?a.pt:a.en}</div>
       <div style="font-size:.75rem;color:var(--gold);margin-bottom:8px">+${pts} ${T('points','pontos')}</div>
-      ${open?`<input type="text" id="awd_${a.key}" value="${val}" placeholder="${T('Player or team name…','Nome do jogador ou equipa…')}"/>`:
-      `<div style="color:${val?'var(--text)':'var(--muted)'};padding:8px 0;font-weight:${val?'600':'400'}">${val||T('No prediction yet','Sem previsão')}</div>`}
+      ${open&&!locked?`<input type="text" id="awd_${a.key}" value="${val}" placeholder="${T('Player or team name…','Nome do jogador ou equipa…')}"/>`:
+      `<div style="color:${val?'var(--green)':'var(--muted)'};padding:8px 0;font-weight:${val?'700':'400'}">${val?'🔒 '+val:T('No prediction yet','Sem previsão')}</div>`}
     </div>`;
   }).join('');
-  document.getElementById('saveAwdBtn').style.display=open?'block':'none';
+  document.getElementById('saveAwdBtn').style.display=(open&&!alreadySubmitted)?'block':'none';
 }
 
 async function saveAwardPredictions() {
   if (!currentUser) return;
   const btn=document.getElementById('saveAwdBtn');
   btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','A guardar…')}`;
-  const toUpsert=AWARDS.reduce((acc,a)=>{
+  const toInsert=AWARDS.reduce((acc,a)=>{
     const el=document.getElementById('awd_'+a.key);
-    if(el&&el.value.trim()) acc.push({participant_id:currentUser.id,award_type:a.key,prediction:el.value.trim()});
+    if(el&&el.value.trim()&&!awardPreds[a.key]) acc.push({participant_id:currentUser.id,award_type:a.key,prediction:el.value.trim()});
     return acc;
   },[]);
-  if(toUpsert.length){
-    const {error}=await db.from('award_predictions').upsert(toUpsert,{onConflict:'participant_id,award_type'});
-    if(error) alert(T('Error: ','Erro: ')+error.message);
-    else toUpsert.forEach(p=>awardPreds[p.award_type]=p);
+  if(!toInsert.length){ btn.disabled=false; btn.innerHTML=T('💾 Save Award Predictions','💾 Guardar Previsões de Prémios'); return; }
+  if(!confirm(T('⚠️ Once saved these predictions are LOCKED FOREVER. Are you sure?','⚠️ Depois de guardar estas previsões ficam BLOQUEADAS PARA SEMPRE. Tem a certeza?'))) {
+    btn.disabled=false; btn.innerHTML=T('💾 Save Award Predictions','💾 Guardar Previsões de Prémios'); return;
   }
+  const {error}=await db.from('award_predictions').insert(toInsert);
+  if(error) alert(T('Error: ','Erro: ')+error.message);
+  else toInsert.forEach(p=>awardPreds[p.award_type]=p);
   btn.disabled=false; btn.innerHTML=T('💾 Save Award Predictions','💾 Guardar Previsões de Prémios');
+  renderAwardsPage();
 }
 
 // ── LEADERBOARD ────────────────────────────────────────────────
+let allParticipants=[], allGroupPreds=[], allAwardPreds=[];
+
 async function loadLeaderboard() {
   const el=document.getElementById('lbContainer');
   el.innerHTML=`<div class="empty-state"><span class="spinner"></span></div>`;
-  const {data:scores,error}=await db.from('scores').select('*,participants(name)').order('total_points',{ascending:false});
+  const {data:scores,error}=await db.from('scores').select('*,participants(id,name,avatar_url)').order('total_points',{ascending:false});
   if (error||!scores?.length){el.innerHTML=`<div class="empty-state"><div class="icon">🏆</div><p>${T('No scores yet — be the first!','Sem pontuações ainda — seja o primeiro!')}</p></div>`;return;}
   const myId=currentUser?.id;
   el.innerHTML=`<table class="lb-table"><thead><tr>
@@ -685,15 +1309,437 @@ async function loadLeaderboard() {
   scores.map((s,i)=>{
     const rank=i+1, cls=rank===1?'r1':rank===2?'r2':rank===3?'r3':'rN';
     const isMe=s.participant_id===myId;
+    const p=s.participants||{};
     return `<tr style="${isMe?'background:rgba(201,168,76,.08)':''}">
       <td><span class="rank-badge ${cls}">${rank}</span></td>
-      <td><strong>${s.participants?.name||'—'}</strong>${isMe?` <span style="color:var(--gold);font-size:.75rem">${T('(you)','(você)')}</span>`:''}</td>
+      <td><span style="display:flex;align-items:center;gap:10px">${avHtml(p,64)}<span><strong>${p.name||'—'}</strong>${isMe?` <span style="color:var(--gold);font-size:.75rem">${T('(you)','(você)')}</span>`:''}</span></span></td>
       <td style="color:var(--muted)">${s.group_points||0}</td>
       <td style="color:var(--muted)">${s.ko_points||0}</td>
       <td style="color:var(--muted)">${s.award_points||0}</td>
       <td class="pts-total">${s.total_points||0}</td>
     </tr>`;
   }).join('')+'</tbody></table>';
+
+  // Show all predictions only after group phase closes
+  const groupClosed = settings.group_phase_open !== 'true';
+  const card = document.getElementById('allPredsCard');
+  if (!groupClosed) { card.style.display='none'; return; }
+  card.style.display='block';
+
+  allParticipants = scores.map(s=>s.participants).filter(Boolean);
+  const [gR, aR] = await Promise.all([
+    db.from('group_predictions').select('*'),
+    db.from('award_predictions').select('*'),
+  ]);
+  allGroupPreds  = gR.data||[];
+  allAwardPreds  = aR.data||[];
+
+  const sel = document.getElementById('predViewUser');
+  sel.innerHTML = allParticipants.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  renderAllPreds();
+}
+
+function renderAllPreds() {
+  const pid = document.getElementById('predViewUser').value;
+  const p   = allParticipants.find(x=>x.id===pid);
+  if (!p) return;
+  const gp  = allGroupPreds.filter(x=>x.participant_id===pid);
+  const ap  = allAwardPreds.filter(x=>x.participant_id===pid);
+  const gpMap = {}; gp.forEach(x=>gpMap[x.match_id]=x);
+
+  const groupRows = matches.filter(m=>m.r==='group').map(m=>{
+    const pred=gpMap[m.id];
+    const h=teams[m.h], a=teams[m.a];
+    const hn=h?(lang==='pt'?h.pt:h.en):'TBD', an=a?(lang==='pt'?a.pt:a.en):'TBD';
+    const hf=h?h.f:'🏳', af=a?a.f:'🏳';
+    return `<tr>
+      <td style="padding:8px 10px;color:var(--muted);font-size:.78rem">${hn} ${hf} vs ${af} ${an}</td>
+      <td style="padding:8px 10px;font-weight:700;color:var(--gold);text-align:center">${pred?pred.home_goals+' : '+pred.away_goals:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const awardRows = AWARDS.map(a=>{
+    const pred=ap.find(x=>x.award_type===a.key);
+    return `<tr>
+      <td style="padding:8px 10px;color:var(--muted)">${a.icon} ${lang==='pt'?a.pt:a.en}</td>
+      <td style="padding:8px 10px;font-weight:600;color:var(--text)">${pred?pred.prediction:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('allPredsContainer').innerHTML=`
+    <h3 style="color:var(--gold);margin-bottom:10px">${T('Group Predictions','Previsões dos Grupos')}</h3>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">${T('Match','Jogo')}</th>
+        <th style="text-align:center;padding:8px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">${T('Prediction','Previsão')}</th>
+      </tr></thead><tbody>${groupRows}</tbody>
+    </table>
+    <h3 style="color:var(--gold);margin-bottom:10px">${T('Award Predictions','Previsões de Prémios')}</h3>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">${T('Award','Prémio')}</th>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">${T('Prediction','Previsão')}</th>
+      </tr></thead><tbody>${awardRows}</tbody>
+    </table>`;
+}
+
+// ── TRIVIA ─────────────────────────────────────────────────────
+const TRIVIA = [
+  { cat:'Legend', en:"Pelé never lost a single game at the World Cup. He played 14 matches across 1958, 1962 and 1970 — and won every single one. He's also the only player to win 3 World Cup titles.", pt:"Pelé nunca perdeu um jogo no Mundial. Disputou 14 jogos em 1958, 1962 e 1970 — e ganhou todos. É também o único jogador com 3 títulos mundiais." },
+  { cat:'Record', en:"The biggest crowd ever at a football match was the 1950 World Cup final between Brazil and Uruguay at Maracanã, Rio de Janeiro. Estimates put the crowd at around 200,000 people. Brazil lost 2-1 — a national trauma still called 'Maracanazo'.", pt:"A maior multidão num jogo de futebol foi a final do Mundial de 1950 entre Brasil e Uruguai no Maracanã. Estima-se cerca de 200.000 pessoas. O Brasil perdeu 2-1 — trauma chamado 'Maracanazo'." },
+  { cat:'Goals', en:"Miroslav Klose (Germany) is the all-time World Cup top scorer with 16 goals, overtaking Ronaldo Nazário's record of 15 in the 2014 semi-final. Klose scored in 4 different World Cups.", pt:"Miroslav Klose (Alemanha) é o maior goleador de sempre em Mundiais, com 16 golos, superando os 15 de Ronaldo Nazário na meia-final de 2014. Klose marcou em 4 Mundiais diferentes." },
+  { cat:'Record', en:"Just Fontaine (France) scored 13 goals in a single World Cup tournament in 1958 — a record that has stood for over 65 years and is considered virtually unbreakable.", pt:"Just Fontaine (França) marcou 13 golos num único torneio em 1958 — recorde que dura há mais de 65 anos e considerado praticamente imbatível." },
+  { cat:'Speed', en:"The fastest goal in World Cup history was scored by Hakan Şükür of Turkey just 11 seconds after kick-off against South Korea in the 2002 third-place match.", pt:"O golo mais rápido da história dos Mundiais foi marcado por Hakan Şükür da Turquia apenas 11 segundos após o apito inicial contra a Coreia do Sul em 2002." },
+  { cat:'Appearances', en:"Lothar Matthäus (Germany) holds the record for most World Cup appearances: 25 games across 5 tournaments (1982–1998). He also played in 5 World Cups — tied with Antonio Carbajal of Mexico.", pt:"Lothar Matthäus (Alemanha) tem o recorde de mais jogos no Mundial: 25 jogos em 5 torneios (1982–1998). Também jogou em 5 Mundiais — empatado com Antonio Carbajal do México." },
+  { cat:'Brazil', en:"Brazil is the only country to have participated in every single FIFA World Cup since the first edition in 1930. That's all 22 tournaments — a unique record no other nation has matched.", pt:"O Brasil é o único país a ter participado em todos os Mundiais da FIFA desde a primeira edição em 1930 — 22 torneios, um recorde único que nenhuma outra nação igualou." },
+  { cat:'Goals', en:"The highest-scoring game in World Cup history was Austria 7–5 Switzerland in 1954, with 12 goals in 90 minutes. Austria went through despite conceding 5 goals!", pt:"O jogo com mais golos na história dos Mundiais foi Áustria 7–5 Suíça em 1954, com 12 golos em 90 minutos. A Áustria passou apesar de sofrer 5 golos!" },
+  { cat:'Record', en:"The biggest victory in World Cup history is Hungary 10–1 El Salvador in 1982. László Kiss came off the bench and scored a hat-trick — the fastest substitute hat-trick in World Cup history.", pt:"A maior vitória da história dos Mundiais é Hungria 10–1 El Salvador em 1982. László Kiss entrou como suplente e marcou um hat-trick — o mais rápido de um suplente na história." },
+  { cat:'Legend', en:"Roger Milla of Cameroon became the oldest goal scorer in World Cup history when he scored against Russia in 1994 at the age of 42 years and 39 days. He celebrated with his iconic corner flag dance.", pt:"Roger Milla dos Camarões tornou-se o marcador mais velho da história dos Mundiais ao marcar frente à Rússia em 1994, com 42 anos e 39 dias. Celebrou com a sua famosa dança na bandeirinha." },
+  { cat:'Drama', en:"Zinedine Zidane was sent off with a headbutt in the very last game of his professional career — the 2006 World Cup final against Italy. He still won the Golden Ball as the best player of the tournament.", pt:"Zinedine Zidane foi expulso com uma cabeçada no último jogo da sua carreira profissional — a final do Mundial 2006 contra Itália. Mesmo assim ganhou a Bola de Ouro do torneio." },
+  { cat:'Save', en:"Gordon Banks' save from a Pelé header in the 1970 World Cup is widely called 'The Save of the Century.' Pelé said it was the best save he ever saw — from point-blank range on the goal line.", pt:"A defesa de Gordon Banks a um cabeceamento de Pelé em 1970 é chamada 'A Defesa do Século.' Pelé disse que foi a melhor defesa que alguma vez viu — à queima-roupa na linha de golo." },
+  { cat:'History', en:"The first World Cup was held in Uruguay in 1930. Only 13 teams participated. Uruguay won the tournament on home soil, beating Argentina 4–2 in the final in front of 68,000 fans.", pt:"O primeiro Mundial foi realizado no Uruguai em 1930. Apenas 13 equipas participaram. O Uruguai venceu em casa, batendo a Argentina 4–2 na final perante 68.000 adeptos." },
+  { cat:'2026', en:"The 2026 World Cup in Canada, Mexico and USA will be the first ever with 48 teams (up from 32), producing 104 matches — 40 more than in 2022. It's the biggest World Cup in history.", pt:"O Mundial 2026 no Canadá, México e EUA será o primeiro com 48 seleções (anteriormente 32), com 104 jogos — 40 a mais do que em 2022. É o maior Mundial da história." },
+  { cat:'Goals', en:"Ronaldo Nazário (Brazil) is the only player to have scored in two different World Cup finals — 1998 (against France, though Brazil lost) and 2002 (against Germany, winning 2–0).", pt:"Ronaldo Nazário (Brasil) é o único jogador a ter marcado em duas finais do Mundial diferentes — 1998 (contra França, mas o Brasil perdeu) e 2002 (contra Alemanha, vencendo 2–0)." },
+  { cat:'Record', en:"Germany (including West Germany) has the most World Cup final appearances: 8 finals, winning 4 times (1954, 1974, 1990, 2014). They have never finished lower than 4th place since 1954.", pt:"A Alemanha (incluindo Alemanha Ocidental) tem mais finais do Mundial: 8 finais, vencendo 4 vezes (1954, 1974, 1990, 2014). Nunca ficou abaixo do 4.º lugar desde 1954." },
+  { cat:'Legend', en:"Only 8 countries have ever won the World Cup: Brazil (5), Germany (4), Italy (4), Argentina (3), France (2), Uruguay (2), England (1) and Spain (1). All other nations are still waiting.", pt:"Apenas 8 países ganharam o Mundial: Brasil (5), Alemanha (4), Itália (4), Argentina (3), França (2), Uruguai (2), Inglaterra (1) e Espanha (1). Todos os outros ainda esperam." },
+  { cat:'Drama', en:"In the 1982 semi-final, France and West Germany drew 3–3 after extra time — the first World Cup match decided on penalties. West Germany won 5–4 on penalties in one of the most dramatic games ever.", pt:"Na meia-final de 1982, França e Alemanha empataram 3–3 após prolongamento — o primeiro jogo do Mundial decidido nas grandes penalidades. A Alemanha ganhou 5–4 num dos jogos mais dramáticos de sempre." },
+  { cat:'Young', en:"Pelé was just 17 years and 249 days old when he won his first World Cup in 1958 — making him the youngest World Cup winner in history. He scored 6 goals in the tournament including a hat-trick.", pt:"Pelé tinha apenas 17 anos e 249 dias quando ganhou o seu primeiro Mundial em 1958 — tornando-se o campeão mais jovem da história. Marcou 6 golos no torneio incluindo um hat-trick." },
+  { cat:'Record', en:"The World Cup trophy weighs 6.1 kg and is made of 18-carat gold. It stands 36.8 cm tall and was redesigned in 1974. The original Jules Rimet Trophy was stolen in England in 1966 — and later found by a dog named Pickles.", pt:"O troféu do Mundial pesa 6,1 kg e é feito de ouro de 18 quilates. Tem 36,8 cm de altura e foi redesenhado em 1974. O troféu original Jules Rimet foi roubado em Inglaterra em 1966 — e encontrado por um cão chamado Pickles." },
+  { cat:'Goalkeeping', en:"Peter Shilton of England holds the record for most World Cup appearances by a goalkeeper: 17 games across 3 tournaments (1982, 1986, 1990). England reached the semi-finals in 1990 with him in goal.", pt:"Peter Shilton de Inglaterra tem o recorde de mais jogos num Mundial por um guarda-redes: 17 jogos em 3 torneios (1982, 1986, 1990). Inglaterra chegou às meias-finais de 1990 com ele na baliza." },
+  { cat:'Drama', en:"In the 1986 quarter-final, Diego Maradona scored arguably the two greatest contrasting goals in history within 4 minutes: the infamous 'Hand of God' and the magnificent solo 'Goal of the Century' against England.", pt:"No quarto de final de 1986, Diego Maradona marcou os dois golos mais contrastantes da história com 4 minutos de diferença: a infame 'Mão de Deus' e o magnífico golo individual do 'Golo do Século' contra Inglaterra." },
+  { cat:'Record', en:"The 2022 World Cup in Qatar was the first held in the Middle East and the first played in November–December to avoid extreme summer heat. It was also the most expensive World Cup ever, costing an estimated $220 billion.", pt:"O Mundial 2022 no Qatar foi o primeiro no Médio Oriente e o primeiro disputado em novembro-dezembro para evitar o calor extremo do verão. Foi também o mais caro de sempre, custando cerca de 220 mil milhões de dólares." },
+  { cat:'Legend', en:"Ronaldo Nazário missed the 1998 World Cup final through illness — he had a mysterious seizure the night before. Brazil lost 3–0 to France. He came back in 2002 to score twice in the final and win the Golden Boot.", pt:"Ronaldo Nazário faltou à final do Mundial de 1998 por doença — sofreu uma convulsão misteriosa na véspera. O Brasil perdeu 3–0 para França. Voltou em 2002, marcou dois golos na final e ganhou a Bota de Ouro." },
+  { cat:'Referee', en:"In the 2010 final between Spain and Netherlands, referee Howard Webb showed 14 yellow cards — a World Cup final record. The Netherlands received 9 yellows and 1 red. Spain won 1–0 in extra time.", pt:"Na final de 2010 entre Espanha e Holanda, o árbitro Howard Webb mostrou 14 cartões amarelos — recorde numa final. A Holanda recebeu 9 amarelos e 1 vermelho. A Espanha venceu 1–0 no prolongamento." },
+  { cat:'Goals', en:"Oleg Salenko of Russia scored 5 goals in a single World Cup game against Cameroon in 1994 — the most goals scored by one player in a single match in World Cup history.", pt:"Oleg Salenko da Rússia marcou 5 golos num único jogo do Mundial contra os Camarões em 1994 — o maior número de golos marcados por um jogador num único jogo na história dos Mundiais." },
+  { cat:'History', en:"The 1934 and 1938 World Cups were both won by the host nation — Italy in 1934 and France in 1938 (played in France). No host nation has won the World Cup since France in 1998.", pt:"Os Mundiais de 1934 e 1938 foram ambos vencidos pelo país anfitrião — Itália em 1934 e França em 1938 (disputado em França). Nenhum anfitrião ganhou o Mundial desde França em 1998." },
+  { cat:'2026', en:"The 2026 World Cup will be hosted across 16 cities in 3 countries: 11 in the USA (including New York, Los Angeles, Dallas, Miami), 3 in Mexico (Mexico City, Guadalajara, Monterrey) and 2 in Canada (Toronto, Vancouver).", pt:"O Mundial 2026 será disputado em 16 cidades em 3 países: 11 nos EUA (incluindo Nova Iorque, Los Angeles, Dallas, Miami), 3 no México (Cidade do México, Guadalajara, Monterrey) e 2 no Canadá (Toronto, Vancouver)." },
+  { cat:'Record', en:"The most red cards shown in a single World Cup tournament was in 2006 Germany, with 28 red cards across all matches. Zinedine Zidane's final headbutt was just one of them.", pt:"O maior número de cartões vermelhos num único torneio do Mundial foi em 2006 na Alemanha, com 28 cartões vermelhos em todos os jogos. A cabeçada final de Zinedine Zidane foi apenas um deles." },
+  { cat:'Young', en:"Norman Whiteside of Northern Ireland became the youngest player ever to appear in a World Cup in 1982, aged just 17 years and 41 days — beating Pelé's previous record by over 200 days.", pt:"Norman Whiteside da Irlanda do Norte tornou-se o jogador mais jovem de sempre a aparecer num Mundial em 1982, com apenas 17 anos e 41 dias — batendo o recorde anterior de Pelé por mais de 200 dias." },
+  { cat:'Legend', en:"Lev Yashin, known as the 'Black Spider', is considered the greatest goalkeeper of all time. He saved over 150 penalty kicks throughout his career and is the only goalkeeper ever to win the Ballon d'Or (1963).", pt:"Lev Yashin, conhecido como a 'Aranha Negra', é considerado o maior guarda-redes de todos os tempos. Defendeu mais de 150 penáltis ao longo da carreira e é o único guarda-redes a ganhar a Bola de Ouro (1963)." },
+  { cat:'Drama', en:"In 1950, the USA shocked England 1–0 in the group stage — considered one of the biggest upsets in World Cup history. England were heavy favourites. The goal was scored by Haitian-born Joe Gaetjens.", pt:"Em 1950, os EUA surpreenderam Inglaterra 1–0 na fase de grupos — considerado um dos maiores resultados inesperados na história dos Mundiais. A Inglaterra era grande favorita. O golo foi marcado por Joe Gaetjens, nascido no Haiti." },
+  { cat:'Mineirazo', en:"Germany demolished hosts Brazil 7–1 in the 2014 World Cup semi-final in Belo Horizonte — the biggest ever defeat for Brazil. The match became known as the 'Mineirazo'. Germany scored 5 goals in 18 minutes.", pt:"A Alemanha demoliu o Brasil anfitrião 7–1 na meia-final do Mundial 2014 em Belo Horizonte — a maior derrota de sempre do Brasil. O jogo ficou conhecido como o 'Mineirazo'. A Alemanha marcou 5 golos em 18 minutos." },
+  { cat:'Finals', en:"The Netherlands have appeared in 3 World Cup finals — 1974, 1978 and 2010 — and lost every single one. No other country has played in 3 finals without ever winning the title.", pt:"A Holanda disputou 3 finais do Mundial — 1974, 1978 e 2010 — e perdeu todas. Nenhum outro país disputou 3 finais sem jamais vencer o título." },
+  { cat:'Goals', en:"Mario Götze scored one of the most famous goals in World Cup history — a stunning chest-and-volley in extra time of the 2014 final to give Germany a 1–0 win over Argentina. He was just 22 years old.", pt:"Mario Götze marcou um dos golos mais famosos da história do Mundial — um extraordinário peito-e-voleio no prolongamento da final de 2014 para dar à Alemanha uma vitória 1–0 sobre a Argentina. Tinha apenas 22 anos." },
+  { cat:'Rules', en:"The 'Golden Goal' rule — where the first goal in extra time wins the game instantly — was used at the 1998 and 2002 World Cups. France won the 1998 final under this rule. It was scrapped after 2002 due to negative tactics.", pt:"A regra do 'Golo de Ouro' — em que o primeiro golo no prolongamento vence o jogo instantaneamente — foi usada nos Mundiais de 1998 e 2002. A França venceu a final de 1998 com esta regra. Foi abolida após 2002 devido às táticas negativas que gerava." },
+  { cat:'Young', en:"Kylian Mbappé became the second player ever (after Pelé in 1958) to score in a World Cup final as a teenager. At the 2018 World Cup he was named Best Young Player and finished the tournament with 4 goals for France.", pt:"Kylian Mbappé tornou-se o segundo jogador de sempre (depois de Pelé em 1958) a marcar numa final do Mundial ainda adolescente. No Mundial de 2018 foi eleito Melhor Jogador Jovem e terminou o torneio com 4 golos pela França." },
+  { cat:'History', en:"The 1962 World Cup in Chile featured the infamous 'Battle of Santiago' — Chile vs Italy was so violent that the referee called the police onto the pitch. Two Italian players were sent off and several punches were thrown.", pt:"O Mundial de 1962 no Chile teve a infame 'Batalha de Santiago' — Chile vs Itália foi tão violento que o árbitro chamou a polícia para o relvado. Dois jogadores italianos foram expulsos e houve vários socos." },
+  { cat:'Goals', en:"Paolo Rossi was Italy's hero at the 1982 World Cup, top-scoring with 6 goals — including a hat-trick to eliminate Brazil. He had returned from a 2-year match-fixing ban just months earlier. Italy went on to win the title.", pt:"Paolo Rossi foi o herói da Itália no Mundial de 1982, marcando 6 golos — incluindo um hat-trick para eliminar o Brasil. Tinha regressado de uma suspensão de 2 anos por manipulação de resultados apenas meses antes. A Itália acabou por ganhar o título." },
+  { cat:'History', en:"The official ball of the 1970 World Cup was the 'Telstar' — the iconic black-and-white pentagonal design. It was chosen to be visible on black-and-white televisions, which were still common worldwide at the time.", pt:"A bola oficial do Mundial de 1970 era a 'Telstar' — o icónico design preto e branco pentagonal. Foi escolhida para ser visível nas televisões a preto e branco, que ainda eram comuns em todo o mundo na altura." },
+  { cat:'Africa', en:"Cameroon became the first African team to reach a World Cup quarter-final in 1990, defeating Colombia in extra time. Roger Milla came off the bench and scored twice in that match, becoming a global icon at age 38.", pt:"Os Camarões tornaram-se a primeira equipa africana a chegar aos quartos-de-final do Mundial em 1990, eliminando a Colômbia no prolongamento. Roger Milla entrou como suplente e marcou dois golos nesse jogo, tornando-se um ícone mundial aos 38 anos." },
+  { cat:'Drama', en:"In the 1990 World Cup semi-final, England lost on penalties to West Germany. Stuart Pearce and Chris Waddle both missed their penalties. Images of Pearce's anguish became iconic — he later redeemed himself at Euro 1996.", pt:"Na meia-final do Mundial de 1990, a Inglaterra perdeu nas grandes penalidades para a Alemanha Ocidental. Stuart Pearce e Chris Waddle falharam os seus penáltis. As imagens da angústia de Pearce tornaram-se icónicas — ele redimiu-se mais tarde no Euro 1996." },
+  { cat:'Women', en:"The first ever FIFA Women's World Cup was held in China in 1991. The USA won the inaugural title, beating Norway 2–1 in the final. The tournament had 12 teams — compared to 32 nations in the modern Women's World Cup.", pt:"O primeiro Mundial Feminino da FIFA foi realizado na China em 1991. Os EUA ganharam o título inaugural, batendo a Noruega 2–1 na final. O torneio tinha 12 equipas — comparado com 32 nações no moderno Mundial Feminino." },
+  { cat:'Skill', en:"The 'Cruyff Turn' — one of football's most iconic dribbling moves — was unveiled by Johan Cruyff of the Netherlands at the 1974 World Cup against Sweden. The move is still taught to children worldwide over 50 years later.", pt:"A 'Cruyff Turn' — uma das jogadas de drible mais icónicas do futebol — foi revelada por Johan Cruyff da Holanda no Mundial de 1974 contra a Suécia. A jogada ainda é ensinada a crianças em todo o mundo mais de 50 anos depois." },
+  { cat:'Record', en:"The oldest player ever to appear in a World Cup match is Essam El-Hadary of Egypt, who played in the 2018 World Cup aged 45 years and 161 days — even saving a penalty against Saudi Arabia.", pt:"O jogador mais velho de sempre a aparecer num jogo do Mundial é Essam El-Hadary do Egito, que jogou no Mundial de 2018 com 45 anos e 161 dias — chegando mesmo a defender um penálti frente à Arábia Saudita." },
+  { cat:'Goals', en:"Geoff Hurst is the only player ever to score a hat-trick in a World Cup final. His famous 'Did it cross the line?' second goal in the 1966 final vs West Germany remains one of football's most debated moments. England won 4–2.", pt:"Geoff Hurst é o único jogador de sempre a marcar um hat-trick numa final do Mundial. O seu famoso segundo golo em 1966 frente à Alemanha Ocidental — 'Será que entrou?' — continua a ser um dos momentos mais debatidos do futebol. Inglaterra venceu 4–2." },
+  { cat:'Record', en:"Hungary scored the most goals in a single World Cup tournament: 27 goals in 5 matches at the 1954 World Cup — averaging 5.4 goals per game. They were heavy favourites but lost the final to West Germany 3–2 in what became known as the 'Miracle of Bern'.", pt:"A Hungria marcou o maior número de golos num único torneio do Mundial: 27 golos em 5 jogos no Mundial de 1954 — uma média de 5,4 golos por jogo. Eram os grandes favoritos mas perderam a final para a Alemanha Ocidental 3–2 no que ficou conhecido como o 'Milagre de Berna'." },
+];
+
+const QUICK_FACTS = [
+  "🏆 Only 8 countries have ever won the World Cup",
+  "⚽ Pelé won 3 World Cups — 1958, 1962 & 1970",
+  "🥅 Klose: 16 WC goals — all-time record",
+  "⚡ Fastest goal: Şükür in 11 seconds (2002)",
+  "👴 Oldest scorer: Roger Milla, age 42 (1994)",
+  "🇧🇷 Brazil played every WC since 1930",
+  "📅 First WC: Uruguay, 1930",
+  "👥 2026: First WC with 48 teams",
+  "🎯 Fontaine: 13 goals in one tournament (1958)",
+  "🐶 The Jules Rimet trophy was found by a dog named Pickles",
+  "🖐️ Maradona's 'Hand of God' goal was in 1986 vs England",
+  "5️⃣ Salenko scored 5 goals in one game (1994)",
+  "🇺🇸 USA shocked England 1–0 in 1950",
+  "🧤 Lev Yashin saved 150+ penalties in his career",
+  "👶 Whiteside: youngest WC player ever at 17y 41d",
+];
+
+let lastFactIdx = -1;
+function initTrivia() {
+  // Reset to facts tab each visit
+  document.getElementById('trivTab-facts').classList.add('active');
+  document.getElementById('trivTab-quiz').classList.remove('active');
+  document.getElementById('trivia-facts').style.display = '';
+  document.getElementById('trivia-quiz').style.display = 'none';
+  quizOrder = []; // reset quiz so it reshuffles on next open
+  nextFact();
+  document.getElementById('triviaGrid').innerHTML = QUICK_FACTS.map(f =>
+    `<div class="trivia-chip">${f}</div>`
+  ).join('');
+}
+
+function nextFact() {
+  let idx;
+  do { idx = Math.floor(Math.random() * TRIVIA.length); } while (idx === lastFactIdx);
+  lastFactIdx = idx;
+  const f = TRIVIA[idx];
+  const bubble = document.getElementById('factBubble');
+  bubble.style.animation = 'none';
+  bubble.offsetHeight; // reflow
+  bubble.style.animation = '';
+  document.getElementById('factCategory').textContent = f.cat;
+  document.getElementById('factText').textContent = lang === 'pt' ? f.pt : f.en;
+  // Bounce mascot
+  const m = document.getElementById('mascot');
+  m.style.transform = 'scale(1.3) rotate(-10deg)';
+  setTimeout(() => m.style.transform = '', 300);
+}
+
+// ── QUIZ ───────────────────────────────────────────────────────
+const QUIZ_QUESTIONS = [
+  { q:"Which country hosted the first FIFA World Cup in 1930?", a:"Uruguay", opts:["Brazil","France","Uruguay","Italy"] },
+  { q:"Which country has won the most FIFA World Cup titles?", a:"Brazil (5 titles)", opts:["Germany","Italy","Argentina","Brazil (5 titles)"] },
+  { q:"Who scored the fastest goal in World Cup history — in just 11 seconds?", a:"Hakan Şükür (Turkey, 2002)", opts:["Inzaghi","Ronaldo","Hakan Şükür (Turkey, 2002)","Owen"] },
+  { q:"Which country won the FIFA World Cup in 2010?", a:"Spain", opts:["Germany","Netherlands","Brazil","Spain"] },
+  { q:"Who is the all-time top scorer in World Cup history with 16 goals?", a:"Miroslav Klose", opts:["Pelé","Ronaldo Nazário","Just Fontaine","Miroslav Klose"] },
+  { q:"Just Fontaine scored how many goals in the 1958 World Cup — a record that still stands?", a:"13 goals", opts:["8 goals","10 goals","13 goals","16 goals"] },
+  { q:"By what scoreline did Germany defeat Brazil in the 2014 World Cup semi-final?", a:"7–1", opts:["5–0","6–1","7–1","4–0"] },
+  { q:"In which year did Diego Maradona score his infamous 'Hand of God' goal against England?", a:"1986", opts:["1982","1986","1990","1994"] },
+  { q:"Who scored the winning goal for Germany in extra time of the 2014 World Cup final?", a:"Mario Götze", opts:["Thomas Müller","Toni Kroos","Mesut Özil","Mario Götze"] },
+  { q:"The Netherlands have appeared in 3 World Cup finals — how many did they win?", a:"None — 0 wins", opts:["1","2","3","None — 0 wins"] },
+  { q:"Which player won the Best Young Player award at the 2018 World Cup?", a:"Kylian Mbappé", opts:["Pogba","Griezmann","Mbappé","Dembélé"] },
+  { q:"The Jules Rimet Trophy was stolen in England in 1966. Who found it?", a:"A dog named Pickles", opts:["A police officer","A child in a park","A janitor","A dog named Pickles"] },
+  { q:"Roger Milla became the oldest World Cup goal scorer in 1994 — at what age?", a:"42 years old", opts:["38 years old","40 years old","42 years old","44 years old"] },
+  { q:"Oleg Salenko set the record for most goals by one player in a single World Cup game. How many?", a:"5 goals vs Cameroon (1994)", opts:["3","4","5 goals vs Cameroon (1994)","6"] },
+  { q:"Which nation became the first African team to reach a World Cup quarter-final?", a:"Cameroon (1990)", opts:["Nigeria","Ghana","Senegal","Cameroon (1990)"] },
+  { q:"How many teams will compete in the 2026 World Cup for the first time in history?", a:"48 teams", opts:["32 teams","40 teams","48 teams","64 teams"] },
+  { q:"What was the nickname of the iconic black-and-white ball used at the 1970 World Cup?", a:"Telstar", opts:["Azteca","Tango","Jabulani","Telstar"] },
+  { q:"Which South American country hosted the World Cup in 1978?", a:"Argentina", opts:["Brazil","Chile","Argentina","Colombia"] },
+  { q:"Who managed the French team that won the 1998 World Cup?", a:"Aimé Jacquet", opts:["Didier Deschamps","Michel Platini","Aimé Jacquet","Roger Lemerre"] },
+  { q:"Geoff Hurst is the only player to score a hat-trick in a World Cup final. Which year?", a:"1966 (England vs West Germany)", opts:["1962","1966 (England vs West Germany)","1970","1974"] },
+];
+
+let quizOrder = [], quizIdx = 0, quizCorrect = 0, quizAnswered = false;
+
+function setTriviaTab(tab) {
+  document.getElementById('trivTab-facts').classList.toggle('active', tab==='facts');
+  document.getElementById('trivTab-quiz').classList.toggle('active', tab==='quiz');
+  document.getElementById('trivia-facts').style.display = tab==='facts' ? '' : 'none';
+  document.getElementById('trivia-quiz').style.display  = tab==='quiz'  ? '' : 'none';
+  if (tab==='quiz' && quizOrder.length===0) startQuiz();
+}
+
+function startQuiz() {
+  quizOrder = [...Array(QUIZ_QUESTIONS.length).keys()].sort(()=>Math.random()-.5);
+  quizIdx = 0; quizCorrect = 0; quizAnswered = false;
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const card = document.getElementById('quizCard');
+  if (quizIdx >= QUIZ_QUESTIONS.length) {
+    // Results screen
+    const pct = Math.round(quizCorrect/QUIZ_QUESTIONS.length*100);
+    const emoji = pct>=80?'🏆':pct>=60?'⭐':pct>=40?'😅':'😬';
+    card.innerHTML = `
+      <div class="quiz-result-card">
+        <div style="font-size:4rem">${emoji}</div>
+        <div class="quiz-result-score">${quizCorrect} / ${QUIZ_QUESTIONS.length}</div>
+        <div class="quiz-result-label">${pct}% correct${pct>=80?' — World Cup expert!':pct>=60?' — Good knowledge!':pct>=40?' — Not bad!':' — Keep learning!'}</div>
+        <button class="btn" style="margin-top:24px" onclick="startQuiz()">🔄 ${T('Play Again','Jogar Novamente')}</button>
+      </div>`;
+    return;
+  }
+  const q = QUIZ_QUESTIONS[quizOrder[quizIdx]];
+  const shuffled = [...q.opts].sort(()=>Math.random()-.5);
+  const progress = (quizIdx / QUIZ_QUESTIONS.length * 100).toFixed(0);
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span class="quiz-score-badge">✅ ${quizCorrect} correct</span>
+      <span style="font-size:.82rem;color:var(--muted)">${quizIdx+1} / ${QUIZ_QUESTIONS.length}</span>
+    </div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${progress}%"></div></div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-opts" id="quizOpts">
+      ${shuffled.map((opt,i)=>`<button class="quiz-opt" id="qopt-${i}" onclick="answerQuiz('${opt.replace(/'/g,"\\'")}','${q.a.replace(/'/g,"\\'")}',${i})">${opt}</button>`).join('')}
+    </div>
+    <div id="quizNext" style="display:none;margin-top:18px;text-align:center">
+      <button class="btn" onclick="nextQuizQ()">${quizIdx+1<QUIZ_QUESTIONS.length?'➡️ '+T('Next Question','Próxima Pergunta'):'🏁 '+T('See Results','Ver Resultados')}</button>
+    </div>`;
+  quizAnswered = false;
+}
+
+function answerQuiz(chosen, correct, btnIdx) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === correct) b.classList.add('correct');
+  });
+  if (chosen === correct) {
+    quizCorrect++;
+    opts[btnIdx].classList.add('correct');
+  } else {
+    opts[btnIdx].classList.add('wrong');
+  }
+  document.getElementById('quizNext').style.display = 'block';
+}
+
+function nextQuizQ() {
+  quizIdx++;
+  renderQuiz();
+}
+
+// ── CHAT ───────────────────────────────────────────────────────
+let chatChannel = null;
+
+async function initChat() {
+  const el = document.getElementById('chatMessages');
+  el.innerHTML = `<div class="empty-state"><span class="spinner"></span></div>`;
+
+  // Load last 100 messages
+  const { data, error } = await db.from('messages').select('*').order('created_at', { ascending: true }).limit(100);
+  if (error) { el.innerHTML = `<div class="alert alert-error">${error.message}</div>`; return; }
+  el.innerHTML = '';
+  (data || []).forEach(m => appendMessage(m));
+  el.scrollTop = el.scrollHeight;
+
+  // Subscribe to new messages in real-time
+  if (chatChannel) chatChannel.unsubscribe();
+  chatChannel = db.channel('messages-live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+      appendMessage(payload.new);
+      el.scrollTop = el.scrollHeight;
+    })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, payload => {
+      document.getElementById('msg-' + payload.old.id)?.remove();
+    })
+    .subscribe();
+}
+
+function appendMessage(m) {
+  const el = document.getElementById('chatMessages');
+  const isMe = currentUser && m.participant_id === currentUser.id;
+  const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const av = avHtml({ name: m.participant_name, avatar_url: m.avatar_url }, 38);
+  const div = document.createElement('div');
+  div.id = 'msg-' + m.id;
+  div.className = 'msg-row' + (isMe ? ' mine' : '');
+  div.innerHTML = `
+    ${av}
+    <div>
+      <div class="msg-name">${m.participant_name}</div>
+      <div class="msg-bubble">${m.body.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div class="msg-time">${time}</div>
+    </div>`;
+  el.appendChild(div);
+}
+
+async function sendMessage() {
+  if (!currentUser) { alert(T('Please login first.', 'Por favor faça login primeiro.')); return; }
+  const input = document.getElementById('chatInput');
+  const body = input.value.trim();
+  if (!body) return;
+  input.value = '';
+  const { error } = await db.from('messages').insert({
+    participant_id: currentUser.id,
+    participant_name: currentUser.name,
+    avatar_url: currentUser.avatar_url || null,
+    body
+  });
+  if (error) { input.value = body; alert('Error sending message: ' + error.message); }
+}
+
+// ── AVATAR ─────────────────────────────────────────────────────
+const AV_EMOJIS=[
+  '⚽','🏆','🥇','🎯','🔥','⚡','🌟','💪',
+  '🦁','🦅','🐯','🦊','🐺','🦋','🦄','🐲',
+  '🐻','🐼','🦊','🐸','🦀','🦈','🐬','🦜',
+  '🐭','🐀','🐍','🦎','🦖','🦕','🐊','🦟',
+  '🐙','🦑','🦞','🦂','🕷️','🦧','🦣','🦏',
+  '🦸','🧙','👑','🎪','🎭','🤺','🏋️','🧗',
+  '🇧🇷','🇵🇹','🇦🇷','🇩🇪','🇫🇷','🇪🇸','🏴󠁧󠁢󠁥󠁮󠁧󠁿','🇺🇸',
+  '🇮🇹','🇳🇱','🇧🇪','🇭🇷','🇯🇵','🇲🇦','🇸🇳','🇨🇦',
+  '🎮','🕹️','🎲','🃏','🎸','🥁','🎤','🚀',
+  '🍕','🍺','🌮','🍟','☕','🧃','🍩','🎂',
+  '🤡','👻','💀','🤖','👽','🎃','🧸','🪆',
+];
+const AV_COLORS=['#e11d48','#7c3aed','#1d4ed8','#0891b2','#059669','#b45309'];
+
+// Convert emoji flag to country code for img fallback
+function flagImg(team, size=38) {
+  if (!team) return `<span style="font-size:${size}px;line-height:1">🏳️</span>`;
+  // Extract country code from flag emoji (regional indicator letters A=🇦, Z=🇿)
+  const emoji = team.f || '';
+  const code = [...emoji].filter(c => {
+    const cp = c.codePointAt(0);
+    return cp >= 0x1F1E6 && cp <= 0x1F1FF;
+  }).map(c => String.fromCharCode(c.codePointAt(0) - 0x1F1E6 + 65)).join('').toLowerCase();
+  if (code.length === 2) {
+    return `<img src="https://flagcdn.com/${size}x${Math.round(size*.75)}/${code}.png"
+      width="${size}" height="${Math.round(size*.75)}"
+      style="border-radius:4px;object-fit:cover;display:block"
+      onerror="this.outerHTML='<span style=\\'font-size:${Math.round(size*.7)}px\\'>${emoji}</span>'"
+      alt="${team.en||''}"/>`;
+  }
+  return `<span style="font-size:${Math.round(size*.7)}px;line-height:1">${emoji}</span>`;
+}
+
+function avHtml(user, size=36){
+  const s=`width:${size}px;height:${size}px;font-size:${Math.round(size*.38)}px`;
+  if(!user?.name) return `<span class="av" style="${s};background:var(--border)">?</span>`;
+  const url=user.avatar_url;
+  if(url?.startsWith('http')) return `<span class="av" style="${s}"><img src="${url}" alt=""/></span>`;
+  if(url) return `<span class="av" style="${s};background:var(--mid);font-size:${Math.round(size*.55)}px">${url}</span>`;
+  const col=AV_COLORS[user.name.charCodeAt(0)%AV_COLORS.length];
+  return `<span class="av" style="${s};background:${col};color:#fff">${user.name.charAt(0).toUpperCase()}</span>`;
+}
+
+function openAvPicker(){
+  if(!currentUser) return;
+  const cur=currentUser.avatar_url;
+  document.getElementById('avBox').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="color:var(--gold);margin:0">${T('🖼️ Your Avatar','🖼️ O Seu Avatar')}</h3>
+      <button onclick="closeAvPicker()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <div style="text-align:center;margin-bottom:16px">${avHtml(currentUser,140)}</div>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:4px">${T('Pick an emoji:','Escolha um emoji:')}</p>
+    <div class="emoji-grid">${AV_EMOJIS.map(e=>`<button class="emoji-opt${cur===e?' sel':''}" onclick="pickEmoji('${e}')">${e}</button>`).join('')}</div>
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+      <p style="color:var(--muted);font-size:.82rem;margin-bottom:10px">${T('Or upload a photo (max 2MB):','Ou carregue uma foto (máx 2MB):')}</p>
+      <input type="file" id="avFile" accept="image/*" style="display:none" onchange="uploadAvPhoto(this.files[0])"/>
+      <button class="btn btn-outline" style="font-size:.85rem;padding:9px" onclick="document.getElementById('avFile').click()">📷 ${T('Upload Photo','Carregar Foto')}</button>
+      <div id="avAlert" style="margin-top:10px"></div>
+    </div>
+    ${cur?`<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px">
+      <button onclick="removeMyAv()" style="background:none;border:1px solid var(--red);color:var(--red);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.82rem;width:100%">✕ ${T('Remove Avatar','Remover Avatar')}</button>
+    </div>`:''}`;
+  document.getElementById('avOverlay').classList.add('open');
+}
+function closeAvPicker(){ document.getElementById('avOverlay').classList.remove('open'); }
+
+async function pickEmoji(e){
+  const {error}=await db.from('participants').update({avatar_url:e}).eq('id',currentUser.id);
+  if(error){alert('Error: '+error.message);return;}
+  currentUser.avatar_url=e; localStorage.setItem('wc2026_user',JSON.stringify(currentUser));
+  openAvPicker(); renderActive();
+}
+
+async function uploadAvPhoto(file){
+  const al=document.getElementById('avAlert');
+  if(!file) return;
+  if(file.size>2*1024*1024){al.innerHTML='<div class="alert alert-error">Max 2MB</div>';return;}
+  al.innerHTML='<div class="alert alert-info"><span class="spinner"></span> Uploading…</div>';
+  const ext=file.name.split('.').pop().toLowerCase()||'jpg';
+  const path=`${currentUser.id}.${ext}`;
+  const {error:upErr}=await db.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type});
+  if(upErr){al.innerHTML=`<div class="alert alert-error">${upErr.message}</div>`;return;}
+  const {data:{publicUrl}}=db.storage.from('avatars').getPublicUrl(path);
+  const {error:dbErr}=await db.from('participants').update({avatar_url:publicUrl}).eq('id',currentUser.id);
+  if(dbErr){al.innerHTML=`<div class="alert alert-error">${dbErr.message}</div>`;return;}
+  currentUser.avatar_url=publicUrl; localStorage.setItem('wc2026_user',JSON.stringify(currentUser));
+  al.innerHTML='<div class="alert alert-success">✅ Photo saved!</div>';
+  setTimeout(()=>{openAvPicker();renderActive();},800);
+}
+
+async function removeMyAv(){
+  if(currentUser.avatar_url?.startsWith('http')){
+    const parts=currentUser.avatar_url.split('/avatars/');
+    if(parts[1]) await db.storage.from('avatars').remove([decodeURIComponent(parts[1])]);
+  }
+  await db.from('participants').update({avatar_url:null}).eq('id',currentUser.id);
+  currentUser.avatar_url=null; localStorage.setItem('wc2026_user',JSON.stringify(currentUser));
+  closeAvPicker(); renderActive();
 }
 
 // ── HELPERS ────────────────────────────────────────────────────
@@ -703,8 +1749,13 @@ function phaseBanner(label,open,extra=''){
 }
 function userBar(){
   if(!currentUser) return '';
-  return `<div class="user-bar"><span>👤 <strong>${currentUser.name}</strong></span>
-    <button class="btn btn-outline" style="width:auto;padding:5px 12px;font-size:.8rem" onclick="logout()">${T('Logout','Sair')}</button></div>`;
+  return `<div class="user-bar">
+    <span style="display:flex;align-items:center;gap:10px">
+      <span onclick="openAvPicker()" title="${T('Change avatar','Mudar avatar')}" style="cursor:pointer">${avHtml(currentUser,64)}</span>
+      <strong>${currentUser.name}</strong>
+    </span>
+    <button class="btn btn-outline" style="width:auto;padding:5px 12px;font-size:.8rem" onclick="logout()">${T('Logout','Sair')}</button>
+  </div>`;
 }
 function loginPrompt(){
   return `<div class="card empty-state"><div class="icon">🔑</div>
@@ -727,7 +1778,7 @@ async function forgotPassword(){
   if(!email){showAlert(alertEl,T('Enter your email.','Insira o seu e-mail.'),'error');return;}
   const {data,error}=await db.from('participants').select('id').eq('email',email).single();
   if(error||!data){showAlert(alertEl,T('Email not found.','E-mail não encontrado.'),'error');return;}
-  showAlert(alertEl,T('Email found! Please contact the admin to reset your password.','E-mail encontrado! Por favor contacte o administrador para redefinir a sua palavra-passe.'),'success');
+  showAlert(alertEl,T('Email found! Please contact the admin at magalhaesguilherme@gmail.com to reset your password.','E-mail encontrado! Por favor contacte o administrador em magalhaesguilherme@gmail.com para redefinir a sua palavra-passe.'),'success');
 }
 function showAlert(el,msg,type){
   el.innerHTML=`<div class="alert alert-${type}">${msg}</div>`;
