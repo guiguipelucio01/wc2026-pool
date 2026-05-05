@@ -1,7 +1,7 @@
 // ============================================================
 // WC 2026 — Auto Results Fetcher
 // Runs via GitHub Actions every 5 minutes during the tournament.
-// Node 20 has built-in fetch — no extra packages needed beyond @supabase/supabase-js.
+// Node 22+ has built-in fetch and WebSocket — no extra packages needed beyond @supabase/supabase-js.
 // ============================================================
 
 const { createClient } = require("@supabase/supabase-js");
