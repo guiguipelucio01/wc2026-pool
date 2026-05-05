@@ -49,8 +49,10 @@ async function run() {
   );
 
   if (!res.ok) {
-    console.error(`API error ${res.status}:`, await res.text());
-    process.exit(1);
+    const body = await res.text();
+    console.log(`API returned ${res.status} — competition data not available yet. Nothing to update.`);
+    console.log(body.slice(0, 300));
+    return; // exit 0 — not our fault, just no data yet
   }
 
   const { matches: apiMatches = [] } = await res.json();
