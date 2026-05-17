@@ -1982,8 +1982,11 @@ function renderPrizeCard(scores) {
 
     // How many prize slots does this tie span?
     const slotsSpanned = Math.min(tieCount, 3 - pi);
-    const sharedAmount = PRIZE_SPLIT.slice(pi, pi + slotsSpanned).reduce((a,b)=>a+b, 0) * pool / slotsSpanned * slotsSpanned;
-    const eachAmount   = PRIZE_SPLIT.slice(pi, pi + slotsSpanned).reduce((a,b)=>a+b, 0) * pool / tieCount;
+    const isLastGroup  = pos + tieCount >= n;
+    const totalPct     = isLastGroup
+      ? PRIZE_SPLIT.slice(pi).reduce((a,b)=>a+b, 0)
+      : PRIZE_SPLIT.slice(pi, pi + slotsSpanned).reduce((a,b)=>a+b, 0);
+    const eachAmount   = totalPct * pool / tieCount;
 
     const names = scores.slice(pos, pos + tieCount).map(s => dName(s.participants||{})).join(', ');
     const tied  = tieCount > 1;
