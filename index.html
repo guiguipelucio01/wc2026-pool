@@ -795,7 +795,7 @@ function toggleTheme() {
   localStorage.setItem('wc2026_theme', next);
 }
 (function initTheme() {
-  const saved = localStorage.getItem('wc2026_theme') || 'dark';
+  const saved = localStorage.getItem('wc2026_theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
   window.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('themeBtn');
