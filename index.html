@@ -1988,44 +1988,33 @@ function renderAwardsPage() {
   document.getElementById('awdBanner').innerHTML=phaseBanner(T('Award predictions','Previsões de prêmios'),open);
   if (!currentUser){document.getElementById('awdGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1">${loginPrompt()}</div>`;document.getElementById('saveAwdBtn').style.display='none';document.getElementById('awdUserBar').innerHTML='';return;}
   document.getElementById('awdUserBar').innerHTML=userBar();
-  const alreadySubmitted = AWARDS.every(a => awardPreds[a.key]);
-  if (open && !alreadySubmitted) {
-    document.getElementById('awdAlert').innerHTML=`<div class="alert alert-warn" style="background:rgba(234,179,8,.15);border:1px solid #eab308;color:#eab308;margin-bottom:14px">
-      ⚠️ ${T('Choose carefully. Once saved, your award predictions are locked forever and cannot be changed.','Escolha com cuidado. Depois de salvar, as previsões de prêmios ficam bloqueadas para sempre e não podem ser alteradas.')}
-    </div>`;
-  } else {
-    document.getElementById('awdAlert').innerHTML='';
-  }
+  document.getElementById('awdAlert').innerHTML='';
   document.getElementById('awdGrid').innerHTML=AWARDS.map(a=>{
     const pred=awardPreds[a.key], val=pred?pred.prediction:'', pts=scoring['award_'+a.key]||5;
-    const locked = !!pred;
-    return `<div class="award-card" style="${locked?'border-color:var(--gold);opacity:.9':''}">
+    return `<div class="award-card">
       <div class="award-icon">${a.icon}</div>
       <div style="font-weight:600;margin-bottom:2px">${lang==='pt'?a.pt:a.en}</div>
       <div style="font-size:.75rem;color:var(--gold);margin-bottom:8px">+${pts} ${T('points','pontos')}</div>
-      ${open&&!locked?`<input type="text" id="awd_${a.key}" value="${val}" placeholder="${T('Player or team name…','Nome do jogador ou equipa…')}"/>`:
-      `<div style="color:${val?'var(--green)':'var(--muted)'};padding:8px 0;font-weight:${val?'700':'400'}">${val?'🔒 '+val:T('No prediction yet','Sem previsão')}</div>`}
+      ${open?`<input type="text" id="awd_${a.key}" value="${val}" placeholder="${T('Player or team name…','Nome do jogador ou equipa…')}"/>`:
+      `<div style="color:${val?'var(--green)':'var(--muted)'};padding:8px 0;font-weight:${val?'700':'400'}">${val||T('No prediction yet','Sem previsão')}</div>`}
     </div>`;
   }).join('');
-  document.getElementById('saveAwdBtn').style.display=(open&&!alreadySubmitted)?'block':'none';
+  document.getElementById('saveAwdBtn').style.display=open?'block':'none';
 }
 
 async function saveAwardPredictions() {
   if (!currentUser) return;
   const btn=document.getElementById('saveAwdBtn');
   btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','Salvando…')}`;
-  const toInsert=AWARDS.reduce((acc,a)=>{
+  const toSave=AWARDS.reduce((acc,a)=>{
     const el=document.getElementById('awd_'+a.key);
-    if(el&&el.value.trim()&&!awardPreds[a.key]) acc.push({participant_id:currentUser.id,award_type:a.key,prediction:el.value.trim()});
+    if(el&&el.value.trim()) acc.push({participant_id:currentUser.id,award_type:a.key,prediction:el.value.trim()});
     return acc;
   },[]);
-  if(!toInsert.length){ btn.disabled=false; btn.innerHTML=T('💾 Save Award Predictions','💾 Salvar Previsões de Prêmios'); return; }
-  if(!confirm(T('⚠️ Once saved these predictions are LOCKED FOREVER. Are you sure?','⚠️ Depois de salvar estas previsões ficam BLOQUEADAS PARA SEMPRE. Tem certeza?'))) {
-    btn.disabled=false; btn.innerHTML=T('💾 Save Award Predictions','💾 Salvar Previsões de Prêmios'); return;
-  }
-  const {error}=await db.from('award_predictions').insert(toInsert);
+  if(!toSave.length){ btn.disabled=false; btn.innerHTML=T('💾 Save Award Predictions','💾 Salvar Previsões de Prêmios'); return; }
+  const {error}=await db.from('award_predictions').upsert(toSave,{onConflict:'participant_id,award_type'});
   if(error) alert(T('Error: ','Erro: ')+error.message);
-  else toInsert.forEach(p=>awardPreds[p.award_type]=p);
+  else toSave.forEach(p=>awardPreds[p.award_type]=p);
   btn.disabled=false; btn.innerHTML=T('💾 Save Award Predictions','💾 Salvar Previsões de Prêmios');
   renderAwardsPage();
 }
