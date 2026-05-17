@@ -472,6 +472,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <button               data-page="tables"      onclick="showPage('tables',this)"     data-en="📋 Tables"     data-pt="📋 Tabelas">📋 Tables</button>
   <button               data-page="knockout"    onclick="showPage('knockout',this)"   data-en="🏆 Knockout"   data-pt="🏆 Eliminatórias">🏆 Knockout</button>
   <button               data-page="awards"      onclick="showPage('awards',this)"     data-en="🥇 Awards"     data-pt="🥇 Prêmios">🥇 Awards</button>
+  <button               data-page="results"     onclick="showPage('results',this)"    data-en="🏁 Results"    data-pt="🏁 Resultados">🏁 Results</button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"data-en="📊 Standings"  data-pt="📊 Classificação">📊 Standings</button>
   <button               data-page="chat"        onclick="showPage('chat',this)"        data-en="💬 Chat"       data-pt="💬 Chat">💬 Chat</button>
   <button               data-page="trivia"      onclick="showPage('trivia',this)"      data-en="🧠 Trivia"     data-pt="🧠 Curiosidades">🧠 Trivia</button>
@@ -481,8 +482,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <button               data-page="register"    onclick="showPage('register',this)">   <span class="bn-icon">🔑</span><span data-en="Login"  data-pt="Entrar">Login</span></button>
   <button               data-page="groups"      onclick="showPage('groups',this)"      style="position:relative">     <span class="bn-icon">⚽</span><span data-en="Groups"    data-pt="Grupos">Groups</span><span class="pred-badge" id="navBadgeBtm" style="display:none"></span></button>
   <button               data-page="tables"      onclick="showPage('tables',this)">     <span class="bn-icon">📋</span><span data-en="Tables"    data-pt="Tabelas">Tables</span></button>
-  <button               data-page="knockout"    onclick="showPage('knockout',this)">   <span class="bn-icon">🏆</span><span data-en="Knockout"  data-pt="Elim.">Knockout</span></button>
-  <button               data-page="awards"      onclick="showPage('awards',this)">     <span class="bn-icon">🥇</span><span data-en="Awards"    data-pt="Prêmios">Awards</span></button>
+  <button               data-page="results"     onclick="showPage('results',this)">    <span class="bn-icon">🏁</span><span data-en="Results"   data-pt="Resultados">Results</span></button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"><span class="bn-icon">📊</span><span data-en="Standings" data-pt="Classif.">Standings</span></button>
   <button               data-page="chat"        onclick="showPage('chat',this)">        <span class="bn-icon">💬</span><span data-en="Chat"       data-pt="Chat">Chat</span></button>
   <button               data-page="trivia"      onclick="showPage('trivia',this)">      <span class="bn-icon">🧠</span><span data-en="Trivia"     data-pt="Trivia">Trivia</span></button>
@@ -657,6 +657,14 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   </div>
 </div>
 
+<div id="page-results" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h2 style="margin:0;font-size:clamp(1rem,4vw,1.4rem)" data-en="🏁 Match Results" data-pt="🏁 Resultados">🏁 Match Results</h2>
+    <button class="btn btn-outline" style="width:auto;padding:6px 14px;font-size:.84rem" onclick="renderResultsPage()">↻ <span data-en="Refresh" data-pt="Atualizar">Refresh</span></button>
+  </div>
+  <div id="resultsContainer"></div>
+</div>
+
 <div id="page-leaderboard" class="page">
   <div class="card" id="prizeCard" style="display:none">
     <div style="text-align:center;margin-bottom:16px">
@@ -825,6 +833,7 @@ function renderActive(name) {
   if (n==='home')        renderHome();
   if (n==='groups')      renderGroupPage();
   if (n==='tables')      renderTablesPage();
+  if (n==='results')     renderResultsPage();
   if (n==='knockout')    renderKOPage();
   if (n==='awards')      renderAwardsPage();
   if (n==='leaderboard') loadLeaderboard();
@@ -1137,6 +1146,78 @@ function setGroupView(mode) {
 
 function renderTablesPage() {
   renderGroupStandings('tablesContainer');
+}
+
+function renderResultsPage() {
+  const el = document.getElementById('resultsContainer');
+  if (!el) return;
+
+  const finished = matches.filter(m => m.home_goals != null)
+    .sort((a, b) => new Date(b.d) - new Date(a.d));
+
+  if (!finished.length) {
+    el.innerHTML = `<div class="card" style="text-align:center;padding:32px;color:var(--muted)">
+      ${T('No results yet. Check back once the tournament starts!','Sem resultados ainda. Volte quando o torneio começar!')}
+    </div>`;
+    return;
+  }
+
+  const ROUND_LABEL = {
+    group: T('Group Stage','Fase de Grupos'),
+    r32:   T('Round of 32','Oitavas de Final'),
+    r16:   T('Round of 16','Quartas de Final'),
+    qf:    T('Quarter-finals','Quartas-de-Final'),
+    sf:    T('Semi-finals','Semifinais'),
+    third: T('Third Place','3º Lugar'),
+    final: T('Final','Final'),
+  };
+
+  const ROUND_ORDER = ['final','third','sf','qf','r16','r32','group'];
+
+  const byRound = {};
+  finished.forEach(m => {
+    const r = m.r || 'group';
+    if (!byRound[r]) byRound[r] = [];
+    byRound[r].push(m);
+  });
+
+  el.innerHTML = ROUND_ORDER.filter(r => byRound[r]?.length).map(r => {
+    const rows = byRound[r].map(m => {
+      const h = teams[m.h || m.home_team_id];
+      const a = teams[m.a || m.away_team_id];
+      const hn = h ? (lang === 'pt' ? h.pt : h.en) : 'TBD';
+      const an = a ? (lang === 'pt' ? a.pt : a.en) : 'TBD';
+      const dt = m.d ? new Date(m.d).toLocaleDateString(lang === 'pt' ? 'pt-BR' : 'en-GB', {day:'2-digit', month:'short'}) : '';
+      const winner = m.home_goals > m.away_goals ? 'h' : m.home_goals < m.away_goals ? 'a' : 'd';
+      const grpTag = m.g ? `<span style="font-size:.62rem;background:var(--input-bg);border-radius:4px;padding:1px 5px;color:var(--muted);margin-left:4px">${T('Grp','Grp')} ${m.g}</span>` : '';
+      const penTag = m.home_penalties != null
+        ? `<div style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:2px">(${m.home_penalties} – ${m.away_penalties} ${T('pens','pen')})</div>`
+        : '';
+      return `<div style="display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:44px;flex-shrink:0">
+          <span style="font-size:.65rem;color:var(--muted)">${dt}</span>${grpTag ? `<span style="margin-top:2px">${grpTag}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;flex:1;justify-content:flex-end">
+          ${flagImg(h,18)}<span style="font-size:.82rem;font-weight:${winner==='h'?700:400};text-align:right">${hn}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding:0 8px">
+          <span style="font-size:.95rem;font-weight:900;color:var(--gold);white-space:nowrap">${m.home_goals} : ${m.away_goals}</span>
+          ${penTag}
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;flex:1">
+          <span style="font-size:.82rem;font-weight:${winner==='a'?700:400}">${an}</span>${flagImg(a,18)}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--glass)">
+        <strong style="font-size:.84rem;letter-spacing:.03em">${ROUND_LABEL[r] || r}</strong>
+        <span style="float:right;font-size:.72rem;color:var(--muted)">${byRound[r].length} ${T('matches','jogos')}</span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
 }
 
 function renderGroupStandings(containerId) {
