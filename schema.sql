@@ -182,10 +182,15 @@ INSERT INTO matches(id,round) VALUES
 CREATE TABLE participants (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
+  display_name TEXT,
   email TEXT UNIQUE NOT NULL,
   password TEXT,
+  is_validated BOOLEAN DEFAULT FALSE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+-- For existing databases, run:
+-- ALTER TABLE participants ADD COLUMN IF NOT EXISTS is_validated BOOLEAN DEFAULT FALSE NOT NULL;
+-- ALTER TABLE participants ADD COLUMN IF NOT EXISTS display_name TEXT;
 CREATE TABLE group_predictions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   participant_id UUID REFERENCES participants(id) ON DELETE CASCADE,

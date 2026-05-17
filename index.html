@@ -207,6 +207,15 @@ select option{background:var(--card-solid)}
   border:1px solid var(--border);color:var(--text);font-family:inherit;transition:all .2s;
 }
 .score-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15);outline:none}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+.spin-wrap{position:relative;display:inline-flex;flex-shrink:0}
+.spin-wrap input{padding-right:15px !important}
+.spin-up,.spin-dn{position:absolute;right:0;width:14px;cursor:pointer;background:var(--glass);border:none;border-left:1px solid var(--border);color:var(--muted);padding:0;font-size:7px;line-height:1;display:flex;align-items:center;justify-content:center;user-select:none}
+.spin-up{top:0;bottom:50%;border-radius:0 6px 0 0}
+.spin-dn{top:50%;bottom:0;border-radius:0 0 6px 0;border-top:1px solid var(--border)}
+.spin-up:hover,.spin-dn:hover{background:rgba(201,168,76,.2);color:var(--gold)}
 .score-sep{font-size:1.2rem;color:var(--muted);font-weight:700}
 .match-pts{font-size:.75rem;color:var(--green);text-align:center;margin-top:6px;font-weight:600}
 .saved-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:6px;opacity:0;transition:opacity .35s;vertical-align:middle}
@@ -214,6 +223,49 @@ select option{background:var(--card-solid)}
 .mf{font-size:2rem;line-height:1;display:block}
 .team-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 .team-block.away{align-items:flex-start}
+
+/* ── PREDICTION NUDGE ────────────────────────────────────────── */
+.pred-badge{position:absolute;top:2px;right:2px;background:#ff453a;color:#fff;border-radius:10px;font-size:.55rem;font-weight:800;padding:1px 5px;min-width:16px;text-align:center;pointer-events:none;line-height:1.6}
+.nudge-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);margin-bottom:14px;animation:nudge-pulse 2.4s ease-in-out infinite;cursor:pointer}
+.nudge-card:hover{background:rgba(201,168,76,.11)}
+.nudge-arrow{font-size:1.9rem;animation:nudge-point .9s ease-in-out infinite alternate;flex-shrink:0}
+@keyframes nudge-point{0%{transform:translateX(0)}100%{transform:translateX(5px)}}
+@keyframes nudge-pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.25)}50%{box-shadow:0 0 0 7px rgba(201,168,76,0)}}
+
+/* ── MULTI-GROUP GRID ────────────────────────────────────────── */
+.grp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
+@media(max-width:1000px){.grp-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:580px){.grp-grid{grid-template-columns:1fr}}
+.pred-match-row{display:flex;align-items:center;gap:4px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:.8rem}
+.pred-match-row:last-child{border-bottom:none}
+.pred-team{flex:1;display:flex;align-items:center;gap:5px;min-width:0}
+.pred-team.away{justify-content:flex-end;text-align:right;flex-direction:row-reverse}
+.pred-team-name{font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62px}
+.pred-score-inputs{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.pred-score-input{width:30px;text-align:center;padding:4px 2px;font-size:.88rem;font-weight:700;border-radius:7px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);font-family:inherit;transition:all .15s}
+.pred-score-input:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,168,76,.15);outline:none}
+.dice-btn{background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.78rem;padding:3px 5px;color:var(--muted);transition:border-color .15s,color .15s,transform .2s;line-height:1;font-family:inherit}
+.dice-btn:hover{border-color:var(--gold);color:var(--gold);transform:rotate(25deg)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.06)}
+
+/* ── KO ROUNDS ───────────────────────────────────────────────── */
+.ko-round-hdr{display:flex;align-items:center;gap:10px;margin:18px 0 10px;padding:0 2px}
+.ko-round-hdr span{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.ko-round-hdr::after{content:'';flex:1;height:1px;background:var(--border)}
+.ko-match{background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:12px 14px;transition:border-color .2s}
+.ko-match.ko-done{border-color:rgba(201,168,76,.35)}
+.ko-match.ko-open{border-color:rgba(201,168,76,.2)}
+.ko-match-hdr{font-size:.68rem;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.ko-team-row{display:flex;align-items:center;gap:8px;padding:5px 0}
+.ko-team-row+.ko-team-row{border-top:1px solid var(--border)}
+.ko-team-name{flex:1;font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ko-team-tbd{flex:1;font-size:.82rem;color:var(--muted);font-style:italic}
+.ko-score-input{width:40px;text-align:center;font-size:1rem;font-weight:700;padding:4px 2px;border-radius:8px;background:var(--card);border:1.5px solid var(--border);color:var(--text);font-family:inherit;transition:border-color .2s}
+.ko-score-input:focus{border-color:var(--gold);outline:none}
+.ko-score-done{width:32px;text-align:center;font-size:1rem;font-weight:800;color:var(--gold)}
+.ko-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.ko-grid{grid-template-columns:1fr}}
 
 /* ── LEADERBOARD ─────────────────────────────────────────────── */
 .lb-table{width:100%;border-collapse:collapse}
@@ -228,6 +280,11 @@ select option{background:var(--card-solid)}
 .r3{background:linear-gradient(135deg,#e8a060,#a05a20);color:#fff;box-shadow:0 0 12px rgba(205,127,50,.4)}
 .rN{background:var(--input-bg);color:var(--muted)}
 .pts-total{font-weight:800;color:var(--gold);font-size:1rem}
+.prize-pool-total{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--gold);letter-spacing:2px;text-shadow:0 0 24px rgba(201,168,76,.4);line-height:1}
+.prize-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.prize-row:last-child{border-bottom:none}
+.prize-medal{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0}
+.prize-amount{font-weight:800;font-size:1rem;color:var(--gold);margin-left:auto;flex-shrink:0}
 
 /* ── GROUP TABS ──────────────────────────────────────────────── */
 .group-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
@@ -380,7 +437,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:20px 0}
   .card{padding:18px 16px;border-radius:18px}
   .emoji-grid{grid-template-columns:repeat(6,1fr)}
 }
-/* Hide bottom nav text labels on very small phones — icons only */
+/* Hide bottom nav text labels on very small phones, icons only */
 @media(max-width:380px){
   .bottom-nav button{font-size:0;padding:12px 2px 8px}
   .bottom-nav button .bn-icon{font-size:1.45rem}
@@ -390,24 +447,28 @@ hr.div{border:none;border-top:1px solid var(--border);margin:20px 0}
 <body>
 
 <script>
-// ── CONFIG — replace with your Supabase project details ──────
+// ── CONFIG, replace with your Supabase project details ──────
 const SUPABASE_URL      = 'https://wyfomomcjevtjwqffbix.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
 // ─────────────────────────────────────────────────────────────
 </script>
 
 <header>
-  <div class="logo" data-en="⚽ WC 2026 Pool" data-pt="⚽ Bolão da Copa 2026">⚽ WC 2026 Pool</div>
+  <div class="logo" style="display:flex;align-items:center;gap:10px">
+    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/1/17/2026_FIFA_World_Cup_emblem.svg/60px-2026_FIFA_World_Cup_emblem.svg.png"
+         alt="FIFA World Cup 2026" style="height:38px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(201,168,76,.4))"/>
+    <span data-en="WC 2026 Pool" data-pt="Bolão da Copa 2026">WC 2026 Pool</span>
+  </div>
   <div class="header-actions">
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
-    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🇧🇷 PT</button>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🇬🇧 EN</button>
   </div>
 </header>
 
 <nav class="top-nav">
   <button class="active" data-page="home"       onclick="showPage('home',this)"       data-en="🏠 Home"        data-pt="🏠 Início">🏠 Home</button>
   <button               data-page="register"    onclick="showPage('register',this)"   data-en="🔑 Login / Register"   data-pt="🔑 Login / Registrar">🔑 Login / Register</button>
-  <button               data-page="groups"      onclick="showPage('groups',this)"     data-en="⚽ Groups"      data-pt="⚽ Grupos">⚽ Groups</button>
+  <button               data-page="groups"      onclick="showPage('groups',this)"     data-en="⚽ Groups"      data-pt="⚽ Grupos" style="position:relative">⚽ Groups<span class="pred-badge" id="navBadgeTop" style="display:none"></span></button>
   <button               data-page="tables"      onclick="showPage('tables',this)"     data-en="📋 Tables"     data-pt="📋 Tabelas">📋 Tables</button>
   <button               data-page="knockout"    onclick="showPage('knockout',this)"   data-en="🏆 Knockout"   data-pt="🏆 Eliminatórias">🏆 Knockout</button>
   <button               data-page="awards"      onclick="showPage('awards',this)"     data-en="🥇 Awards"     data-pt="🥇 Prêmios">🥇 Awards</button>
@@ -418,7 +479,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
 <nav class="bottom-nav">
   <button class="active" data-page="home"       onclick="showPage('home',this)">       <span class="bn-icon">🏠</span><span data-en="Home"      data-pt="Início">Home</span></button>
   <button               data-page="register"    onclick="showPage('register',this)">   <span class="bn-icon">🔑</span><span data-en="Login"  data-pt="Entrar">Login</span></button>
-  <button               data-page="groups"      onclick="showPage('groups',this)">     <span class="bn-icon">⚽</span><span data-en="Groups"    data-pt="Grupos">Groups</span></button>
+  <button               data-page="groups"      onclick="showPage('groups',this)"      style="position:relative">     <span class="bn-icon">⚽</span><span data-en="Groups"    data-pt="Grupos">Groups</span><span class="pred-badge" id="navBadgeBtm" style="display:none"></span></button>
   <button               data-page="tables"      onclick="showPage('tables',this)">     <span class="bn-icon">📋</span><span data-en="Tables"    data-pt="Tabelas">Tables</span></button>
   <button               data-page="knockout"    onclick="showPage('knockout',this)">   <span class="bn-icon">🏆</span><span data-en="Knockout"  data-pt="Elim.">Knockout</span></button>
   <button               data-page="awards"      onclick="showPage('awards',this)">     <span class="bn-icon">🥇</span><span data-en="Awards"    data-pt="Prêmios">Awards</span></button>
@@ -456,7 +517,10 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
     <div class="hero-sub" data-en="June 11 – July 19, 2026 · 48 Teams · 104 Matches" data-pt="11 junho – 19 julho 2026 · 48 seleções · 104 jogos">June 11 – July 19, 2026 · 48 Teams · 104 Matches</div>
   </div>
   <div id="homeStatus"></div>
+  <div id="predNudge"></div>
   <div class="stat-grid" id="homeStats"></div>
+  <div id="homeLive"></div>
+  <div id="homeResults"></div>
   <div class="card">
     <h3 data-en="📋 How to play" data-pt="📋 Como jogar">📋 How to play</h3>
     <ol style="padding-left:20px;line-height:2.1;color:var(--muted);font-size:.88rem;margin-top:8px">
@@ -464,7 +528,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
       <li data-en="Predict all 72 group stage scores before June 11" data-pt="Preveja os 72 resultados antes de 11 junho">Predict all 72 group stage scores before June 11</li>
       <li data-en="Pick your awards (top scorer, best player…)" data-pt="Escolha os prêmios (melhor marcador, etc.)">Pick your awards</li>
       <li data-en="After group stage ends: predict knockout rounds" data-pt="Após grupos: preveja as eliminatórias">After group stage: predict knockout rounds</li>
-      <li data-en="Earn points as results come in — live standings!" data-pt="Ganhe pontos com os resultados — classificação ao vivo!">Earn points as results come in</li>
+      <li data-en="Earn points as results come in, live standings!" data-pt="Ganhe pontos com os resultados, classificação ao vivo!">Earn points as results come in</li>
     </ol>
     <hr class="div"/>
     <h3 data-en="⭐ Scoring" data-pt="⭐ Pontuação">⭐ Scoring</h3>
@@ -478,8 +542,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
     <div id="regAlert"></div>
     <div id="regForm">
       <div class="form-group">
-        <label data-en="Full Name" data-pt="Nome Completo">Full Name</label>
+        <label data-en="Name" data-pt="Nome">Name</label>
         <input type="text" id="regName" placeholder="João Silva"/>
+      </div>
+      <div class="form-group">
+        <label data-en="Display Name" data-pt="Nome de Exibição">Display Name</label>
+        <input type="text" id="regDisplayName" placeholder="Joãozinho"/>
+        <small style="color:var(--muted);font-size:.75rem;margin-top:4px;display:block" data-en="How you appear to others. Must be recognizable by all participants." data-pt="Como aparece para os outros. Deve ser reconhecível por todos os participantes.">How you appear to others. Must be recognizable by all participants.</small>
       </div>
       <div class="form-group">
         <label data-en="Email Address" data-pt="Endereço de E-mail">Email Address</label>
@@ -545,9 +614,17 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
     </div>
   </div>
   <div id="grpMatches"></div>
-  <button class="btn" id="saveGrpBtn" onclick="saveDateViewPredictions()" style="display:none;margin-top:4px">
-    <span id="saveGrpBtnLabel" data-en="💾 Save Predictions" data-pt="💾 Salvar Previsões">💾 Save Predictions</span>
-  </button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;align-items:center">
+    <button class="btn btn-outline" id="randomAllBtn" onclick="randomizeAll()" style="display:none">
+      🎲 <span id="randomAllBtnLabel" data-en="Random All" data-pt="Aleatório Total">Random All</span>
+    </button>
+    <button class="btn btn-outline" id="clearAllBtn" onclick="clearAll()" style="display:none;border-color:var(--muted);color:var(--muted)">
+      ↺ <span data-en="Reset" data-pt="Limpar">Reset</span>
+    </button>
+    <button class="btn" id="saveGrpBtn" style="display:none">
+      <span id="saveGrpBtnLabel" data-en="💾 Save Predictions" data-pt="💾 Salvar Previsões">💾 Save Predictions</span>
+    </button>
+  </div>
 </div>
 
 <div id="page-tables" class="page">
@@ -581,10 +658,18 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
 </div>
 
 <div id="page-leaderboard" class="page">
+  <div class="card" id="prizeCard" style="display:none">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px" data-en="Total Prize Pool" data-pt="Premiação Total">Premiação Total</div>
+      <div class="prize-pool-total" id="prizeTotal">R$ 0</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:6px" id="prizeSubtitle"></div>
+    </div>
+    <div id="prizeRows"></div>
+  </div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h2 style="margin:0;font-size:clamp(1rem,4vw,1.5rem)" data-en="📊 Live Standings" data-pt="📊 Classificação ao Vivo">📊 Live Standings</h2>
-      <button class="btn btn-outline" style="width:auto;padding:6px 14px;font-size:.84rem" onclick="loadLeaderboard()">↻ <span data-en="Refresh" data-pt="Atualizar">Refresh</span></button>
+      <h2 style="margin:0;font-size:clamp(1rem,4vw,1.5rem)" data-en="📊 Live Standings" data-pt="📊 Classificação ao Vivo">📊 Classificação ao Vivo</h2>
+      <button class="btn btn-outline" style="width:auto;padding:6px 14px;font-size:.84rem" onclick="loadLeaderboard()">↻ <span data-en="Refresh" data-pt="Atualizar">Atualizar</span></button>
     </div>
     <div id="lbContainer"><div class="empty-state"><span class="spinner"></span></div></div>
   </div>
@@ -666,15 +751,21 @@ if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE
     <p style="color:#8090b0;margin-top:10px;font-size:.82rem">See SETUP.md Step 5.</p></div>`;
 } else {
   var db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.addEventListener('DOMContentLoaded', loadInitialData);
+  window.addEventListener('DOMContentLoaded', () => {
+    document.title = 'Bolão da Copa 2026';
+    document.querySelectorAll('[data-en]').forEach(el => {
+      if (!el.children.length) el.textContent = el.getAttribute('data-pt') || el.getAttribute('data-en');
+    });
+    loadInitialData();
+  });
 }
 
-// ── STATIC DATA — baked in from official FIFA 2026 draw ───────
-const TEAMS_STATIC = [{"id": 1, "en": "Mexico", "pt": "México", "g": "A", "f": "🇲🇽"}, {"id": 2, "en": "South Africa", "pt": "África do Sul", "g": "A", "f": "🇿🇦"}, {"id": 3, "en": "South Korea", "pt": "Coreia do Sul", "g": "A", "f": "🇰🇷"}, {"id": 4, "en": "Czech Republic", "pt": "Rep. Checa", "g": "A", "f": "🇨🇿"}, {"id": 5, "en": "Canada", "pt": "Canadá", "g": "B", "f": "🇨🇦"}, {"id": 6, "en": "Bosnia & Herzegovina", "pt": "Bósnia e Herzegovina", "g": "B", "f": "🇧🇦"}, {"id": 7, "en": "Qatar", "pt": "Qatar", "g": "B", "f": "🇶🇦"}, {"id": 8, "en": "Switzerland", "pt": "Suíça", "g": "B", "f": "🇨🇭"}, {"id": 9, "en": "Brazil", "pt": "Brasil", "g": "C", "f": "🇧🇷"}, {"id": 10, "en": "Morocco", "pt": "Marrocos", "g": "C", "f": "🇲🇦"}, {"id": 11, "en": "Haiti", "pt": "Haiti", "g": "C", "f": "🇭🇹"}, {"id": 12, "en": "Scotland", "pt": "Escócia", "g": "C", "f": "🏴󠁧󠁢󠁳󠁣󠁴󠁿"}, {"id": 13, "en": "USA", "pt": "EUA", "g": "D", "f": "🇺🇸"}, {"id": 14, "en": "Paraguay", "pt": "Paraguai", "g": "D", "f": "🇵🇾"}, {"id": 15, "en": "Australia", "pt": "Austrália", "g": "D", "f": "🇦🇺"}, {"id": 16, "en": "Turkey", "pt": "Turquia", "g": "D", "f": "🇹🇷"}, {"id": 17, "en": "Germany", "pt": "Alemanha", "g": "E", "f": "🇩🇪"}, {"id": 18, "en": "Curacao", "pt": "Curaçao", "g": "E", "f": "🇨🇼"}, {"id": 19, "en": "Ivory Coast", "pt": "Costa do Marfim", "g": "E", "f": "🇨🇮"}, {"id": 20, "en": "Ecuador", "pt": "Equador", "g": "E", "f": "🇪🇨"}, {"id": 21, "en": "Netherlands", "pt": "Países Baixos", "g": "F", "f": "🇳🇱"}, {"id": 22, "en": "Japan", "pt": "Japão", "g": "F", "f": "🇯🇵"}, {"id": 23, "en": "Sweden", "pt": "Suécia", "g": "F", "f": "🇸🇪"}, {"id": 24, "en": "Tunisia", "pt": "Tunísia", "g": "F", "f": "🇹🇳"}, {"id": 25, "en": "Belgium", "pt": "Bélgica", "g": "G", "f": "🇧🇪"}, {"id": 26, "en": "Egypt", "pt": "Egito", "g": "G", "f": "🇪🇬"}, {"id": 27, "en": "Iran", "pt": "Irão", "g": "G", "f": "🇮🇷"}, {"id": 28, "en": "New Zealand", "pt": "Nova Zelândia", "g": "G", "f": "🇳🇿"}, {"id": 29, "en": "Spain", "pt": "Espanha", "g": "H", "f": "🇪🇸"}, {"id": 30, "en": "Cape Verde", "pt": "Cabo Verde", "g": "H", "f": "🇨🇻"}, {"id": 31, "en": "Saudi Arabia", "pt": "Arábia Saudita", "g": "H", "f": "🇸🇦"}, {"id": 32, "en": "Uruguay", "pt": "Uruguai", "g": "H", "f": "🇺🇾"}, {"id": 33, "en": "France", "pt": "França", "g": "I", "f": "🇫🇷"}, {"id": 34, "en": "Senegal", "pt": "Senegal", "g": "I", "f": "🇸🇳"}, {"id": 35, "en": "Iraq", "pt": "Iraque", "g": "I", "f": "🇮🇶"}, {"id": 36, "en": "Norway", "pt": "Noruega", "g": "I", "f": "🇳🇴"}, {"id": 37, "en": "Argentina", "pt": "Argentina", "g": "J", "f": "🇦🇷"}, {"id": 38, "en": "Algeria", "pt": "Argélia", "g": "J", "f": "🇩🇿"}, {"id": 39, "en": "Austria", "pt": "Áustria", "g": "J", "f": "🇦🇹"}, {"id": 40, "en": "Jordan", "pt": "Jordânia", "g": "J", "f": "🇯🇴"}, {"id": 41, "en": "Portugal", "pt": "Portugal", "g": "K", "f": "🇵🇹"}, {"id": 42, "en": "DR Congo", "pt": "RD Congo", "g": "K", "f": "🇨🇩"}, {"id": 43, "en": "Uzbekistan", "pt": "Uzbequistão", "g": "K", "f": "🇺🇿"}, {"id": 44, "en": "Colombia", "pt": "Colômbia", "g": "K", "f": "🇨🇴"}, {"id": 45, "en": "England", "pt": "Inglaterra", "g": "L", "f": "🏴󠁧󠁢󠁥󠁮󠁧󠁿"}, {"id": 46, "en": "Croatia", "pt": "Croácia", "g": "L", "f": "🇭🇷"}, {"id": 47, "en": "Ghana", "pt": "Gana", "g": "L", "f": "🇬🇭"}, {"id": 48, "en": "Panama", "pt": "Panamá", "g": "L", "f": "🇵🇦"}];
+// ── STATIC DATA, baked in from official FIFA 2026 draw ───────
+const TEAMS_STATIC = [{"id": 1, "en": "Mexico", "pt": "México", "g": "A", "f": "🇲🇽"}, {"id": 2, "en": "South Africa", "pt": "África do Sul", "g": "A", "f": "🇿🇦"}, {"id": 3, "en": "South Korea", "pt": "Coreia do Sul", "g": "A", "f": "🇰🇷"}, {"id": 4, "en": "Czech Republic", "pt": "Rep. Checa", "g": "A", "f": "🇨🇿"}, {"id": 5, "en": "Canada", "pt": "Canadá", "g": "B", "f": "🇨🇦"}, {"id": 6, "en": "Bosnia & Herzegovina", "pt": "Bósnia e Herzegovina", "g": "B", "f": "🇧🇦"}, {"id": 7, "en": "Qatar", "pt": "Qatar", "g": "B", "f": "🇶🇦"}, {"id": 8, "en": "Switzerland", "pt": "Suíça", "g": "B", "f": "🇨🇭"}, {"id": 9, "en": "Brazil", "pt": "Brasil", "g": "C", "f": "🇧🇷"}, {"id": 10, "en": "Morocco", "pt": "Marrocos", "g": "C", "f": "🇲🇦"}, {"id": 11, "en": "Haiti", "pt": "Haiti", "g": "C", "f": "🇭🇹"}, {"id": 12, "en": "Scotland", "pt": "Escócia", "g": "C", "f": "🏴󠁧󠁢󠁳󠁣󠁴󠁿"}, {"id": 13, "en": "USA", "pt": "EUA", "g": "D", "f": "🇺🇸"}, {"id": 14, "en": "Paraguay", "pt": "Paraguai", "g": "D", "f": "🇵🇾"}, {"id": 15, "en": "Australia", "pt": "Austrália", "g": "D", "f": "🇦🇺"}, {"id": 16, "en": "Turkey", "pt": "Turquia", "g": "D", "f": "🇹🇷"}, {"id": 17, "en": "Germany", "pt": "Alemanha", "g": "E", "f": "🇩🇪"}, {"id": 18, "en": "Curacao", "pt": "Curaçao", "g": "E", "f": "🇨🇼"}, {"id": 19, "en": "Ivory Coast", "pt": "Costa do Marfim", "g": "E", "f": "🇨🇮"}, {"id": 20, "en": "Ecuador", "pt": "Equador", "g": "E", "f": "🇪🇨"}, {"id": 21, "en": "Netherlands", "pt": "Países Baixos", "g": "F", "f": "🇳🇱"}, {"id": 22, "en": "Japan", "pt": "Japão", "g": "F", "f": "🇯🇵"}, {"id": 23, "en": "Sweden", "pt": "Suécia", "g": "F", "f": "🇸🇪"}, {"id": 24, "en": "Tunisia", "pt": "Tunísia", "g": "F", "f": "🇹🇳"}, {"id": 25, "en": "Belgium", "pt": "Bélgica", "g": "G", "f": "🇧🇪"}, {"id": 26, "en": "Egypt", "pt": "Egito", "g": "G", "f": "🇪🇬"}, {"id": 27, "en": "Iran", "pt": "Irã", "g": "G", "f": "🇮🇷"}, {"id": 28, "en": "New Zealand", "pt": "Nova Zelândia", "g": "G", "f": "🇳🇿"}, {"id": 29, "en": "Spain", "pt": "Espanha", "g": "H", "f": "🇪🇸"}, {"id": 30, "en": "Cape Verde", "pt": "Cabo Verde", "g": "H", "f": "🇨🇻"}, {"id": 31, "en": "Saudi Arabia", "pt": "Arábia Saudita", "g": "H", "f": "🇸🇦"}, {"id": 32, "en": "Uruguay", "pt": "Uruguai", "g": "H", "f": "🇺🇾"}, {"id": 33, "en": "France", "pt": "França", "g": "I", "f": "🇫🇷"}, {"id": 34, "en": "Senegal", "pt": "Senegal", "g": "I", "f": "🇸🇳"}, {"id": 35, "en": "Iraq", "pt": "Iraque", "g": "I", "f": "🇮🇶"}, {"id": 36, "en": "Norway", "pt": "Noruega", "g": "I", "f": "🇳🇴"}, {"id": 37, "en": "Argentina", "pt": "Argentina", "g": "J", "f": "🇦🇷"}, {"id": 38, "en": "Algeria", "pt": "Argélia", "g": "J", "f": "🇩🇿"}, {"id": 39, "en": "Austria", "pt": "Áustria", "g": "J", "f": "🇦🇹"}, {"id": 40, "en": "Jordan", "pt": "Jordânia", "g": "J", "f": "🇯🇴"}, {"id": 41, "en": "Portugal", "pt": "Portugal", "g": "K", "f": "🇵🇹"}, {"id": 42, "en": "DR Congo", "pt": "RD Congo", "g": "K", "f": "🇨🇩"}, {"id": 43, "en": "Uzbekistan", "pt": "Uzbequistão", "g": "K", "f": "🇺🇿"}, {"id": 44, "en": "Colombia", "pt": "Colômbia", "g": "K", "f": "🇨🇴"}, {"id": 45, "en": "England", "pt": "Inglaterra", "g": "L", "f": "🏴󠁧󠁢󠁥󠁮󠁧󠁿"}, {"id": 46, "en": "Croatia", "pt": "Croácia", "g": "L", "f": "🇭🇷"}, {"id": 47, "en": "Ghana", "pt": "Gana", "g": "L", "f": "🇬🇭"}, {"id": 48, "en": "Panama", "pt": "Panamá", "g": "L", "f": "🇵🇦"}];
 const MATCHES_STATIC = [{"id": 1, "r": "group", "g": "A", "d": "2026-06-11 20:00+00", "h": 1, "a": 2}, {"id": 2, "r": "group", "g": "A", "d": "2026-06-12 03:00+00", "h": 3, "a": 4}, {"id": 3, "r": "group", "g": "B", "d": "2026-06-12 19:00+00", "h": 5, "a": 6}, {"id": 4, "r": "group", "g": "D", "d": "2026-06-13 04:00+00", "h": 13, "a": 14}, {"id": 5, "r": "group", "g": "C", "d": "2026-06-14 01:00+00", "h": 11, "a": 12}, {"id": 6, "r": "group", "g": "D", "d": "2026-06-14 07:00+00", "h": 15, "a": 16}, {"id": 7, "r": "group", "g": "C", "d": "2026-06-13 22:00+00", "h": 9, "a": 10}, {"id": 8, "r": "group", "g": "B", "d": "2026-06-13 22:00+00", "h": 7, "a": 8}, {"id": 9, "r": "group", "g": "E", "d": "2026-06-14 23:00+00", "h": 19, "a": 20}, {"id": 10, "r": "group", "g": "E", "d": "2026-06-14 18:00+00", "h": 17, "a": 18}, {"id": 11, "r": "group", "g": "F", "d": "2026-06-14 21:00+00", "h": 21, "a": 22}, {"id": 12, "r": "group", "g": "F", "d": "2026-06-15 03:00+00", "h": 23, "a": 24}, {"id": 13, "r": "group", "g": "H", "d": "2026-06-15 22:00+00", "h": 31, "a": 32}, {"id": 14, "r": "group", "g": "H", "d": "2026-06-15 16:00+00", "h": 29, "a": 30}, {"id": 15, "r": "group", "g": "G", "d": "2026-06-16 04:00+00", "h": 27, "a": 28}, {"id": 16, "r": "group", "g": "G", "d": "2026-06-15 22:00+00", "h": 25, "a": 26}, {"id": 17, "r": "group", "g": "I", "d": "2026-06-16 19:00+00", "h": 33, "a": 34}, {"id": 18, "r": "group", "g": "I", "d": "2026-06-16 22:00+00", "h": 35, "a": 36}, {"id": 19, "r": "group", "g": "J", "d": "2026-06-17 02:00+00", "h": 37, "a": 38}, {"id": 20, "r": "group", "g": "J", "d": "2026-06-17 07:00+00", "h": 39, "a": 40}, {"id": 21, "r": "group", "g": "L", "d": "2026-06-17 23:00+00", "h": 47, "a": 48}, {"id": 22, "r": "group", "g": "L", "d": "2026-06-17 21:00+00", "h": 45, "a": 46}, {"id": 23, "r": "group", "g": "K", "d": "2026-06-17 18:00+00", "h": 41, "a": 42}, {"id": 24, "r": "group", "g": "K", "d": "2026-06-18 03:00+00", "h": 43, "a": 44}, {"id": 25, "r": "group", "g": "A", "d": "2026-06-18 16:00+00", "h": 4, "a": 2}, {"id": 26, "r": "group", "g": "B", "d": "2026-06-18 22:00+00", "h": 8, "a": 6}, {"id": 27, "r": "group", "g": "B", "d": "2026-06-19 01:00+00", "h": 5, "a": 7}, {"id": 28, "r": "group", "g": "A", "d": "2026-06-19 02:00+00", "h": 1, "a": 3}, {"id": 29, "r": "group", "g": "C", "d": "2026-06-20 01:00+00", "h": 9, "a": 11}, {"id": 30, "r": "group", "g": "C", "d": "2026-06-19 22:00+00", "h": 12, "a": 10}, {"id": 31, "r": "group", "g": "D", "d": "2026-06-20 07:00+00", "h": 16, "a": 14}, {"id": 32, "r": "group", "g": "D", "d": "2026-06-19 22:00+00", "h": 13, "a": 15}, {"id": 33, "r": "group", "g": "E", "d": "2026-06-20 20:00+00", "h": 17, "a": 19}, {"id": 34, "r": "group", "g": "E", "d": "2026-06-21 01:00+00", "h": 20, "a": 18}, {"id": 35, "r": "group", "g": "F", "d": "2026-06-20 18:00+00", "h": 21, "a": 23}, {"id": 36, "r": "group", "g": "F", "d": "2026-06-21 05:00+00", "h": 24, "a": 22}, {"id": 37, "r": "group", "g": "H", "d": "2026-06-21 22:00+00", "h": 32, "a": 30}, {"id": 38, "r": "group", "g": "H", "d": "2026-06-21 16:00+00", "h": 29, "a": 31}, {"id": 39, "r": "group", "g": "G", "d": "2026-06-21 22:00+00", "h": 25, "a": 27}, {"id": 40, "r": "group", "g": "G", "d": "2026-06-22 04:00+00", "h": 28, "a": 26}, {"id": 41, "r": "group", "g": "I", "d": "2026-06-23 00:00+00", "h": 36, "a": 34}, {"id": 42, "r": "group", "g": "I", "d": "2026-06-22 21:00+00", "h": 33, "a": 35}, {"id": 43, "r": "group", "g": "J", "d": "2026-06-22 18:00+00", "h": 37, "a": 39}, {"id": 44, "r": "group", "g": "J", "d": "2026-06-23 06:00+00", "h": 40, "a": 38}, {"id": 45, "r": "group", "g": "L", "d": "2026-06-23 20:00+00", "h": 45, "a": 47}, {"id": 46, "r": "group", "g": "L", "d": "2026-06-23 23:00+00", "h": 48, "a": 46}, {"id": 47, "r": "group", "g": "K", "d": "2026-06-23 18:00+00", "h": 41, "a": 43}, {"id": 48, "r": "group", "g": "K", "d": "2026-06-24 03:00+00", "h": 44, "a": 42}, {"id": 49, "r": "group", "g": "C", "d": "2026-06-24 22:00+00", "h": 12, "a": 9}, {"id": 50, "r": "group", "g": "C", "d": "2026-06-24 22:00+00", "h": 10, "a": 11}, {"id": 51, "r": "group", "g": "B", "d": "2026-06-24 22:00+00", "h": 8, "a": 5}, {"id": 52, "r": "group", "g": "B", "d": "2026-06-24 22:00+00", "h": 6, "a": 7}, {"id": 53, "r": "group", "g": "A", "d": "2026-06-25 02:00+00", "h": 4, "a": 1}, {"id": 54, "r": "group", "g": "A", "d": "2026-06-25 02:00+00", "h": 2, "a": 3}, {"id": 55, "r": "group", "g": "E", "d": "2026-06-25 20:00+00", "h": 18, "a": 19}, {"id": 56, "r": "group", "g": "E", "d": "2026-06-25 20:00+00", "h": 20, "a": 17}, {"id": 57, "r": "group", "g": "F", "d": "2026-06-26 00:00+00", "h": 22, "a": 23}, {"id": 58, "r": "group", "g": "F", "d": "2026-06-26 00:00+00", "h": 24, "a": 21}, {"id": 59, "r": "group", "g": "D", "d": "2026-06-26 05:00+00", "h": 16, "a": 13}, {"id": 60, "r": "group", "g": "D", "d": "2026-06-26 05:00+00", "h": 14, "a": 15}, {"id": 61, "r": "group", "g": "I", "d": "2026-06-26 19:00+00", "h": 36, "a": 33}, {"id": 62, "r": "group", "g": "I", "d": "2026-06-26 19:00+00", "h": 34, "a": 35}, {"id": 63, "r": "group", "g": "G", "d": "2026-06-27 06:00+00", "h": 26, "a": 27}, {"id": 64, "r": "group", "g": "G", "d": "2026-06-27 06:00+00", "h": 28, "a": 25}, {"id": 65, "r": "group", "g": "H", "d": "2026-06-27 01:00+00", "h": 30, "a": 31}, {"id": 66, "r": "group", "g": "H", "d": "2026-06-27 01:00+00", "h": 32, "a": 29}, {"id": 67, "r": "group", "g": "L", "d": "2026-06-27 21:00+00", "h": 48, "a": 45}, {"id": 68, "r": "group", "g": "L", "d": "2026-06-27 21:00+00", "h": 46, "a": 47}, {"id": 69, "r": "group", "g": "J", "d": "2026-06-28 03:00+00", "h": 38, "a": 39}, {"id": 70, "r": "group", "g": "J", "d": "2026-06-28 03:00+00", "h": 40, "a": 37}, {"id": 71, "r": "group", "g": "K", "d": "2026-06-27 23:30+00", "h": 44, "a": 41}, {"id": 72, "r": "group", "g": "K", "d": "2026-06-27 23:30+00", "h": 42, "a": 43}, {"id": 73, "r": "r32", "g": null, "d": "2026-06-28 22:00+00", "h": null, "a": null}, {"id": 74, "r": "r32", "g": null, "d": "2026-06-29 20:30+00", "h": null, "a": null}, {"id": 75, "r": "r32", "g": null, "d": "2026-06-30 02:00+00", "h": null, "a": null}, {"id": 76, "r": "r32", "g": null, "d": "2026-06-29 18:00+00", "h": null, "a": null}, {"id": 77, "r": "r32", "g": null, "d": "2026-06-30 21:00+00", "h": null, "a": null}, {"id": 78, "r": "r32", "g": null, "d": "2026-06-30 18:00+00", "h": null, "a": null}, {"id": 79, "r": "r32", "g": null, "d": "2026-07-01 02:00+00", "h": null, "a": null}, {"id": 80, "r": "r32", "g": null, "d": "2026-07-01 16:00+00", "h": null, "a": null}, {"id": 81, "r": "r32", "g": null, "d": "2026-07-02 03:00+00", "h": null, "a": null}, {"id": 82, "r": "r32", "g": null, "d": "2026-07-01 23:00+00", "h": null, "a": null}, {"id": 83, "r": "r32", "g": null, "d": "2026-07-02 23:00+00", "h": null, "a": null}, {"id": 84, "r": "r32", "g": null, "d": "2026-07-02 22:00+00", "h": null, "a": null}, {"id": 85, "r": "r32", "g": null, "d": "2026-07-03 06:00+00", "h": null, "a": null}, {"id": 86, "r": "r32", "g": null, "d": "2026-07-03 22:00+00", "h": null, "a": null}, {"id": 87, "r": "r32", "g": null, "d": "2026-07-04 02:30+00", "h": null, "a": null}, {"id": 88, "r": "r32", "g": null, "d": "2026-07-03 19:00+00", "h": null, "a": null}, {"id": 89, "r": "r16", "g": null, "d": "2026-07-04 21:00+00", "h": null, "a": null}, {"id": 90, "r": "r16", "g": null, "d": "2026-07-04 18:00+00", "h": null, "a": null}, {"id": 91, "r": "r16", "g": null, "d": "2026-07-05 20:00+00", "h": null, "a": null}, {"id": 92, "r": "r16", "g": null, "d": "2026-07-06 01:00+00", "h": null, "a": null}, {"id": 93, "r": "r16", "g": null, "d": "2026-07-06 20:00+00", "h": null, "a": null}, {"id": 94, "r": "r16", "g": null, "d": "2026-07-07 03:00+00", "h": null, "a": null}, {"id": 95, "r": "r16", "g": null, "d": "2026-07-07 16:00+00", "h": null, "a": null}, {"id": 96, "r": "r16", "g": null, "d": "2026-07-07 23:00+00", "h": null, "a": null}, {"id": 97, "r": "qf", "g": null, "d": "2026-07-09 20:00+00", "h": null, "a": null}, {"id": 98, "r": "qf", "g": null, "d": "2026-07-10 22:00+00", "h": null, "a": null}, {"id": 99, "r": "qf", "g": null, "d": "2026-07-11 21:00+00", "h": null, "a": null}, {"id": 100, "r": "qf", "g": null, "d": "2026-07-12 02:00+00", "h": null, "a": null}, {"id": 101, "r": "sf", "g": null, "d": "2026-07-14 20:00+00", "h": null, "a": null}, {"id": 102, "r": "sf", "g": null, "d": "2026-07-15 19:00+00", "h": null, "a": null}, {"id": 103, "r": "third", "g": null, "d": "2026-07-18 21:00+00", "h": null, "a": null}, {"id": 104, "r": "final", "g": null, "d": "2026-07-19 19:00+00", "h": null, "a": null}];
 
 // ── STATE ──────────────────────────────────────────────────────
-let lang = 'en';
+let lang = 'pt';
 let currentUser = null;
 let teams = {}, matches = [], settings = {}, scoring = {};
 let groupPreds = {}, koPreds = {}, awardPreds = {};
@@ -693,6 +784,7 @@ const AWARDS = [
 ];
 
 function T(en,pt){ return lang==='pt'?pt:en; }
+function dName(user){ return (user?.display_name||user?.name||''); }
 
 // ── THEME ──────────────────────────────────────────────────────
 function toggleTheme() {
@@ -763,7 +855,13 @@ async function loadInitialData() {
 
     const saved = localStorage.getItem('wc2026_user');
     if (saved) {
-      try { currentUser = JSON.parse(saved); await loadUserPredictions(); }
+      try {
+        currentUser = JSON.parse(saved);
+        // Refresh is_validated from DB so admin changes take effect immediately
+        const { data: fresh } = await db.from('participants').select('is_validated').eq('id', currentUser.id).single();
+        if (fresh) currentUser.is_validated = fresh.is_validated;
+        await loadUserPredictions();
+      }
       catch(e) { localStorage.removeItem('wc2026_user'); currentUser = null; }
     }
     // Auto-navigate to today's matches if any exist
@@ -793,6 +891,7 @@ async function loadUserPredictions() {
   groupPreds={}; gR.data?.forEach(p => groupPreds[p.match_id]=p);
   koPreds={};    kR.data?.forEach(p => koPreds[p.match_id]=p);
   awardPreds={}; aR.data?.forEach(p => awardPreds[p.award_type]=p);
+  updatePredBadge();
 }
 
 // ── HOME ───────────────────────────────────────────────────────
@@ -806,7 +905,7 @@ function renderHome() {
     <div class="phase-banner">
       <div class="phase-dot ${gOpen?'':'off'}"></div>
       <div><strong>${T('Group Stage','Fase de Grupos')}:</strong> ${gOpen?T('OPEN ✅','ABERTO ✅'):T('CLOSED 🔒','FECHADO 🔒')}
-      ${currentUser?` — ${gDone}/${gMs.length} ${T('predicted','previstos')}`:''}
+      ${currentUser?` · ${gDone}/${gMs.length} ${T('predicted','previstos')}`:''}
       </div></div>
     <div class="phase-banner" style="margin-top:-2px">
       <div class="phase-dot ${kOpen?'':'off'}"></div>
@@ -820,33 +919,103 @@ function renderHome() {
     {icon:'📅',n:'Jun 11',l:T('Kick-off','Início')},
   ].map(s=>`<div class="stat-card"><div style="font-size:1.6rem">${s.icon}</div><div class="stat-num">${s.n}</div><div class="stat-lbl">${s.l}</div></div>`).join('');
 
+  // ── Live matches ──────────────────────────────────────────────
+  const now = Date.now();
+  const liveMs = matches.filter(m => {
+    const t = m.d ? new Date(m.d).getTime() : 0;
+    return t && now >= t && now <= t + 7200000;
+  });
+  const liveEl = document.getElementById('homeLive');
+  if (liveMs.length) {
+    liveEl.innerHTML = liveMs.map(m => {
+      const h = teams[m.h||m.home_team_id], a = teams[m.a||m.away_team_id];
+      const hn = h ? (lang==='pt'?h.pt:h.en) : 'TBD';
+      const an = a ? (lang==='pt'?a.pt:a.en) : 'TBD';
+      const score = m.home_goals!=null
+        ? `<span style="font-size:1.5rem;font-weight:900;color:var(--gold);padding:0 10px">${m.home_goals} : ${m.away_goals}</span>`
+        : `<span style="font-size:1.1rem;color:var(--muted);padding:0 10px">vs</span>`;
+      return `<div class="card" style="border-color:var(--green);box-shadow:0 0 0 2px rgba(48,209,88,.15);padding:14px 16px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="background:var(--green);color:#000;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:20px;animation:pulse 1.5s infinite;letter-spacing:.06em">🔴 AO VIVO</span>
+          <span style="font-size:.75rem;color:var(--muted)">${m.r==='group'?T('Group','Grupo')+' '+(m.g||''):m.r?.toUpperCase()||''}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+            ${flagImg(h,36)}<span style="font-size:.78rem;font-weight:700;text-align:center">${hn}</span>
+          </div>
+          ${score}
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+            ${flagImg(a,36)}<span style="font-size:.78rem;font-weight:700;text-align:center">${an}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    liveEl.innerHTML = '';
+  }
+
+  // ── Recent results ─────────────────────────────────────────────
+  const doneMs = matches
+    .filter(m => m.home_goals != null)
+    .sort((a, b) => new Date(b.d) - new Date(a.d))
+    .slice(0, 8);
+  const resEl = document.getElementById('homeResults');
+  if (doneMs.length) {
+    const rows = doneMs.map(m => {
+      const h = teams[m.h||m.home_team_id], a = teams[m.a||m.away_team_id];
+      const hn = h ? (lang==='pt'?h.pt:h.en) : 'TBD';
+      const an = a ? (lang==='pt'?a.pt:a.en) : 'TBD';
+      const dt = m.d ? new Date(m.d).toLocaleDateString(lang==='pt'?'pt-BR':'en-GB',{day:'2-digit',month:'short'}) : '';
+      const winner = m.home_goals > m.away_goals ? 'h' : m.home_goals < m.away_goals ? 'a' : 'd';
+      return `<div style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border)">
+        <span style="font-size:.68rem;color:var(--muted);width:38px;flex-shrink:0">${dt}</span>
+        <div style="display:flex;align-items:center;gap:5px;flex:1;justify-content:flex-end">
+          ${flagImg(h,18)}<span style="font-size:.8rem;font-weight:${winner==='h'?700:400}">${hn}</span>
+        </div>
+        <span style="font-size:.9rem;font-weight:900;color:var(--gold);padding:0 8px;white-space:nowrap">${m.home_goals} : ${m.away_goals}</span>
+        <div style="display:flex;align-items:center;gap:5px;flex:1">
+          <span style="font-size:.8rem;font-weight:${winner==='a'?700:400}">${an}</span>${flagImg(a,18)}
+        </div>
+      </div>`;
+    }).join('');
+    resEl.innerHTML = `<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <strong style="font-size:.88rem">${T('🏁 Recent Results','🏁 Resultados Recentes')}</strong>
+        <button class="btn-outline" style="font-size:.72rem;padding:4px 10px;border-radius:8px" onclick="showPage('groups',document.querySelector('nav button[data-page=groups]'))">${T('All matches →','Ver todos →')}</button>
+      </div>${rows}</div>`;
+  } else {
+    resEl.innerHTML = '';
+  }
+
+  updatePredBadge();
   const sc = scoring;
   document.getElementById('scoringDisplay').innerHTML = `
     <strong style="color:var(--text)">${T('Group Stage','Fase de Grupos')}</strong><br>
-    &nbsp;+${sc.group_correct_result||3} ${T('pts — Correct W/D/L','pts — Resultado V/E/D correto')}<br>
-    &nbsp;+${sc.group_correct_goal_diff||1} ${T('pt — Correct goal difference','pt — Diferença de gols')}<br>
-    &nbsp;+${sc.group_exact_score||1} ${T('pt — Exact score (bonus)','pt — Resultado exato (bônus)')}<br>
+    &nbsp;+${sc.group_correct_result||3} ${T('pts: Correct W/D/L','pts: Resultado V/E/D correto')}<br>
+    &nbsp;+${sc.group_correct_goal_diff||1} ${T('pt: Correct goal difference','pt: Diferença de gols')}<br>
+    &nbsp;+${sc.group_exact_score||1} ${T('pt: Exact score (bonus)','pt: Resultado exato (bônus)')}<br>
     <strong style="color:var(--text);display:block;margin-top:6px">${T('Knockout Rounds','Eliminatórias')}</strong><br>
-    &nbsp;+${sc.ko_correct_result||4} ${T('pts — Correct result','pts — Resultado correto')}<br>
-    &nbsp;+${sc.ko_correct_goal_diff||1} ${T('pt — Correct goal difference','pt — Diferença de gols')}<br>
-    &nbsp;+${sc.ko_exact_score||2} ${T('pts — Exact score (bonus)','pts — Resultado exato (bônus)')}<br>
+    &nbsp;+${sc.ko_correct_result||4} ${T('pts: Correct result','pts: Resultado correto')}<br>
+    &nbsp;+${sc.ko_correct_goal_diff||1} ${T('pt: Correct goal difference','pt: Diferença de gols')}<br>
+    &nbsp;+${sc.ko_exact_score||2} ${T('pts: Exact score (bonus)','pts: Resultado exato (bônus)')}<br>
     <strong style="color:var(--text);display:block;margin-top:6px">${T('Awards','Prêmios')}</strong><br>
-    &nbsp;+${sc.award_winner||5} ${T('pts — Winner, Top Scorer, Best Player, Best GK','pts — Campeão, Marcador, Jogador, GR')}<br>
-    &nbsp;+${sc.award_best_young||3} ${T('pts — Best Young Player','pts — Melhor Jovem')}`;
+    &nbsp;+${sc.award_winner||5} ${T('pts: Winner, Top Scorer, Best Player, Best GK','pts: Campeão, Marcador, Jogador, GR')}<br>
+    &nbsp;+${sc.award_best_young||3} ${T('pts: Best Young Player','pts: Melhor Jovem')}`;
 }
 
 // ── REGISTER ───────────────────────────────────────────────────
 async function register() {
-  const name     = document.getElementById('regName').value.trim();
-  const email    = document.getElementById('regEmail').value.trim().toLowerCase();
-  const password = document.getElementById('regPassword').value;
-  const alertEl  = document.getElementById('regAlert');
-  if (!name||!email||!password) { showAlert(alertEl,T('Please fill in all fields.','Por favor preencha todos os campos.'),'error'); return; }
+  const name        = document.getElementById('regName').value.trim();
+  const displayName = document.getElementById('regDisplayName').value.trim();
+  const email       = document.getElementById('regEmail').value.trim().toLowerCase();
+  const password    = document.getElementById('regPassword').value;
+  const alertEl     = document.getElementById('regAlert');
+  if (!name||!displayName||!email||!password) { showAlert(alertEl,T('Please fill in all fields.','Por favor preencha todos os campos.'),'error'); return; }
   if (!email.includes('@')) { showAlert(alertEl,T('Enter a valid email.','Insira um e-mail válido.'),'error'); return; }
   if (password.length < 4) { showAlert(alertEl,T('Password must be at least 4 characters.','A senha deve ter pelo menos 4 caracteres.'),'error'); return; }
   const btn = document.getElementById('regBtn');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
-  const {data,error} = await db.from('participants').insert({name,email,password}).select().single();
+  const {data,error} = await db.from('participants').insert({name,display_name:displayName,email,password}).select().single();
   btn.disabled=false; btn.innerHTML=T('Create My Account','Criar A Minha Conta');
   if (error) {
     if (error.code==='23505') showAlert(alertEl,T('Email already registered. Use login below.','E-mail já registrado. Use o login abaixo.'),'error');
@@ -859,7 +1028,7 @@ async function register() {
   document.getElementById('regForm').style.display='none';
   document.getElementById('regSuccess').style.display='block';
   document.getElementById('regSuccess').innerHTML=`
-    <div class="alert alert-success"><strong>🎉 ${T('Welcome','Bem-vindo(a)')}, ${name}!</strong><br/>
+    <div class="alert alert-success"><strong>🎉 ${T('Welcome','Bem-vindo(a)')}, ${displayName||name}!</strong><br/>
     ${T('Registered! You can log in any time with your email and password.','Registrado! Pode entrar a qualquer momento com seu e-mail e senha.')}</div>
     <button class="btn" onclick="showPage('groups',document.querySelector('nav button[data-page=groups]'))">
       ${T('▶ Start Predicting','▶ Começar a Prever')}</button>`;
@@ -876,7 +1045,7 @@ async function loginByEmail() {
   currentUser=data;
   localStorage.setItem('wc2026_user',JSON.stringify(data));
   await loadUserPredictions();
-  showAlert(alertEl,T('Welcome back, ','Bem-vindo(a) de volta, ')+data.name+'! ✅','success');
+  showAlert(alertEl,T('Welcome back, ','Bem-vindo(a) de volta, ')+dName(data)+'! ✅','success');
   setTimeout(()=>{
     showPage('groups',document.querySelector('nav button[data-page=groups]'));
     // If there are matches today, switch to date view on today
@@ -895,29 +1064,54 @@ async function loginByEmail() {
 // ── GROUP STAGE ────────────────────────────────────────────────
 function renderGroupPage() {
   const open = settings.group_phase_open==='true';
+  const kOpen = settings.knockout_phase_open==='true';
   document.getElementById('grpBanner').innerHTML = phaseBanner(T('Group stage predictions','Previsões fase de grupos'),open);
+  const saveBtn = document.getElementById('saveGrpBtn');
+  const randomAllBtn = document.getElementById('randomAllBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
 
   if (!currentUser) {
     document.getElementById('grpMatches').innerHTML=loginPrompt();
-    document.getElementById('saveGrpBtn').style.display='none';
+    saveBtn.style.display='none';
+    if(randomAllBtn) randomAllBtn.style.display='none';
+    if(clearAllBtn) clearAllBtn.style.display='none';
     document.getElementById('grpUserBar').innerHTML=''; return;
   }
+
+  // Check validation
+  if(currentUser.is_validated===false) {
+    document.getElementById('grpMatches').innerHTML=`<div class="card" style="text-align:center;padding:24px">
+      <div style="font-size:2rem;margin-bottom:8px">⏳</div>
+      <strong>${T('Account pending approval','Conta aguardando aprovação')}</strong>
+      <p style="color:var(--muted);margin-top:6px;font-size:.88rem">${T('The admin needs to validate your account before you can submit predictions.','O admin precisa validar a sua conta antes de poder submeter previsões.')}</p>
+    </div>`;
+    saveBtn.style.display='none';
+    if(randomAllBtn) randomAllBtn.style.display='none';
+    if(clearAllBtn) clearAllBtn.style.display='none';
+    document.getElementById('grpUserBar').innerHTML=userBar(); return;
+  }
+
   document.getElementById('grpUserBar').innerHTML=userBar();
   const gMs=matches.filter(m=>m.r==='group');
   const gDone=gMs.filter(m=>groupPreds[m.id]).length;
   document.getElementById('grpProgress').textContent=T(`${gDone} / ${gMs.length} predicted`,`${gDone} / ${gMs.length} previstos`);
   document.getElementById('grpProgFill').style.width=(gMs.length?gDone/gMs.length*100:0)+'%';
-  document.getElementById('grpTabs').innerHTML=GROUPS.map(g=>
-    `<button class="group-tab${g===currentGroup?' active':''}" onclick="selectGroup('${g}')">${T('Group','Grupo')} ${g}</button>`).join('');
-  const kOpen = settings.knockout_phase_open==='true';
+  document.getElementById('grpTabs').style.display='none'; // hidden in new grid view
+
   if (groupViewMode==='date') {
     renderDateMatches();
-    document.getElementById('saveGrpBtn').style.display=(open||kOpen)?'block':'none';
+    saveBtn.style.display=(open||kOpen)?'block':'none';
+    saveBtn.onclick=saveDateViewPredictions;
     document.getElementById('saveGrpBtnLabel').textContent=T('💾 Save Predictions','💾 Salvar Previsões');
+    if(randomAllBtn) randomAllBtn.style.display='none';
+    if(clearAllBtn) clearAllBtn.style.display='none';
   } else {
-    renderGroupMatches();
-    document.getElementById('saveGrpBtn').style.display=open?'block':'none';
-    document.getElementById('saveGrpBtnLabel').textContent=T('💾 Save Group Predictions','💾 Salvar Previsões dos Grupos');
+    renderAllGroupsGrid();
+    saveBtn.style.display=open?'block':'none';
+    saveBtn.onclick=saveGroupPredictions;
+    document.getElementById('saveGrpBtnLabel').textContent=T('💾 Save All Groups','💾 Salvar Todos os Grupos');
+    if(randomAllBtn) randomAllBtn.style.display=open?'block':'none';
+    if(clearAllBtn) clearAllBtn.style.display=open?'block':'none';
   }
 }
 
@@ -927,10 +1121,9 @@ function setGroupView(mode) {
   groupViewMode = mode;
   document.getElementById('viewByGroup').classList.toggle('active', mode==='group');
   document.getElementById('viewByDate').classList.toggle('active', mode==='date');
-  document.getElementById('grpTabs').style.display = mode==='group' ? '' : 'none';
+  document.getElementById('grpTabs').style.display='none';
   document.getElementById('datePicker').style.display = mode==='date' ? '' : 'none';
   if (mode==='date') {
-    // Default to today if within tournament, else first match day
     const today = new Date().toISOString().slice(0,10);
     const matchDays = getMatchDays();
     const input = document.getElementById('matchDateInput');
@@ -938,10 +1131,8 @@ function setGroupView(mode) {
       input.value = matchDays.includes(today) ? today : matchDays[0] || today;
     }
     input.min = matchDays[0]; input.max = matchDays[matchDays.length-1];
-    renderDateMatches();
-  } else {
-    renderGroupMatches();
   }
+  renderGroupPage();
 }
 
 function renderTablesPage() {
@@ -950,7 +1141,6 @@ function renderTablesPage() {
 
 function renderGroupStandings(containerId) {
   containerId = containerId || 'grpMatches';
-  // Build per-group stats from actual match results
   const stats = {};
   GROUPS.forEach(g => { stats[g] = {}; });
   Object.values(teams).forEach(t => {
@@ -970,8 +1160,8 @@ function renderGroupStandings(containerId) {
     else            { hs.d++;hs.pts++;as_.d++;as_.pts++; }
   });
 
-  const html = GROUPS.map(g => {
-    // FIFA 2026: pts → H2H pts → H2H gd → H2H gf → overall gd → overall gf
+  // Compute sorted rows per group with H2H tiebreaking
+  function sortGroupRows(g) {
     const grpMs = matches.filter(m=>m.r==='group'&&m.g===g&&m.home_goals!=null);
     function h2hOf(ids){
       const s={};ids.forEach(id=>s[id]={pts:0,gd:0,gf:0});
@@ -994,18 +1184,38 @@ function renderGroupStandings(containerId) {
       }
       rows.push(...tied);ri=rj;
     }
+    return rows;
+  }
+
+  const allGroupRows = {};
+  GROUPS.forEach(g => { allGroupRows[g] = sortGroupRows(g); });
+
+  // Cross-group 3rd-place ranking: pts → gd → gf → top 8 advance
+  const thirds = GROUPS.map(g => allGroupRows[g][2]).filter(r => r && r.p > 0);
+  thirds.sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf);
+  const top8Thirds = new Set(thirds.slice(0,8).map(r => r.team.id));
+
+  const legendHtml = `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:.75rem;color:var(--text2)">
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);margin-right:5px;vertical-align:middle"></span>${T('Qualifies','Classifica')}</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f59e0b;margin-right:5px;vertical-align:middle"></span>${T('Best 3rd (top 8)','Melhor 3º (top 8)')}</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--border);margin-right:5px;vertical-align:middle"></span>${T('Eliminated','Eliminado')}</span>
+  </div>`;
+
+  const html = GROUPS.map(g => {
+    const rows = allGroupRows[g];
     const hasResults = rows.some(r=>r.p>0);
     const tRows = rows.map((r,i) => {
       const nm = lang==='pt' ? (r.team.pt||r.team.en) : r.team.en;
-      const qualify = i<2 && hasResults && r.pts>0;
+      const q12 = i<2 && hasResults;
+      const q3  = i===2 && hasResults && top8Thirds.has(r.team.id);
+      const borderColor = q12 ? 'var(--green)' : q3 ? '#f59e0b' : 'transparent';
       const gdStr = r.gd>0?'+'+r.gd : ''+r.gd;
       const gdColor = r.gd>0?'var(--green)':r.gd<0?'var(--red)':'var(--muted)';
-      return `<tr style="border-bottom:1px solid var(--border)${i===1?';border-bottom:2px dashed rgba(201,168,76,.35)':''}">
-        <td style="padding:8px 8px 8px 14px">
+      return `<tr style="border-bottom:1px solid var(--border)${i===1?';border-bottom:2px dashed rgba(201,168,76,.35)':''};border-left:3px solid ${borderColor}">
+        <td style="padding:8px 8px 8px 11px">
           <div style="display:flex;align-items:center;gap:8px">
             ${flagImg(r.team, 24)}
-            <span style="font-weight:${qualify?700:400};color:${qualify?'var(--text)':'var(--text2)'};font-size:.85rem">${nm}</span>
-            ${qualify?'<span style="font-size:.6rem;color:var(--green)">▲</span>':''}
+            <span style="font-weight:${q12||q3?700:400};color:${q12||q3?'var(--text)':'var(--text2)'};font-size:.85rem">${nm}</span>
           </div>
         </td>
         <td style="padding:10px 6px;text-align:center;color:var(--muted);font-size:.82rem">${r.p}</td>
@@ -1024,17 +1234,17 @@ function renderGroupStandings(containerId) {
         ${!hasResults?`<span style="font-size:.72rem;color:var(--muted)">${T('No results yet','Sem resultados')}</span>`:''}
       </div>
       <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;min-width:360px">
+        <table style="width:100%;border-collapse:collapse;min-width:360px;table-layout:fixed">
           <thead><tr style="color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;background:var(--glass)">
             <th style="padding:7px 8px 7px 14px;text-align:left;font-weight:600">${T('Team','Equipe')}</th>
-            <th style="padding:7px 6px;text-align:center;font-weight:600">P</th>
-            <th style="padding:7px 6px;text-align:center;font-weight:600">W</th>
-            <th style="padding:7px 6px;text-align:center;font-weight:600">D</th>
-            <th style="padding:7px 6px;text-align:center;font-weight:600">L</th>
-            <th style="padding:7px 6px;text-align:center;font-weight:600">GF</th>
-            <th style="padding:7px 6px;text-align:center;font-weight:600">GA</th>
-            <th style="padding:7px 6px;text-align:center;font-weight:600">GD</th>
-            <th style="padding:7px 8px 7px 6px;text-align:center;font-weight:600;color:var(--gold)">${T('Pts','Pts')}</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600;width:36px">P</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600;width:36px">W</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600;width:36px">D</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600;width:36px">L</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600;width:36px">GF</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600;width:36px">GA</th>
+            <th style="padding:7px 6px;text-align:center;font-weight:600;width:36px">GD</th>
+            <th style="padding:7px 8px 7px 6px;text-align:center;font-weight:600;color:var(--gold);width:40px">${T('Pts','Pts')}</th>
           </tr></thead>
           <tbody>${tRows}</tbody>
         </table>
@@ -1044,8 +1254,8 @@ function renderGroupStandings(containerId) {
 
   document.getElementById(containerId).innerHTML = `
     <div class="alert alert-info" style="margin-bottom:10px;font-size:.8rem">
-      🏆 ${T('Official WC 2026 group standings — updated as admin enters match results. ▲ = qualified zone.','Classificação oficial da fase de grupos — atualizada com os resultados. ▲ = zona de apuramento.')}
-    </div>${html}`;
+      🏆 ${T('Top 2 from each group qualify. Best 8 of 12 third-placed teams also advance (ranked by pts → gd → gf).','Top 2 de cada grupo classificam. Os 8 melhores 3ºs também avançam (pts → sg → gf).')}
+    </div>${legendHtml}${html}`;
 }
 
 function getMatchDays() {
@@ -1102,7 +1312,7 @@ function renderDateMatches() {
         <div class="team-block">${flagImg(h,40)}<span class="team-name">${hn}</span></div>
         <div class="score-inputs">
           ${canPredict
-            ?`<input class="score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="—"/>`
+            ?`<div class="spin-wrap"><input class="score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="0"/><button class="spin-up" onclick="stepInput('g${m.id}h',1)" type="button">▲</button><button class="spin-dn" onclick="stepInput('g${m.id}h',-1)" type="button">▼</button></div><span class="score-sep">:</span><div class="spin-wrap"><input class="score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="0"/><button class="spin-up" onclick="stepInput('g${m.id}a',1)" type="button">▲</button><button class="spin-dn" onclick="stepInput('g${m.id}a',-1)" type="button">▼</button></div><button class="dice-btn" onclick="randomizeMatch(${m.id})" title="${T('Random score','Aleatório')}" style="margin-left:4px">🎲</button>`
             :`<span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.home_goals:(hg!==''?hg:'?')}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.away_goals:(ag!==''?ag:'?')}</span>`
           }
         </div>
@@ -1115,6 +1325,7 @@ function renderDateMatches() {
 
 async function saveDateViewPredictions() {
   if (!currentUser) return;
+  if (currentUser.is_validated===false) { alert(T('Your account is pending admin approval.','A sua conta aguarda aprovação do admin.')); return; }
   const btn = document.getElementById('saveGrpBtn');
   btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','Salvando…')}`;
   const gOpen = settings.group_phase_open==='true';
@@ -1171,7 +1382,7 @@ function renderGroupMatches() {
         <div class="team-block">${flagImg(h,40)}<span class="team-name">${hn}</span></div>
         <div class="score-inputs">
           ${open&&!done
-            ?`<input class="score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="—"/>`
+            ?`<input class="score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="0"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="0"/>`
             :`<span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.home_goals:(hg!==''?hg:'?')}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};padding:0 8px">${done?m.away_goals:(ag!==''?ag:'?')}</span>`
           }
         </div>
@@ -1185,6 +1396,7 @@ function renderGroupMatches() {
 
 async function saveGroupPredictions() {
   if (!currentUser) return;
+  if (currentUser.is_validated===false) { alert(T('Your account is pending admin approval.','A sua conta aguarda aprovação do admin.')); return; }
   const btn=document.getElementById('saveGrpBtn');
   btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','Salvando…')}`;
   const toUpsert=matches.filter(m=>m.r==='group'&&m.home_goals==null).reduce((acc,m)=>{
@@ -1203,6 +1415,7 @@ async function saveGroupPredictions() {
     });
   }
   btn.disabled=false; btn.innerHTML=T('💾 Save Group Predictions','💾 Salvar Previsões dos Grupos');
+  updatePredBadge();
   renderGroupPage();
 }
 
@@ -1215,54 +1428,466 @@ function calcGrpPts(ph,pa,rh,ra) {
   return p;
 }
 
-// ── KNOCKOUT ───────────────────────────────────────────────────
+// ── RANDOM PREDICTIONS ─────────────────────────────────────────
+function stepInput(id, delta) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let v = parseInt(el.value);
+  if (isNaN(v)) v = 0;
+  el.value = Math.max(0, Math.min(20, v + delta));
+  el.dispatchEvent(new Event('input', {bubbles:true}));
+}
+function randGoal() {
+  const pool=[0,0,0,1,1,1,1,2,2,2,3,3,4,5];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function randomizeMatch(id) {
+  const h=document.getElementById('g'+id+'h'),a=document.getElementById('g'+id+'a');
+  if(!h||!a) return;
+  h.value=randGoal(); a.value=randGoal();
+  const m=matches.find(x=>x.id===id);
+  if(m?.g) updatePredStandings(m.g);
+}
+function randomizeGroup(g) {
+  matches.filter(m=>m.r==='group'&&m.g===g&&m.home_goals==null).forEach(m=>{
+    const h=document.getElementById('g'+m.id+'h'),a=document.getElementById('g'+m.id+'a');
+    if(h&&a){h.value=randGoal();a.value=randGoal();}
+  });
+  updatePredStandings(g);
+}
+function randomizeAll() {
+  const gOpen=settings.group_phase_open==='true';
+  const kOpen=settings.knockout_phase_open==='true';
+  matches.filter(m=>m.home_goals==null&&((m.r==='group'&&gOpen)||(m.r!=='group'&&kOpen)))
+    .forEach(m=>randomizeMatch(m.id));
+}
+function clearAll() {
+  const gOpen=settings.group_phase_open==='true';
+  matches.filter(m=>m.r==='group'&&m.home_goals==null&&gOpen).forEach(m=>{
+    const h=document.getElementById('g'+m.id+'h'),a=document.getElementById('g'+m.id+'a');
+    if(h&&a){h.value='';a.value='';}
+    if(m.g) updatePredStandings(m.g);
+  });
+}
+function updatePredBadge() {
+  if(!currentUser||currentUser.is_validated===false||settings.group_phase_open!=='true') {
+    ['navBadgeTop','navBadgeBtm'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+    const nudge=document.getElementById('predNudge');if(nudge)nudge.innerHTML='';
+    return;
+  }
+  const gMs=matches.filter(m=>m.r==='group');
+  const missing=gMs.filter(m=>!groupPreds[m.id]).length;
+  ['navBadgeTop','navBadgeBtm'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(missing>0){el.textContent=missing;el.style.display='';}
+    else el.style.display='none';
+  });
+  const nudge=document.getElementById('predNudge');
+  if(!nudge) return;
+  if(missing>0){
+    nudge.innerHTML=`<div class="nudge-card" onclick="showPage('groups',document.querySelector('[data-page=groups]'))">
+      <span class="nudge-arrow">👉</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.92rem">${missing} ${T('group predictions missing','previsões de grupos em falta')}</div>
+        <div style="color:var(--muted);font-size:.78rem;margin-top:2px">${T('Submit before Jun 11 to score points. Tap to fill in.','Submeta antes de 11 Jun para pontuar. Toque para preencher.')}</div>
+      </div>
+      <span style="color:var(--gold);font-size:.85rem;font-weight:700;flex-shrink:0">${T('Go →','Ir →')}</span>
+    </div>`;
+  } else {
+    nudge.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:rgba(48,209,88,.07);border:1px solid rgba(48,209,88,.25);margin-bottom:14px">
+      <span style="font-size:1.4rem">✅</span>
+      <span style="font-size:.88rem;font-weight:600;color:var(--green)">${T('All group predictions submitted!','Todas as previsões de grupos submetidas!')}</span>
+    </div>`;
+  }
+}
+
+// ── PREDICTED STANDINGS (live updates as user types) ───────────
+function calcAllPredStandings() {
+  const allRows = {};
+  GROUPS.forEach(g => { allRows[g] = calcPredStandings(g); });
+  // Cross-group 3rd-place ranking: pts → gd → gf
+  const thirds = GROUPS.map(g => allRows[g][2]).filter(r => r && r.mp > 0);
+  thirds.sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf);
+  const top8 = new Set(thirds.slice(0,8).map(r => r.team.id));
+  return { allRows, top8 };
+}
+function calcPredStandings(g) {
+  const st={};
+  Object.values(teams).filter(t=>t.g===g).forEach(t=>{
+    st[t.id]={team:t,mp:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0};
+  });
+  matches.filter(m=>m.r==='group'&&m.g===g).forEach(m=>{
+    let hg,ag;
+    if(m.home_goals!=null){hg=m.home_goals;ag=m.away_goals;}
+    else{
+      const hEl=document.getElementById('g'+m.id+'h'),aEl=document.getElementById('g'+m.id+'a');
+      if(hEl&&hEl.value!==''){hg=parseInt(hEl.value);ag=parseInt(aEl?.value||0);}
+      else if(groupPreds[m.id]){hg=groupPreds[m.id].home_goals;ag=groupPreds[m.id].away_goals;}
+    }
+    if(hg==null||ag==null||isNaN(hg)||isNaN(ag)) return;
+    const hid=m.h,aid=m.a;
+    if(!st[hid]||!st[aid]) return;
+    st[hid].mp++;st[aid].mp++;
+    st[hid].gf+=hg;st[hid].ga+=ag;st[hid].gd=st[hid].gf-st[hid].ga;
+    st[aid].gf+=ag;st[aid].ga+=hg;st[aid].gd=st[aid].gf-st[aid].ga;
+    if(hg>ag){st[hid].w++;st[hid].pts+=3;st[aid].l++;}
+    else if(hg<ag){st[aid].w++;st[aid].pts+=3;st[hid].l++;}
+    else{st[hid].d++;st[hid].pts++;st[aid].d++;st[aid].pts++;}
+  });
+  return Object.values(st).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+}
+function predStandingsRows(rows, top8) {
+  return rows.map((r,i)=>{
+    const nm=lang==='pt'?(r.team.pt||r.team.en):r.team.en;
+    const q12=i<2;
+    const q3=i===2 && (top8 ? top8.has(r.team.id) : true);
+    const gdStr=(r.gd>0?'+':'')+r.gd;
+    const borderCol=q12?'var(--green)':q3?'#f59e0b':'transparent';
+    const gdCol=r.gd>0?'var(--green)':r.gd<0?'var(--red)':'var(--muted)';
+    return `<tr style="border-bottom:1px solid var(--border);border-left:3px solid ${borderCol}">
+      <td style="padding:4px 4px 4px 6px;color:var(--muted);font-size:.66rem;text-align:center;width:16px">${i+1}</td>
+      <td style="padding:4px 3px;max-width:0;overflow:hidden"><div style="display:flex;align-items:center;gap:4px;min-width:0">
+        ${flagImg(r.team,14)}<span style="font-size:.7rem;font-weight:${q12||q3?700:400};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</span>
+      </div></td>
+      <td style="padding:4px 2px;text-align:center;font-size:.64rem;color:var(--muted);width:22px">${r.mp}</td>
+      <td style="padding:4px 2px;text-align:center;font-size:.64rem;color:var(--green);width:20px">${r.w}</td>
+      <td style="padding:4px 2px;text-align:center;font-size:.64rem;width:20px">${r.d}</td>
+      <td style="padding:4px 2px;text-align:center;font-size:.64rem;color:var(--red);width:20px">${r.l}</td>
+      <td style="padding:4px 2px;text-align:center;font-size:.64rem;color:${gdCol};width:26px">${gdStr}</td>
+      <td style="padding:4px 6px 4px 2px;text-align:center;font-weight:800;color:var(--gold);font-size:.72rem;width:24px">${r.pts}</td>
+    </tr>`;
+  }).join('');
+}
+function updatePredStandings() {
+  const {allRows, top8} = calcAllPredStandings();
+  GROUPS.forEach(g => {
+    const el = document.getElementById('predst-'+g);
+    if (el) el.innerHTML = predStandingsRows(allRows[g], top8);
+  });
+  // Refresh qualifiers panel if it exists
+  const qEl = document.getElementById('predQualPanel');
+  if (qEl) qEl.outerHTML = renderPredQualifiers();
+}
+function renderGroupCard(g, open, top8, rows) {
+  const ms=matches.filter(m=>m.r==='group'&&m.g===g);
+  const stRows=predStandingsRows(rows||calcPredStandings(g), top8);
+  const matchRows=ms.map(m=>{
+    const h=teams[m.h],a=teams[m.a];
+    const pred=groupPreds[m.id];
+    const hg=pred!=null?pred.home_goals:'';
+    const ag=pred!=null?pred.away_goals:'';
+    const done=m.home_goals!=null;
+    const hn=h?(lang==='pt'?h.pt:h.en):T('TBD','A definir');
+    const an=a?(lang==='pt'?a.pt:a.en):T('TBD','A definir');
+    const scoreDisp=`<span style="font-size:.86rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};min-width:16px;text-align:center">${done?m.home_goals:(hg!==''?hg:'-')}</span>
+      <span style="color:var(--muted);font-size:.78rem;font-weight:700">-</span>
+      <span style="font-size:.86rem;font-weight:700;color:${done?'var(--gold)':'var(--muted)'};min-width:16px;text-align:center">${done?m.away_goals:(ag!==''?ag:'-')}</span>`;
+    const scoreInput=`<div class="spin-wrap"><input class="pred-score-input" type="number" min="0" max="20" id="g${m.id}h" value="${hg}" placeholder="?" oninput="updatePredStandings()"/><button class="spin-up" onclick="stepInput('g${m.id}h',1)" type="button">▲</button><button class="spin-dn" onclick="stepInput('g${m.id}h',-1)" type="button">▼</button></div>
+      <span style="color:var(--muted);font-weight:700;font-size:.8rem">-</span>
+      <div class="spin-wrap"><input class="pred-score-input" type="number" min="0" max="20" id="g${m.id}a" value="${ag}" placeholder="?" oninput="updatePredStandings()"/><button class="spin-up" onclick="stepInput('g${m.id}a',1)" type="button">▲</button><button class="spin-dn" onclick="stepInput('g${m.id}a',-1)" type="button">▼</button></div>
+      <button class="dice-btn" onclick="randomizeMatch(${m.id})" title="${T('Random score','Aleatório')}">🎲</button>`;
+    return `<div class="pred-match-row">
+      <div class="pred-team">${flagImg(h,15)}<span class="pred-team-name" title="${hn}">${hn}</span></div>
+      <div class="pred-score-inputs">${open&&!done?scoreInput:scoreDisp}</div>
+      <div class="pred-team away"><span class="pred-team-name" title="${an}">${an}</span>${flagImg(a,15)}</div>
+    </div>`;
+  }).join('');
+  return `<div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--glass)">
+      <strong style="color:var(--gold);font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:1rem">${T('Group','Grupo')} ${g}</strong>
+      ${open?`<button class="dice-btn" onclick="randomizeGroup('${g}')" style="font-size:.72rem;padding:3px 8px">🎲 ${T('All','Todos')}</button>`:''}
+    </div>
+    <div>
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed">
+        <colgroup>
+          <col style="width:16px"><col><col style="width:22px"><col style="width:20px">
+          <col style="width:20px"><col style="width:20px"><col style="width:26px"><col style="width:26px">
+        </colgroup>
+        <thead><tr style="color:var(--muted);font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;background:var(--card)">
+          <th style="padding:5px 4px 5px 6px;text-align:center">#</th>
+          <th style="padding:5px 3px;text-align:left">${T('Team','Equipe')}</th>
+          <th style="padding:5px 2px;text-align:center">P</th><th style="padding:5px 2px;text-align:center">W</th>
+          <th style="padding:5px 2px;text-align:center">D</th><th style="padding:5px 2px;text-align:center">L</th>
+          <th style="padding:5px 2px;text-align:center">GD</th>
+          <th style="padding:5px 6px 5px 2px;text-align:center;color:var(--gold)">Pts</th>
+        </tr></thead>
+        <tbody id="predst-${g}">${stRows}</tbody>
+      </table>
+    </div>
+    <div style="padding:5px 10px;font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--glass)">
+      ⚽ ${T('Matches','Jogos')} <span style="opacity:.5;font-weight:400;font-style:italic;text-transform:none">${T('· type to see predicted standings','· escreva para ver a tabela prevista')}</span>
+    </div>
+    <div>${matchRows}</div>
+  </div>`;
+}
+function renderPredQualifiers() {
+  const {allRows} = calcAllPredStandings();
+  const hasData = GROUPS.some(g => allRows[g].some(r => r.mp > 0));
+  if (!hasData) return '';
+
+  function gt(g, pos) {
+    const r = allRows[g] && allRows[g][pos];
+    return (r && r.mp > 0) ? r.team : null;
+  }
+
+  function teamCell(g, pos, right) {
+    const t = gt(g, pos);
+    const posLbl = pos === 0 ? '1º' : '2º';
+    const nm = t ? (lang==='pt' ? (t.pt||t.en) : t.en) : `${posLbl} ${T('Gr','Gr')} ${g}`;
+    const lbl = `<span style="font-size:.57rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${posLbl} ${T('Gr','Gr')} ${g}</span>`;
+    const flag = t ? flagImg(t,15) : `<span style="font-size:.7rem;opacity:.35">?</span>`;
+    const name = `<span style="font-size:.75rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</span>`;
+    return right
+      ? `<div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;overflow:hidden;min-width:0">${lbl}${name}${flag}</div>`
+      : `<div style="flex:1;display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0">${flag}${name}${lbl}</div>`;
+  }
+
+  function thirdsCell(groups, right) {
+    const notation = groups.map(g => `3${g}`).join('/');
+    const lbl = `<span style="font-size:.57rem;color:#f59e0b;font-weight:700;white-space:nowrap;flex-shrink:0">${notation}</span>`;
+    const icon = `<span style="font-size:.7rem;opacity:.35">?</span>`;
+    return right
+      ? `<div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;overflow:hidden;min-width:0">${lbl}${icon}</div>`
+      : `<div style="flex:1;display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0">${icon}${lbl}</div>`;
+  }
+
+  function mrow(h, a) {
+    const hCell = h.thirds ? thirdsCell(h.thirds, true) : teamCell(h.g, h.pos, true);
+    const aCell = a.thirds ? thirdsCell(a.thirds, false) : teamCell(a.g, a.pos, false);
+    return `<div style="display:flex;align-items:center;padding:5px 10px;gap:6px">
+      ${hCell}
+      <span style="font-size:.6rem;font-weight:800;color:var(--muted);flex-shrink:0;padding:0 2px">vs</span>
+      ${aCell}
+    </div>`;
+  }
+
+  // Official WC2026 R32 bracket — 16 matches, grouped by date
+  // Group winners play 3rd-place teams; runners-up play runners-up (or cross-group winners)
+  const R32_BY_DATE = [
+    { date: 'Jun 28', matches: [
+      { h:{g:'A',pos:1}, a:{g:'B',pos:1} },
+    ]},
+    { date: 'Jun 29', matches: [
+      { h:{g:'E',pos:0}, a:{thirds:['A','B','C','D','F']} },
+      { h:{g:'F',pos:0}, a:{g:'C',pos:1} },
+      { h:{g:'C',pos:0}, a:{g:'F',pos:1} },
+    ]},
+    { date: 'Jun 30', matches: [
+      { h:{g:'I',pos:0}, a:{thirds:['C','D','F','G','H']} },
+      { h:{g:'E',pos:1}, a:{g:'I',pos:1} },
+      { h:{g:'A',pos:0}, a:{thirds:['C','E','F','H','I']} },
+    ]},
+    { date: 'Jul 1', matches: [
+      { h:{g:'L',pos:0}, a:{thirds:['E','H','I','J','K']} },
+      { h:{g:'D',pos:0}, a:{thirds:['B','E','F','I','J']} },
+      { h:{g:'G',pos:0}, a:{thirds:['A','E','H','I','J']} },
+    ]},
+    { date: 'Jul 2', matches: [
+      { h:{g:'K',pos:1}, a:{g:'L',pos:1} },
+      { h:{g:'H',pos:0}, a:{g:'J',pos:1} },
+      { h:{g:'B',pos:0}, a:{thirds:['E','F','G','I','J']} },
+    ]},
+    { date: 'Jul 3', matches: [
+      { h:{g:'J',pos:0}, a:{g:'H',pos:1} },
+      { h:{g:'K',pos:0}, a:{thirds:['D','E','I','J','L']} },
+      { h:{g:'D',pos:1}, a:{g:'G',pos:1} },
+    ]},
+  ];
+
+  const matchesHtml = R32_BY_DATE.map(day => `
+    <div style="border-bottom:1px solid var(--border)">
+      <div style="padding:3px 10px;font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;background:var(--glass)">${day.date}</div>
+      ${day.matches.map((m, i) =>
+        (i > 0 ? `<div style="height:1px;background:var(--border);margin:0 8px"></div>` : '') + mrow(m.h, m.a)
+      ).join('')}
+    </div>`
+  ).join('');
+
+  const thirds = GROUPS.map(g => allRows[g][2])
+    .filter(r => r && r.mp > 0)
+    .sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf)
+    .slice(0,8);
+
+  const thirdsHtml = thirds.length ? `
+    <div>
+      <div style="padding:6px 10px 3px;font-size:.6rem;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em">
+        ${T('Best 3rd-placed teams','Melhores 3ºs colocados')} (${thirds.length}/8)
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr)">
+        ${thirds.map((r,i) => {
+          const nm = lang==='pt' ? (r.team.pt||r.team.en) : r.team.en;
+          return `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-bottom:1px solid var(--border)${i%2===0?';border-right:1px solid var(--border)':''}">
+            <span style="font-size:.58rem;color:var(--muted);width:12px;flex-shrink:0">${i+1}.</span>
+            ${flagImg(r.team,13)}
+            <span style="font-size:.7rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</span>
+            <span style="font-size:.58rem;color:var(--muted);flex-shrink:0">${T('Gr','Gr')} ${r.team.g}</span>
+            <span style="font-size:.63rem;font-weight:700;color:var(--gold);flex-shrink:0;margin-left:2px">${r.pts}p</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+  return `<div id="predQualPanel" class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--glass);display:flex;align-items:center;gap:8px">
+      <span style="font-size:1rem">🔮</span>
+      <strong style="font-size:.85rem">${T('Round of 32: based on your predictions','Rodada de 32: baseado nas suas previsões')}</strong>
+    </div>
+    ${matchesHtml}
+    ${thirdsHtml}
+    <div style="padding:6px 12px;font-size:.63rem;color:var(--muted);font-style:italic">${T('Updates live as you edit scores above.','Atualiza em tempo real conforme você edita os resultados.')}</div>
+  </div>`;
+}
+
+function renderAllGroupsGrid() {
+  const open=settings.group_phase_open==='true';
+  const {allRows, top8}=calcAllPredStandings();
+  const legendHtml=`<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:.75rem;color:var(--text2)">
+    <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--green);margin-right:4px;vertical-align:middle"></span>${T('Qualifies','Classifica')}</span>
+    <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>${T('Best 3rd (top 8)','Melhor 3º (top 8)')}</span>
+    <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--border);margin-right:4px;vertical-align:middle"></span>${T('Eliminated','Eliminado')}</span>
+  </div>`;
+  document.getElementById('grpMatches').innerHTML=
+    legendHtml+renderPredQualifiers()+`<div class="grp-grid">${GROUPS.map(g=>renderGroupCard(g,open,top8,allRows[g])).join('')}</div>`;
+  // Re-run after DOM is ready so inputs drive a fresh calculation
+  updatePredStandings();
+}
+
+// ── KNOCKOUT BRACKET ───────────────────────────────────────────
 function renderKOPage() {
   const open=settings.knockout_phase_open==='true';
   document.getElementById('koBanner').innerHTML=phaseBanner(T('Knockout predictions','Previsões eliminatórias'),open,!open?T('Opens after group stage (~July 3)','Abre após fase de grupos (~3 julho)'):'');
   if (!currentUser){document.getElementById('koMatches').innerHTML=loginPrompt();document.getElementById('saveKOBtn').style.display='none';document.getElementById('koUserBar').innerHTML='';return;}
   if (!open){document.getElementById('koMatches').innerHTML=`<div class="card empty-state"><div class="icon">🔒</div><p>${T('Knockout predictions open after the group stage ends (~July 3, 2026).','Previsões eliminatórias abrem após a fase de grupos (~3 julho 2026).')}</p></div>`;document.getElementById('saveKOBtn').style.display='none';document.getElementById('koUserBar').innerHTML='';return;}
   document.getElementById('koUserBar').innerHTML=userBar();
-  const lbls=lang==='pt'?KO_LABELS_PT:KO_LABELS;
-  let html='';
-  for (const round of KO_ORDER) {
-    const ms=matches.filter(m=>m.r===round);
-    if(!ms.length) continue;
-    html+=`<div class="card"><h3 style="color:var(--gold);margin-bottom:12px">🏆 ${lbls[round]}</h3>`;
-    for (const m of ms) {
-      const h=teams[m.h],a=teams[m.a];
-      const pred=koPreds[m.id];
-      const hg=pred!=null?pred.home_goals:'',ag=pred!=null?pred.away_goals:'';
-      const done=m.home_goals!=null;
-      const ds=m.d?new Date(m.d).toLocaleDateString(lang==='pt'?'pt-BR':'en-GB',{day:'2-digit',month:'short'}):'TBD';
-      const hn=h?(lang==='pt'?h.pt:h.en):T('TBD','A definir');
-      const an=a?(lang==='pt'?a.pt:a.en):T('TBD','A definir');
-      const hf=h?h.f:'🏳';
-      const af=a?a.f:'🏳';
-      html+=`<div class="match-card">
-        <div class="match-header"><span>${ds}</span><span style="color:${done?'var(--green)':'var(--muted)'}">${done?T('FINAL','FINAL'):''}</span></div>
-        <div class="match-teams">
-          <div class="team-block">${flagImg(h,40)}<span class="team-name">${hn}</span></div>
-          <div class="score-inputs">
-            ${!done?`<input class="score-input" type="number" min="0" max="20" id="k${m.id}h" value="${hg}" placeholder="—"/><span class="score-sep">:</span><input class="score-input" type="number" min="0" max="20" id="k${m.id}a" value="${ag}" placeholder="—"/>`:
-            `<span style="font-size:1.1rem;font-weight:700;color:var(--gold);padding:0 8px">${m.home_goals}</span><span class="score-sep">:</span><span style="font-size:1.1rem;font-weight:700;color:var(--gold);padding:0 8px">${m.away_goals}</span>`}
-          </div>
-          <div class="team-block away">${flagImg(a,40)}<span class="team-name">${an}</span></div>
-        </div>
-        <span class="saved-dot" id="ksd${m.id}"></span>
+  document.getElementById('koMatches').innerHTML=`<div style="padding-bottom:80px">${renderKOBracket(open)}</div>`;
+  document.getElementById('saveKOBtn').style.display='block';
+}
+
+function renderKOBracket(kOpen) {
+  const LEAF_H = 60, CARD_W = 162, CONN_W = 20;
+  const KIDS = {
+    104:[101,102], 101:[97,98], 102:[99,100],
+    97:[89,90], 98:[91,92], 99:[93,94], 100:[95,96],
+    89:[73,74], 90:[75,76], 91:[77,78], 92:[79,80],
+    93:[81,82], 94:[83,84], 95:[85,86], 96:[87,88]
+  };
+
+  function matchCard(mId) {
+    const m = matches.find(x => x.id === mId);
+    if (!m) return '';
+    const h = teams[m.h], a = teams[m.a];
+    const pred = koPreds[mId];
+    const done = m.home_goals != null;
+    const teamsKnown = m.h != null && m.a != null;
+    const canInput = kOpen && !done && teamsKnown;
+    const hg = pred != null ? pred.home_goals : '';
+    const ag = pred != null ? pred.away_goals : '';
+    const ds = m.d ? new Date(m.d).toLocaleDateString(lang==='pt'?'pt-BR':'en-GB', {day:'numeric',month:'short'}) : '';
+
+    const hasPred = pred != null;
+    const statusDot = done
+      ? `<span style="color:var(--green);font-size:.7rem">✅ ${T('Result in','Resultado')}</span>`
+      : hasPred
+        ? `<span style="color:var(--gold);font-size:.7rem">✔ ${T('Saved','Salvo')}</span>`
+        : canInput
+          ? `<span style="color:var(--muted);font-size:.7rem">${T('Not predicted','Sem previsão')}</span>`
+          : '';
+
+    function teamRow(team, isHome) {
+      const nm = team ? (lang==='pt' ? team.pt : team.en) : null;
+      const goals = done ? (isHome ? m.home_goals : m.away_goals) : (isHome ? hg : ag);
+      const isWinner = done && (
+        (isHome && m.home_goals > m.away_goals) || (!isHome && m.away_goals > m.home_goals)
+      );
+      const scoreEl = done
+        ? `<span class="ko-score-done" style="${isWinner?'color:var(--gold)':''}">${goals}</span>`
+        : canInput
+          ? `<input class="ko-score-input" type="number" min="0" max="20" id="g${mId}${isHome?'h':'a'}" value="${goals}" placeholder="?"/>`
+          : `<span class="ko-score-done" style="color:var(--muted)">${goals !== '' ? goals : '-'}</span>`;
+
+      if (!nm) return `<div class="ko-team-row">
+        <span style="font-size:1rem;opacity:.3">🏳</span>
+        <span class="ko-team-tbd">${T('TBD','A definir')}</span>
+        ${scoreEl}
+      </div>`;
+
+      return `<div class="ko-team-row" style="${isWinner?'background:rgba(201,168,76,.06);border-radius:8px;margin:0 -4px;padding:5px 4px':''}">
+        ${flagImg(team, 18)}
+        <span class="ko-team-name" style="${isWinner?'color:var(--gold)':''}">${nm}</span>
+        ${scoreEl}
       </div>`;
     }
-    html+='</div>';
+
+    return `<div class="ko-match${done?' ko-done':canInput?' ko-open':''}">
+      <div class="ko-match-hdr">
+        <span>M${mId}${ds ? ' · '+ds : ''}</span>
+        ${statusDot}
+      </div>
+      ${teamRow(h, true)}
+      ${teamRow(a, false)}
+      ${canInput ? `<div style="display:flex;justify-content:flex-end;margin-top:6px">
+        <button class="dice-btn" onclick="randomizeMatch(${mId})" style="font-size:.7rem;padding:3px 8px">🎲 ${T('Random','Aleatório')}</button>
+      </div>` : ''}
+    </div>`;
   }
-  document.getElementById('koMatches').innerHTML=html||`<div class="card empty-state"><div class="icon">⏳</div><p>${T('Knockout fixtures not yet assigned.','Eliminatórias ainda não definidas.')}</p></div>`;
-  document.getElementById('saveKOBtn').style.display='block';
+
+  function subtreeH(id) {
+    const k = KIDS[id];
+    return k ? subtreeH(k[0]) + subtreeH(k[1]) : LEAF_H;
+  }
+
+  function renderNode(id) {
+    const k = KIDS[id];
+    if (!k) {
+      return `<div style="height:${LEAF_H}px;display:flex;align-items:center;width:${CARD_W}px;flex-shrink:0"><div style="width:100%">${matchCard(id)}</div></div>`;
+    }
+    const h1 = subtreeH(k[0]), h2 = subtreeH(k[1]), totalH = h1 + h2;
+    return `<div style="display:flex;flex-direction:row;align-items:stretch"><div style="display:flex;flex-direction:column">${renderNode(k[0])}${renderNode(k[1])}</div><div style="width:${CONN_W}px;display:flex;flex-direction:column;flex-shrink:0"><div style="height:${h1}px;border-right:2px solid rgba(255,255,255,.14);border-bottom:2px solid rgba(255,255,255,.14);border-radius:0 0 4px 0"></div><div style="height:${h2}px;border-right:2px solid rgba(255,255,255,.14);border-top:2px solid rgba(255,255,255,.14);border-radius:0 4px 0 0"></div></div><div style="display:flex;align-items:center;height:${totalH}px;width:${CARD_W}px;flex-shrink:0"><div style="width:100%">${matchCard(id)}</div></div></div>`;
+  }
+
+  const RND_LABELS = [T('Round of 32','Oitavos (32)'),T('Round of 16','Oitavos de Final'),T('Quarter-Finals','Quartas-de-Final'),T('Semi-Finals','Semi-Finais'),T('Final','Final')];
+  const headerCols = RND_LABELS.map((l,i)=>`<div style="width:${CARD_W}px;text-align:center;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding-bottom:8px">${l}</div>${i<4?`<div style="width:${CONN_W}px"></div>`:''}`).join('');
+
+  const allTBD = matches.filter(m => m.r !== 'group' && m.h == null).length === matches.filter(m => m.r !== 'group').length;
+
+  let html = '';
+
+  if (kOpen && allTBD) {
+    html += `<div class="card" style="text-align:center;padding:28px 20px;margin-bottom:12px">
+      <div style="font-size:2.4rem;margin-bottom:10px">⏳</div>
+      <div style="font-weight:700;font-size:1rem;margin-bottom:6px">${T('Group stage in progress','Fase de grupos em andamento')}</div>
+      <p style="color:var(--muted);font-size:.85rem;max-width:360px;margin:0 auto">${T('Teams will appear automatically here once the group stage is complete and qualifying teams are confirmed (~July 3).','As seleções aparecerão automaticamente assim que a fase de grupos terminar e os classificados forem definidos (~3 julho).')}</p>
+    </div>`;
+  }
+
+  if (kOpen) {
+    const predicted = matches.filter(m => m.r !== 'group' && koPreds[m.id]).length;
+    const total = matches.filter(m => m.r !== 'group').length;
+    html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-outline" id="randomAllBtn" onclick="randomizeAll()">🎲 ${T('Random All','Aleatório Total')}</button>
+      <span style="color:var(--muted);font-size:.82rem">${predicted}/${total} ${T('predicted','previstos')}</span>
+    </div>`;
+  }
+
+  html += `<div class="card" style="padding:16px;overflow-x:auto">
+    <div style="display:flex;min-width:${5*CARD_W+4*CONN_W}px">${headerCols}</div>
+    ${renderNode(104)}
+  </div>
+  <div style="margin-top:12px">
+    <div class="ko-round-hdr"><span>🥉 ${T('3rd Place','3º Lugar')}</span></div>
+    <div style="max-width:${CARD_W}px">${matchCard(103)}</div>
+  </div>`;
+
+  return html;
 }
 
 async function saveKOPredictions() {
   if (!currentUser) return;
+  if (currentUser.is_validated===false) { alert(T('Your account is pending admin approval.','A sua conta aguarda aprovação do admin.')); return; }
   const btn=document.getElementById('saveKOBtn');
   btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','Salvando…')}`;
   const toUpsert=matches.filter(m=>m.r!=='group'&&m.home_goals==null).reduce((acc,m)=>{
-    const hEl=document.getElementById(`k${m.id}h`),aEl=document.getElementById(`k${m.id}a`);
+    const hEl=document.getElementById(`g${m.id}h`),aEl=document.getElementById(`g${m.id}a`);
     if(hEl&&aEl&&hEl.value!==''&&aEl.value!=='')
       acc.push({participant_id:currentUser.id,match_id:m.id,home_goals:parseInt(hEl.value),away_goals:parseInt(aEl.value)});
     return acc;
@@ -1270,9 +1895,10 @@ async function saveKOPredictions() {
   if (toUpsert.length) {
     const {error}=await db.from('knockout_predictions').upsert(toUpsert,{onConflict:'participant_id,match_id'});
     if(error) alert(T('Error: ','Erro: ')+error.message);
-    else toUpsert.forEach(p=>{koPreds[p.match_id]=p;const dot=document.getElementById('ksd'+p.match_id);if(dot){dot.classList.add('show');setTimeout(()=>dot.classList.remove('show'),2000);}});
+    else toUpsert.forEach(p=>{koPreds[p.match_id]=p;});
   }
   btn.disabled=false; btn.innerHTML=T('💾 Save Knockout Predictions','💾 Salvar Previsões Eliminatórias');
+  renderKOPage();
 }
 
 // ── AWARDS ─────────────────────────────────────────────────────
@@ -1284,7 +1910,7 @@ function renderAwardsPage() {
   const alreadySubmitted = AWARDS.every(a => awardPreds[a.key]);
   if (open && !alreadySubmitted) {
     document.getElementById('awdAlert').innerHTML=`<div class="alert alert-warn" style="background:rgba(234,179,8,.15);border:1px solid #eab308;color:#eab308;margin-bottom:14px">
-      ⚠️ ${T('Choose carefully — once saved your award predictions are locked forever and cannot be changed.','Escolha com cuidado — depois de salvar as previsões de prêmios ficam bloqueadas para sempre e não podem ser alteradas.')}
+      ⚠️ ${T('Choose carefully. Once saved, your award predictions are locked forever and cannot be changed.','Escolha com cuidado. Depois de salvar, as previsões de prêmios ficam bloqueadas para sempre e não podem ser alteradas.')}
     </div>`;
   } else {
     document.getElementById('awdAlert').innerHTML='';
@@ -1326,11 +1952,65 @@ async function saveAwardPredictions() {
 // ── LEADERBOARD ────────────────────────────────────────────────
 let allParticipants=[], allGroupPreds=[], allAwardPreds=[];
 
+const ENTRY_FEE = 50;
+const PRIZE_SPLIT = [0.5, 0.3, 0.2];
+
+function renderPrizeCard(scores) {
+  const n = scores.length;
+  const pool = n * ENTRY_FEE;
+  document.getElementById('prizeCard').style.display = n > 0 ? 'block' : 'none';
+  document.getElementById('prizeTotal').textContent = `R$ ${pool.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+  document.getElementById('prizeSubtitle').textContent =
+    `${n} ${T('player','jogador')}${n!==1?T('s','es'):''} · R$ ${ENTRY_FEE} ${T('entry each','de entrada cada')}`;
+
+  // Group scores by points to find ties
+  const pts = scores.map(s => s.total_points||0);
+  const medals = [
+    {label:'1º', cls:'r1', pct:PRIZE_SPLIT[0]},
+    {label:'2º', cls:'r2', pct:PRIZE_SPLIT[1]},
+    {label:'3º', cls:'r3', pct:PRIZE_SPLIT[2]},
+  ];
+
+  let prizeRows = '';
+  let pos = 0; // current position in sorted list
+  for (let pi = 0; pi < 3; pi++) {
+    if (pos >= n) break;
+    // Find how many players tie at this position
+    const thisPts = pts[pos];
+    let tieCount = 1;
+    while (pos + tieCount < n && pts[pos + tieCount] === thisPts) tieCount++;
+
+    // How many prize slots does this tie span?
+    const slotsSpanned = Math.min(tieCount, 3 - pi);
+    const sharedAmount = PRIZE_SPLIT.slice(pi, pi + slotsSpanned).reduce((a,b)=>a+b, 0) * pool / slotsSpanned * slotsSpanned;
+    const eachAmount   = PRIZE_SPLIT.slice(pi, pi + slotsSpanned).reduce((a,b)=>a+b, 0) * pool / tieCount;
+
+    const names = scores.slice(pos, pos + tieCount).map(s => dName(s.participants||{})).join(', ');
+    const tied  = tieCount > 1;
+    const m = medals[pi];
+
+    prizeRows += `<div class="prize-row">
+      <span class="prize-medal ${m.cls}">${m.label}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${names}</div>
+        ${tied ? `<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${T('Tie','Empate')} · ${T('split equally','divisão igual')}</div>` : ''}
+      </div>
+      <div class="prize-amount">R$ ${eachAmount.toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
+    </div>`;
+
+    // Advance position, skip all tied players
+    if (tied) { pos += tieCount; pi += slotsSpanned - 1; }
+    else pos++;
+  }
+  document.getElementById('prizeRows').innerHTML = prizeRows;
+}
+
 async function loadLeaderboard() {
   const el=document.getElementById('lbContainer');
   el.innerHTML=`<div class="empty-state"><span class="spinner"></span></div>`;
-  const {data:scores,error}=await db.from('scores').select('*,participants(id,name,avatar_url)').order('total_points',{ascending:false});
-  if (error||!scores?.length){el.innerHTML=`<div class="empty-state"><div class="icon">🏆</div><p>${T('No scores yet — be the first!','Sem pontuações ainda — seja o primeiro!')}</p></div>`;return;}
+  const {data:scores,error}=await db.from('scores').select('*,participants(id,name,display_name,avatar_url)').order('total_points',{ascending:false});
+  if (error||!scores?.length){el.innerHTML=`<div class="empty-state"><div class="icon">🏆</div><p>${T('No scores yet. Be the first!','Sem pontuações ainda. Seja o primeiro!')}</p></div>`;return;}
+  renderPrizeCard(scores);
   const myId=currentUser?.id;
   el.innerHTML = scores.map((s,i)=>{
     const rank=i+1, cls=rank===1?'r1':rank===2?'r2':rank===3?'r3':'rN';
@@ -1340,7 +2020,7 @@ async function loadLeaderboard() {
       <span class="rank-badge ${cls}" style="flex-shrink:0">${rank}</span>
       ${avHtml(p,42)}
       <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name||'—'}${isMe?` <span style="color:var(--gold);font-size:.72rem">${T('(you)','(você)')}</span>`:''}</div>
+        <div style="font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dName(p)}${isMe?` <span style="color:var(--gold);font-size:.72rem">${T('(you)','(você)')}</span>`:''}</div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:3px">${T('Groups','Grupos')}: ${s.group_points||0} &nbsp;·&nbsp; KO: ${s.ko_points||0} &nbsp;·&nbsp; ${T('Awards','Prêmios')}: ${s.award_points||0}</div>
       </div>
       <div class="pts-total" style="flex-shrink:0;font-size:1.1rem">${s.total_points||0}</div>
@@ -1362,7 +2042,7 @@ async function loadLeaderboard() {
   allAwardPreds  = aR.data||[];
 
   const sel = document.getElementById('predViewUser');
-  sel.innerHTML = allParticipants.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  sel.innerHTML = allParticipants.map(p=>`<option value="${p.id}">${dName(p)}</option>`).join('');
   renderAllPreds();
 }
 
@@ -1381,7 +2061,7 @@ function renderAllPreds() {
     const hf=h?h.f:'🏳', af=a?a.f:'🏳';
     return `<tr>
       <td style="padding:8px 10px;color:var(--muted);font-size:.78rem">${hn} ${hf} vs ${af} ${an}</td>
-      <td style="padding:8px 10px;font-weight:700;color:var(--gold);text-align:center">${pred?pred.home_goals+' : '+pred.away_goals:'—'}</td>
+      <td style="padding:8px 10px;font-weight:700;color:var(--gold);text-align:center">${pred?pred.home_goals+' : '+pred.away_goals:'?'}</td>
     </tr>`;
   }).join('');
 
@@ -1389,7 +2069,7 @@ function renderAllPreds() {
     const pred=ap.find(x=>x.award_type===a.key);
     return `<tr>
       <td style="padding:8px 10px;color:var(--muted)">${a.icon} ${lang==='pt'?a.pt:a.en}</td>
-      <td style="padding:8px 10px;font-weight:600;color:var(--text)">${pred?pred.prediction:'—'}</td>
+      <td style="padding:8px 10px;font-weight:600;color:var(--text)">${pred?pred.prediction:'?'}</td>
     </tr>`;
   }).join('');
 
@@ -1412,59 +2092,59 @@ function renderAllPreds() {
 
 // ── TRIVIA ─────────────────────────────────────────────────────
 const TRIVIA = [
-  { cat:'Legend', en:"Pelé never lost a single game at the World Cup. He played 14 matches across 1958, 1962 and 1970 — and won every single one. He's also the only player to win 3 World Cup titles.", pt:"Pelé nunca perdeu um jogo no Mundial. Disputou 14 jogos em 1958, 1962 e 1970 — e ganhou todos. É também o único jogador com 3 títulos mundiais." },
-  { cat:'Record', en:"The biggest crowd ever at a football match was the 1950 World Cup final between Brazil and Uruguay at Maracanã, Rio de Janeiro. Estimates put the crowd at around 200,000 people. Brazil lost 2-1 — a national trauma still called 'Maracanazo'.", pt:"A maior multidão num jogo de futebol foi a final do Mundial de 1950 entre Brasil e Uruguai no Maracanã. Estima-se cerca de 200.000 pessoas. O Brasil perdeu 2-1 — trauma chamado 'Maracanazo'." },
+  { cat:'Legend', en:"Pelé never lost a single game at the World Cup. He played 14 matches across 1958, 1962 and 1970, and won every single one. He's also the only player to win 3 World Cup titles.", pt:"Pelé nunca perdeu um jogo no Mundial. Disputou 14 jogos em 1958, 1962 e 1970, e ganhou todos. É também o único jogador com 3 títulos mundiais." },
+  { cat:'Record', en:"The biggest crowd ever at a football match was the 1950 World Cup final between Brazil and Uruguay at Maracanã, Rio de Janeiro. Estimates put the crowd at around 200,000 people. Brazil lost 2-1, a national trauma still called 'Maracanazo'.", pt:"A maior multidão num jogo de futebol foi a final do Mundial de 1950 entre Brasil e Uruguai no Maracanã. Estima-se cerca de 200.000 pessoas. O Brasil perdeu 2-1, trauma chamado 'Maracanazo'." },
   { cat:'Goals', en:"Miroslav Klose (Germany) is the all-time World Cup top scorer with 16 goals, overtaking Ronaldo Nazário's record of 15 in the 2014 semi-final. Klose scored in 4 different World Cups.", pt:"Miroslav Klose (Alemanha) é o maior goleador de sempre em Mundiais, com 16 gols, superando os 15 de Ronaldo Nazário na meia-final de 2014. Klose marcou em 4 Mundiais diferentes." },
-  { cat:'Record', en:"Just Fontaine (France) scored 13 goals in a single World Cup tournament in 1958 — a record that has stood for over 65 years and is considered virtually unbreakable.", pt:"Just Fontaine (França) marcou 13 gols num único torneio em 1958 — recorde que dura há mais de 65 anos e considerado praticamente imbatível." },
+  { cat:'Record', en:"Just Fontaine (France) scored 13 goals in a single World Cup tournament in 1958, a record that has stood for over 65 years and is considered virtually unbreakable.", pt:"Just Fontaine (França) marcou 13 gols num único torneio em 1958, recorde que dura há mais de 65 anos e considerado praticamente imbatível." },
   { cat:'Speed', en:"The fastest goal in World Cup history was scored by Hakan Şükür of Turkey just 11 seconds after kick-off against South Korea in the 2002 third-place match.", pt:"O golo mais rápido da história dos Mundiais foi marcado por Hakan Şükür da Turquia apenas 11 segundos após o apito inicial contra a Coreia do Sul em 2002." },
-  { cat:'Appearances', en:"Lothar Matthäus (Germany) holds the record for most World Cup appearances: 25 games across 5 tournaments (1982–1998). He also played in 5 World Cups — tied with Antonio Carbajal of Mexico.", pt:"Lothar Matthäus (Alemanha) tem o recorde de mais jogos no Mundial: 25 jogos em 5 torneios (1982–1998). Também jogou em 5 Mundiais — empatado com Antonio Carbajal do México." },
-  { cat:'Brazil', en:"Brazil is the only country to have participated in every single FIFA World Cup since the first edition in 1930. That's all 22 tournaments — a unique record no other nation has matched.", pt:"O Brasil é o único país a ter participado em todos os Mundiais da FIFA desde a primeira edição em 1930 — 22 torneios, um recorde único que nenhuma outra nação igualou." },
+  { cat:'Appearances', en:"Lothar Matthäus (Germany) holds the record for most World Cup appearances: 25 games across 5 tournaments (1982–1998). He also played in 5 World Cups, tied with Antonio Carbajal of Mexico.", pt:"Lothar Matthäus (Alemanha) tem o recorde de mais jogos no Mundial: 25 jogos em 5 torneios (1982–1998). Também jogou em 5 Mundiais, empatado com Antonio Carbajal do México." },
+  { cat:'Brazil', en:"Brazil is the only country to have participated in every single FIFA World Cup since the first edition in 1930. That's all 22 tournaments, a unique record no other nation has matched.", pt:"O Brasil é o único país a ter participado em todos os Mundiais da FIFA desde a primeira edição em 1930, 22 torneios, um recorde único que nenhuma outra nação igualou." },
   { cat:'Goals', en:"The highest-scoring game in World Cup history was Austria 7–5 Switzerland in 1954, with 12 goals in 90 minutes. Austria went through despite conceding 5 goals!", pt:"O jogo com mais gols na história dos Mundiais foi Áustria 7–5 Suíça em 1954, com 12 gols em 90 minutos. A Áustria passou apesar de sofrer 5 gols!" },
-  { cat:'Record', en:"The biggest victory in World Cup history is Hungary 10–1 El Salvador in 1982. László Kiss came off the bench and scored a hat-trick — the fastest substitute hat-trick in World Cup history.", pt:"A maior vitória da história dos Mundiais é Hungria 10–1 El Salvador em 1982. László Kiss entrou como suplente e marcou um hat-trick — o mais rápido de um suplente na história." },
+  { cat:'Record', en:"The biggest victory in World Cup history is Hungary 10–1 El Salvador in 1982. László Kiss came off the bench and scored a hat-trick, the fastest substitute hat-trick in World Cup history.", pt:"A maior vitória da história dos Mundiais é Hungria 10–1 El Salvador em 1982. László Kiss entrou como suplente e marcou um hat-trick, o mais rápido de um suplente na história." },
   { cat:'Legend', en:"Roger Milla of Cameroon became the oldest goal scorer in World Cup history when he scored against Russia in 1994 at the age of 42 years and 39 days. He celebrated with his iconic corner flag dance.", pt:"Roger Milla dos Camarões tornou-se o marcador mais velho da história dos Mundiais ao marcar frente à Rússia em 1994, com 42 anos e 39 dias. Celebrou com a sua famosa dança na bandeirinha." },
-  { cat:'Drama', en:"Zinedine Zidane was sent off with a headbutt in the very last game of his professional career — the 2006 World Cup final against Italy. He still won the Golden Ball as the best player of the tournament.", pt:"Zinedine Zidane foi expulso com uma cabeçada no último jogo da sua carreira profissional — a final do Mundial 2006 contra Itália. Mesmo assim ganhou a Bola de Ouro do torneio." },
-  { cat:'Save', en:"Gordon Banks' save from a Pelé header in the 1970 World Cup is widely called 'The Save of the Century.' Pelé said it was the best save he ever saw — from point-blank range on the goal line.", pt:"A defesa de Gordon Banks a um cabeceamento de Pelé em 1970 é chamada 'A Defesa do Século.' Pelé disse que foi a melhor defesa que alguma vez viu — à queima-roupa na linha de golo." },
+  { cat:'Drama', en:"Zinedine Zidane was sent off with a headbutt in the very last game of his professional career, the 2006 World Cup final against Italy. He still won the Golden Ball as the best player of the tournament.", pt:"Zinedine Zidane foi expulso com uma cabeçada no último jogo da sua carreira profissional, a final do Mundial 2006 contra Itália. Mesmo assim ganhou a Bola de Ouro do torneio." },
+  { cat:'Save', en:"Gordon Banks' save from a Pelé header in the 1970 World Cup is widely called 'The Save of the Century.' Pelé said it was the best save he ever saw, from point-blank range on the goal line.", pt:"A defesa de Gordon Banks a um cabeceamento de Pelé em 1970 é chamada 'A Defesa do Século.' Pelé disse que foi a melhor defesa que alguma vez viu, à queima-roupa na linha de golo." },
   { cat:'History', en:"The first World Cup was held in Uruguay in 1930. Only 13 teams participated. Uruguay won the tournament on home soil, beating Argentina 4–2 in the final in front of 68,000 fans.", pt:"O primeiro Mundial foi realizado no Uruguai em 1930. Apenas 13 equipas participaram. O Uruguai venceu em casa, batendo a Argentina 4–2 na final perante 68.000 adeptos." },
-  { cat:'2026', en:"The 2026 World Cup in Canada, Mexico and USA will be the first ever with 48 teams (up from 32), producing 104 matches — 40 more than in 2022. It's the biggest World Cup in history.", pt:"O Mundial 2026 no Canadá, México e EUA será o primeiro com 48 seleções (anteriormente 32), com 104 jogos — 40 a mais do que em 2022. É o maior Mundial da história." },
-  { cat:'Goals', en:"Ronaldo Nazário (Brazil) is the only player to have scored in two different World Cup finals — 1998 (against France, though Brazil lost) and 2002 (against Germany, winning 2–0).", pt:"Ronaldo Nazário (Brasil) é o único jogador a ter marcado em duas finais do Mundial diferentes — 1998 (contra França, mas o Brasil perdeu) e 2002 (contra Alemanha, vencendo 2–0)." },
+  { cat:'2026', en:"The 2026 World Cup in Canada, Mexico and USA will be the first ever with 48 teams (up from 32), producing 104 matches, 40 more than in 2022. It's the biggest World Cup in history.", pt:"O Mundial 2026 no Canadá, México e EUA será o primeiro com 48 seleções (anteriormente 32), com 104 jogos, 40 a mais do que em 2022. É o maior Mundial da história." },
+  { cat:'Goals', en:"Ronaldo Nazário (Brazil) is the only player to have scored in two different World Cup finals, 1998 (against France, though Brazil lost) and 2002 (against Germany, winning 2–0).", pt:"Ronaldo Nazário (Brasil) é o único jogador a ter marcado em duas finais do Mundial diferentes, 1998 (contra França, mas o Brasil perdeu) e 2002 (contra Alemanha, vencendo 2–0)." },
   { cat:'Record', en:"Germany (including West Germany) has the most World Cup final appearances: 8 finals, winning 4 times (1954, 1974, 1990, 2014). They have never finished lower than 4th place since 1954.", pt:"A Alemanha (incluindo Alemanha Ocidental) tem mais finais do Mundial: 8 finais, vencendo 4 vezes (1954, 1974, 1990, 2014). Nunca ficou abaixo do 4.º lugar desde 1954." },
   { cat:'Legend', en:"Only 8 countries have ever won the World Cup: Brazil (5), Germany (4), Italy (4), Argentina (3), France (2), Uruguay (2), England (1) and Spain (1). All other nations are still waiting.", pt:"Apenas 8 países ganharam o Mundial: Brasil (5), Alemanha (4), Itália (4), Argentina (3), França (2), Uruguai (2), Inglaterra (1) e Espanha (1). Todos os outros ainda esperam." },
-  { cat:'Drama', en:"In the 1982 semi-final, France and West Germany drew 3–3 after extra time — the first World Cup match decided on penalties. West Germany won 5–4 on penalties in one of the most dramatic games ever.", pt:"Na meia-final de 1982, França e Alemanha empataram 3–3 após prolongamento — o primeiro jogo do Mundial decidido nas grandes penalidades. A Alemanha ganhou 5–4 num dos jogos mais dramáticos de sempre." },
-  { cat:'Young', en:"Pelé was just 17 years and 249 days old when he won his first World Cup in 1958 — making him the youngest World Cup winner in history. He scored 6 goals in the tournament including a hat-trick.", pt:"Pelé tinha apenas 17 anos e 249 dias quando ganhou o seu primeiro Mundial em 1958 — tornando-se o campeão mais jovem da história. Marcou 6 gols no torneio incluindo um hat-trick." },
-  { cat:'Record', en:"The World Cup trophy weighs 6.1 kg and is made of 18-carat gold. It stands 36.8 cm tall and was redesigned in 1974. The original Jules Rimet Trophy was stolen in England in 1966 — and later found by a dog named Pickles.", pt:"O troféu do Mundial pesa 6,1 kg e é feito de ouro de 18 quilates. Tem 36,8 cm de altura e foi redesenhado em 1974. O troféu original Jules Rimet foi roubado em Inglaterra em 1966 — e encontrado por um cão chamado Pickles." },
+  { cat:'Drama', en:"In the 1982 semi-final, France and West Germany drew 3–3 after extra time, the first World Cup match decided on penalties. West Germany won 5–4 on penalties in one of the most dramatic games ever.", pt:"Na meia-final de 1982, França e Alemanha empataram 3–3 após prolongamento, o primeiro jogo do Mundial decidido nas grandes penalidades. A Alemanha ganhou 5–4 num dos jogos mais dramáticos de sempre." },
+  { cat:'Young', en:"Pelé was just 17 years and 249 days old when he won his first World Cup in 1958, making him the youngest World Cup winner in history. He scored 6 goals in the tournament including a hat-trick.", pt:"Pelé tinha apenas 17 anos e 249 dias quando ganhou o seu primeiro Mundial em 1958, tornando-se o campeão mais jovem da história. Marcou 6 gols no torneio incluindo um hat-trick." },
+  { cat:'Record', en:"The World Cup trophy weighs 6.1 kg and is made of 18-carat gold. It stands 36.8 cm tall and was redesigned in 1974. The original Jules Rimet Trophy was stolen in England in 1966, and later found by a dog named Pickles.", pt:"O troféu do Mundial pesa 6,1 kg e é feito de ouro de 18 quilates. Tem 36,8 cm de altura e foi redesenhado em 1974. O troféu original Jules Rimet foi roubado em Inglaterra em 1966, e encontrado por um cão chamado Pickles." },
   { cat:'Goalkeeping', en:"Peter Shilton of England holds the record for most World Cup appearances by a goalkeeper: 17 games across 3 tournaments (1982, 1986, 1990). England reached the semi-finals in 1990 with him in goal.", pt:"Peter Shilton de Inglaterra tem o recorde de mais jogos num Mundial por um guarda-redes: 17 jogos em 3 torneios (1982, 1986, 1990). Inglaterra chegou às meias-finais de 1990 com ele na baliza." },
   { cat:'Drama', en:"In the 1986 quarter-final, Diego Maradona scored arguably the two greatest contrasting goals in history within 4 minutes: the infamous 'Hand of God' and the magnificent solo 'Goal of the Century' against England.", pt:"No quarto de final de 1986, Diego Maradona marcou os dois gols mais contrastantes da história com 4 minutos de diferença: a infame 'Mão de Deus' e o magnífico golo individual do 'Golo do Século' contra Inglaterra." },
   { cat:'Record', en:"The 2022 World Cup in Qatar was the first held in the Middle East and the first played in November–December to avoid extreme summer heat. It was also the most expensive World Cup ever, costing an estimated $220 billion.", pt:"O Mundial 2022 no Qatar foi o primeiro no Médio Oriente e o primeiro disputado em novembro-dezembro para evitar o calor extremo do verão. Foi também o mais caro de sempre, custando cerca de 220 mil milhões de dólares." },
-  { cat:'Legend', en:"Ronaldo Nazário missed the 1998 World Cup final through illness — he had a mysterious seizure the night before. Brazil lost 3–0 to France. He came back in 2002 to score twice in the final and win the Golden Boot.", pt:"Ronaldo Nazário faltou à final do Mundial de 1998 por doença — sofreu uma convulsão misteriosa na véspera. O Brasil perdeu 3–0 para França. Voltou em 2002, marcou dois gols na final e ganhou a Bota de Ouro." },
-  { cat:'Referee', en:"In the 2010 final between Spain and Netherlands, referee Howard Webb showed 14 yellow cards — a World Cup final record. The Netherlands received 9 yellows and 1 red. Spain won 1–0 in extra time.", pt:"Na final de 2010 entre Espanha e Holanda, o árbitro Howard Webb mostrou 14 cartões amarelos — recorde numa final. A Holanda recebeu 9 amarelos e 1 vermelho. A Espanha venceu 1–0 no prolongamento." },
-  { cat:'Goals', en:"Oleg Salenko of Russia scored 5 goals in a single World Cup game against Cameroon in 1994 — the most goals scored by one player in a single match in World Cup history.", pt:"Oleg Salenko da Rússia marcou 5 gols num único jogo do Mundial contra os Camarões em 1994 — o maior número de gols marcados por um jogador num único jogo na história dos Mundiais." },
-  { cat:'History', en:"The 1934 and 1938 World Cups were both won by the host nation — Italy in 1934 and France in 1938 (played in France). No host nation has won the World Cup since France in 1998.", pt:"Os Mundiais de 1934 e 1938 foram ambos vencidos pelo país anfitrião — Itália em 1934 e França em 1938 (disputado em França). Nenhum anfitrião ganhou o Mundial desde França em 1998." },
+  { cat:'Legend', en:"Ronaldo Nazário missed the 1998 World Cup final through illness, he had a mysterious seizure the night before. Brazil lost 3–0 to France. He came back in 2002 to score twice in the final and win the Golden Boot.", pt:"Ronaldo Nazário faltou à final do Mundial de 1998 por doença, sofreu uma convulsão misteriosa na véspera. O Brasil perdeu 3–0 para França. Voltou em 2002, marcou dois gols na final e ganhou a Bota de Ouro." },
+  { cat:'Referee', en:"In the 2010 final between Spain and Netherlands, referee Howard Webb showed 14 yellow cards, a World Cup final record. The Netherlands received 9 yellows and 1 red. Spain won 1–0 in extra time.", pt:"Na final de 2010 entre Espanha e Holanda, o árbitro Howard Webb mostrou 14 cartões amarelos, recorde numa final. A Holanda recebeu 9 amarelos e 1 vermelho. A Espanha venceu 1–0 no prolongamento." },
+  { cat:'Goals', en:"Oleg Salenko of Russia scored 5 goals in a single World Cup game against Cameroon in 1994, the most goals scored by one player in a single match in World Cup history.", pt:"Oleg Salenko da Rússia marcou 5 gols num único jogo do Mundial contra os Camarões em 1994, o maior número de gols marcados por um jogador num único jogo na história dos Mundiais." },
+  { cat:'History', en:"The 1934 and 1938 World Cups were both won by the host nation, Italy in 1934 and France in 1938 (played in France). No host nation has won the World Cup since France in 1998.", pt:"Os Mundiais de 1934 e 1938 foram ambos vencidos pelo país anfitrião, Itália em 1934 e França em 1938 (disputado em França). Nenhum anfitrião ganhou o Mundial desde França em 1998." },
   { cat:'2026', en:"The 2026 World Cup will be hosted across 16 cities in 3 countries: 11 in the USA (including New York, Los Angeles, Dallas, Miami), 3 in Mexico (Mexico City, Guadalajara, Monterrey) and 2 in Canada (Toronto, Vancouver).", pt:"O Mundial 2026 será disputado em 16 cidades em 3 países: 11 nos EUA (incluindo Nova Iorque, Los Angeles, Dallas, Miami), 3 no México (Cidade do México, Guadalajara, Monterrey) e 2 no Canadá (Toronto, Vancouver)." },
   { cat:'Record', en:"The most red cards shown in a single World Cup tournament was in 2006 Germany, with 28 red cards across all matches. Zinedine Zidane's final headbutt was just one of them.", pt:"O maior número de cartões vermelhos num único torneio do Mundial foi em 2006 na Alemanha, com 28 cartões vermelhos em todos os jogos. A cabeçada final de Zinedine Zidane foi apenas um deles." },
-  { cat:'Young', en:"Norman Whiteside of Northern Ireland became the youngest player ever to appear in a World Cup in 1982, aged just 17 years and 41 days — beating Pelé's previous record by over 200 days.", pt:"Norman Whiteside da Irlanda do Norte tornou-se o jogador mais jovem de sempre a aparecer num Mundial em 1982, com apenas 17 anos e 41 dias — batendo o recorde anterior de Pelé por mais de 200 dias." },
+  { cat:'Young', en:"Norman Whiteside of Northern Ireland became the youngest player ever to appear in a World Cup in 1982, aged just 17 years and 41 days, beating Pelé's previous record by over 200 days.", pt:"Norman Whiteside da Irlanda do Norte tornou-se o jogador mais jovem de sempre a aparecer num Mundial em 1982, com apenas 17 anos e 41 dias, batendo o recorde anterior de Pelé por mais de 200 dias." },
   { cat:'Legend', en:"Lev Yashin, known as the 'Black Spider', is considered the greatest goalkeeper of all time. He saved over 150 penalty kicks throughout his career and is the only goalkeeper ever to win the Ballon d'Or (1963).", pt:"Lev Yashin, conhecido como a 'Aranha Negra', é considerado o maior guarda-redes de todos os tempos. Defendeu mais de 150 penáltis ao longo da carreira e é o único guarda-redes a ganhar a Bola de Ouro (1963)." },
-  { cat:'Drama', en:"In 1950, the USA shocked England 1–0 in the group stage — considered one of the biggest upsets in World Cup history. England were heavy favourites. The goal was scored by Haitian-born Joe Gaetjens.", pt:"Em 1950, os EUA surpreenderam Inglaterra 1–0 na fase de grupos — considerado um dos maiores resultados inesperados na história dos Mundiais. A Inglaterra era grande favorita. O golo foi marcado por Joe Gaetjens, nascido no Haiti." },
-  { cat:'Mineirazo', en:"Germany demolished hosts Brazil 7–1 in the 2014 World Cup semi-final in Belo Horizonte — the biggest ever defeat for Brazil. The match became known as the 'Mineirazo'. Germany scored 5 goals in 18 minutes.", pt:"A Alemanha demoliu o Brasil anfitrião 7–1 na meia-final do Mundial 2014 em Belo Horizonte — a maior derrota de sempre do Brasil. O jogo ficou conhecido como o 'Mineirazo'. A Alemanha marcou 5 gols em 18 minutos." },
-  { cat:'Finals', en:"The Netherlands have appeared in 3 World Cup finals — 1974, 1978 and 2010 — and lost every single one. No other country has played in 3 finals without ever winning the title.", pt:"A Holanda disputou 3 finais do Mundial — 1974, 1978 e 2010 — e perdeu todas. Nenhum outro país disputou 3 finais sem jamais vencer o título." },
-  { cat:'Goals', en:"Mario Götze scored one of the most famous goals in World Cup history — a stunning chest-and-volley in extra time of the 2014 final to give Germany a 1–0 win over Argentina. He was just 22 years old.", pt:"Mario Götze marcou um dos gols mais famosos da história do Mundial — um extraordinário peito-e-voleio no prolongamento da final de 2014 para dar à Alemanha uma vitória 1–0 sobre a Argentina. Tinha apenas 22 anos." },
-  { cat:'Rules', en:"The 'Golden Goal' rule — where the first goal in extra time wins the game instantly — was used at the 1998 and 2002 World Cups. France won the 1998 final under this rule. It was scrapped after 2002 due to negative tactics.", pt:"A regra do 'Golo de Ouro' — em que o primeiro golo no prolongamento vence o jogo instantaneamente — foi usada nos Mundiais de 1998 e 2002. A França venceu a final de 1998 com esta regra. Foi abolida após 2002 devido às táticas negativas que gerava." },
+  { cat:'Drama', en:"In 1950, the USA shocked England 1–0 in the group stage, considered one of the biggest upsets in World Cup history. England were heavy favourites. The goal was scored by Haitian-born Joe Gaetjens.", pt:"Em 1950, os EUA surpreenderam Inglaterra 1–0 na fase de grupos, considerado um dos maiores resultados inesperados na história dos Mundiais. A Inglaterra era grande favorita. O golo foi marcado por Joe Gaetjens, nascido no Haiti." },
+  { cat:'Mineirazo', en:"Germany demolished hosts Brazil 7–1 in the 2014 World Cup semi-final in Belo Horizonte, the biggest ever defeat for Brazil. The match became known as the 'Mineirazo'. Germany scored 5 goals in 18 minutes.", pt:"A Alemanha demoliu o Brasil anfitrião 7–1 na meia-final do Mundial 2014 em Belo Horizonte, a maior derrota de sempre do Brasil. O jogo ficou conhecido como o 'Mineirazo'. A Alemanha marcou 5 gols em 18 minutos." },
+  { cat:'Finals', en:"The Netherlands have appeared in 3 World Cup finals, 1974, 1978 and 2010, and lost every single one. No other country has played in 3 finals without ever winning the title.", pt:"A Holanda disputou 3 finais do Mundial, 1974, 1978 e 2010, e perdeu todas. Nenhum outro país disputou 3 finais sem jamais vencer o título." },
+  { cat:'Goals', en:"Mario Götze scored one of the most famous goals in World Cup history, a stunning chest-and-volley in extra time of the 2014 final to give Germany a 1–0 win over Argentina. He was just 22 years old.", pt:"Mario Götze marcou um dos gols mais famosos da história do Mundial, um extraordinário peito-e-voleio no prolongamento da final de 2014 para dar à Alemanha uma vitória 1–0 sobre a Argentina. Tinha apenas 22 anos." },
+  { cat:'Rules', en:"The 'Golden Goal' rule, where the first goal in extra time wins the game instantly, was used at the 1998 and 2002 World Cups. France won the 1998 final under this rule. It was scrapped after 2002 due to negative tactics.", pt:"A regra do 'Golo de Ouro', em que o primeiro golo no prolongamento vence o jogo instantaneamente, foi usada nos Mundiais de 1998 e 2002. A França venceu a final de 1998 com esta regra. Foi abolida após 2002 devido às táticas negativas que gerava." },
   { cat:'Young', en:"Kylian Mbappé became the second player ever (after Pelé in 1958) to score in a World Cup final as a teenager. At the 2018 World Cup he was named Best Young Player and finished the tournament with 4 goals for France.", pt:"Kylian Mbappé tornou-se o segundo jogador de sempre (depois de Pelé em 1958) a marcar numa final do Mundial ainda adolescente. No Mundial de 2018 foi eleito Melhor Jogador Jovem e terminou o torneio com 4 gols pela França." },
-  { cat:'History', en:"The 1962 World Cup in Chile featured the infamous 'Battle of Santiago' — Chile vs Italy was so violent that the referee called the police onto the pitch. Two Italian players were sent off and several punches were thrown.", pt:"O Mundial de 1962 no Chile teve a infame 'Batalha de Santiago' — Chile vs Itália foi tão violento que o árbitro chamou a polícia para o relvado. Dois jogadores italianos foram expulsos e houve vários socos." },
-  { cat:'Goals', en:"Paolo Rossi was Italy's hero at the 1982 World Cup, top-scoring with 6 goals — including a hat-trick to eliminate Brazil. He had returned from a 2-year match-fixing ban just months earlier. Italy went on to win the title.", pt:"Paolo Rossi foi o herói da Itália no Mundial de 1982, marcando 6 gols — incluindo um hat-trick para eliminar o Brasil. Tinha regressado de uma suspensão de 2 anos por manipulação de resultados apenas meses antes. A Itália acabou por ganhar o título." },
-  { cat:'History', en:"The official ball of the 1970 World Cup was the 'Telstar' — the iconic black-and-white pentagonal design. It was chosen to be visible on black-and-white televisions, which were still common worldwide at the time.", pt:"A bola oficial do Mundial de 1970 era a 'Telstar' — o icónico design preto e branco pentagonal. Foi escolhida para ser visível nas televisões a preto e branco, que ainda eram comuns em todo o mundo na altura." },
+  { cat:'History', en:"The 1962 World Cup in Chile featured the infamous 'Battle of Santiago', Chile vs Italy was so violent that the referee called the police onto the pitch. Two Italian players were sent off and several punches were thrown.", pt:"O Mundial de 1962 no Chile teve a infame 'Batalha de Santiago', Chile vs Itália foi tão violento que o árbitro chamou a polícia para o relvado. Dois jogadores italianos foram expulsos e houve vários socos." },
+  { cat:'Goals', en:"Paolo Rossi was Italy's hero at the 1982 World Cup, top-scoring with 6 goals, including a hat-trick to eliminate Brazil. He had returned from a 2-year match-fixing ban just months earlier. Italy went on to win the title.", pt:"Paolo Rossi foi o herói da Itália no Mundial de 1982, marcando 6 gols, incluindo um hat-trick para eliminar o Brasil. Tinha regressado de uma suspensão de 2 anos por manipulação de resultados apenas meses antes. A Itália acabou por ganhar o título." },
+  { cat:'History', en:"The official ball of the 1970 World Cup was the 'Telstar', the iconic black-and-white pentagonal design. It was chosen to be visible on black-and-white televisions, which were still common worldwide at the time.", pt:"A bola oficial do Mundial de 1970 era a 'Telstar', o icónico design preto e branco pentagonal. Foi escolhida para ser visível nas televisões a preto e branco, que ainda eram comuns em todo o mundo na altura." },
   { cat:'Africa', en:"Cameroon became the first African team to reach a World Cup quarter-final in 1990, defeating Colombia in extra time. Roger Milla came off the bench and scored twice in that match, becoming a global icon at age 38.", pt:"Os Camarões tornaram-se a primeira equipa africana a chegar aos quartos-de-final do Mundial em 1990, eliminando a Colômbia no prolongamento. Roger Milla entrou como suplente e marcou dois gols nesse jogo, tornando-se um ícone mundial aos 38 anos." },
-  { cat:'Drama', en:"In the 1990 World Cup semi-final, England lost on penalties to West Germany. Stuart Pearce and Chris Waddle both missed their penalties. Images of Pearce's anguish became iconic — he later redeemed himself at Euro 1996.", pt:"Na meia-final do Mundial de 1990, a Inglaterra perdeu nas grandes penalidades para a Alemanha Ocidental. Stuart Pearce e Chris Waddle falharam os seus penáltis. As imagens da angústia de Pearce tornaram-se icónicas — ele redimiu-se mais tarde no Euro 1996." },
-  { cat:'Women', en:"The first ever FIFA Women's World Cup was held in China in 1991. The USA won the inaugural title, beating Norway 2–1 in the final. The tournament had 12 teams — compared to 32 nations in the modern Women's World Cup.", pt:"O primeiro Mundial Feminino da FIFA foi realizado na China em 1991. Os EUA ganharam o título inaugural, batendo a Noruega 2–1 na final. O torneio tinha 12 equipas — comparado com 32 nações no moderno Mundial Feminino." },
-  { cat:'Skill', en:"The 'Cruyff Turn' — one of football's most iconic dribbling moves — was unveiled by Johan Cruyff of the Netherlands at the 1974 World Cup against Sweden. The move is still taught to children worldwide over 50 years later.", pt:"A 'Cruyff Turn' — uma das jogadas de drible mais icónicas do futebol — foi revelada por Johan Cruyff da Holanda no Mundial de 1974 contra a Suécia. A jogada ainda é ensinada a crianças em todo o mundo mais de 50 anos depois." },
-  { cat:'Record', en:"The oldest player ever to appear in a World Cup match is Essam El-Hadary of Egypt, who played in the 2018 World Cup aged 45 years and 161 days — even saving a penalty against Saudi Arabia.", pt:"O jogador mais velho de sempre a aparecer num jogo do Mundial é Essam El-Hadary do Egito, que jogou no Mundial de 2018 com 45 anos e 161 dias — chegando mesmo a defender um penálti frente à Arábia Saudita." },
-  { cat:'Goals', en:"Geoff Hurst is the only player ever to score a hat-trick in a World Cup final. His famous 'Did it cross the line?' second goal in the 1966 final vs West Germany remains one of football's most debated moments. England won 4–2.", pt:"Geoff Hurst é o único jogador de sempre a marcar um hat-trick numa final do Mundial. O seu famoso segundo golo em 1966 frente à Alemanha Ocidental — 'Será que entrou?' — continua a ser um dos momentos mais debatidos do futebol. Inglaterra venceu 4–2." },
-  { cat:'Record', en:"Hungary scored the most goals in a single World Cup tournament: 27 goals in 5 matches at the 1954 World Cup — averaging 5.4 goals per game. They were heavy favourites but lost the final to West Germany 3–2 in what became known as the 'Miracle of Bern'.", pt:"A Hungria marcou o maior número de gols num único torneio do Mundial: 27 gols em 5 jogos no Mundial de 1954 — uma média de 5,4 gols por jogo. Eram os grandes favoritos mas perderam a final para a Alemanha Ocidental 3–2 no que ficou conhecido como o 'Milagre de Berna'." },
+  { cat:'Drama', en:"In the 1990 World Cup semi-final, England lost on penalties to West Germany. Stuart Pearce and Chris Waddle both missed their penalties. Images of Pearce's anguish became iconic, he later redeemed himself at Euro 1996.", pt:"Na meia-final do Mundial de 1990, a Inglaterra perdeu nas grandes penalidades para a Alemanha Ocidental. Stuart Pearce e Chris Waddle falharam os seus penáltis. As imagens da angústia de Pearce tornaram-se icónicas, ele redimiu-se mais tarde no Euro 1996." },
+  { cat:'Women', en:"The first ever FIFA Women's World Cup was held in China in 1991. The USA won the inaugural title, beating Norway 2–1 in the final. The tournament had 12 teams, compared to 32 nations in the modern Women's World Cup.", pt:"O primeiro Mundial Feminino da FIFA foi realizado na China em 1991. Os EUA ganharam o título inaugural, batendo a Noruega 2–1 na final. O torneio tinha 12 equipas, comparado com 32 nações no moderno Mundial Feminino." },
+  { cat:'Skill', en:"The 'Cruyff Turn', one of football's most iconic dribbling moves, was unveiled by Johan Cruyff of the Netherlands at the 1974 World Cup against Sweden. The move is still taught to children worldwide over 50 years later.", pt:"A 'Cruyff Turn', uma das jogadas de drible mais icónicas do futebol, foi revelada por Johan Cruyff da Holanda no Mundial de 1974 contra a Suécia. A jogada ainda é ensinada a crianças em todo o mundo mais de 50 anos depois." },
+  { cat:'Record', en:"The oldest player ever to appear in a World Cup match is Essam El-Hadary of Egypt, who played in the 2018 World Cup aged 45 years and 161 days, even saving a penalty against Saudi Arabia.", pt:"O jogador mais velho de sempre a aparecer num jogo do Mundial é Essam El-Hadary do Egito, que jogou no Mundial de 2018 com 45 anos e 161 dias, chegando mesmo a defender um penálti frente à Arábia Saudita." },
+  { cat:'Goals', en:"Geoff Hurst is the only player ever to score a hat-trick in a World Cup final. His famous 'Did it cross the line?' second goal in the 1966 final vs West Germany remains one of football's most debated moments. England won 4–2.", pt:"Geoff Hurst é o único jogador de sempre a marcar um hat-trick numa final do Mundial. O seu famoso segundo golo em 1966 frente à Alemanha Ocidental, 'Será que entrou?', continua a ser um dos momentos mais debatidos do futebol. Inglaterra venceu 4–2." },
+  { cat:'Record', en:"Hungary scored the most goals in a single World Cup tournament: 27 goals in 5 matches at the 1954 World Cup, averaging 5.4 goals per game. They were heavy favourites but lost the final to West Germany 3–2 in what became known as the 'Miracle of Bern'.", pt:"A Hungria marcou o maior número de gols num único torneio do Mundial: 27 gols em 5 jogos no Mundial de 1954, uma média de 5,4 gols por jogo. Eram os grandes favoritos mas perderam a final para a Alemanha Ocidental 3–2 no que ficou conhecido como o 'Milagre de Berna'." },
 ];
 
 const QUICK_FACTS = [
   { en:"🏆 Only 8 countries have ever won the World Cup", pt:"🏆 Apenas 8 países já venceram a Copa do Mundo" },
-  { en:"⚽ Pelé won 3 World Cups — 1958, 1962 & 1970", pt:"⚽ Pelé ganhou 3 Copas — 1958, 1962 e 1970" },
-  { en:"🥅 Klose: 16 WC goals — all-time record", pt:"🥅 Klose: 16 gols em Copas — recorde histórico" },
+  { en:"⚽ Pelé won 3 World Cups, 1958, 1962 & 1970", pt:"⚽ Pelé ganhou 3 Copas, 1958, 1962 e 1970" },
+  { en:"🥅 Klose: 16 WC goals, all-time record", pt:"🥅 Klose: 16 gols em Copas, recorde histórico" },
   { en:"⚡ Fastest goal: Şükür in 11 seconds (2002)", pt:"⚡ Gol mais rápido: Şükür em 11 segundos (2002)" },
   { en:"👴 Oldest scorer: Roger Milla, age 42 (1994)", pt:"👴 Goleador mais velho: Roger Milla, 42 anos (1994)" },
   { en:"🇧🇷 Brazil played every WC since 1930", pt:"🇧🇷 Brasil jogou todas as Copas desde 1930" },
@@ -1516,28 +2196,28 @@ const QUIZ_QUESTIONS = [
     qPt:"Qual país sediou a primeira Copa do Mundo da FIFA em 1930?", aPt:"Uruguai", optsPt:["Brasil","França","Uruguai","Itália"] },
   { q:"Which country has won the most FIFA World Cup titles?", a:"Brazil (5 titles)", opts:["Germany","Italy","Argentina","Brazil (5 titles)"],
     qPt:"Qual país ganhou mais títulos da Copa do Mundo da FIFA?", aPt:"Brasil (5 títulos)", optsPt:["Alemanha","Itália","Argentina","Brasil (5 títulos)"] },
-  { q:"Who scored the fastest goal in World Cup history — in just 11 seconds?", a:"Hakan Şükür (Turkey, 2002)", opts:["Inzaghi","Ronaldo","Hakan Şükür (Turkey, 2002)","Owen"],
-    qPt:"Quem marcou o gol mais rápido da história da Copa — em apenas 11 segundos?", aPt:"Hakan Şükür (Turquia, 2002)", optsPt:["Inzaghi","Ronaldo","Hakan Şükür (Turquia, 2002)","Owen"] },
+  { q:"Who scored the fastest goal in World Cup history, in just 11 seconds?", a:"Hakan Şükür (Turkey, 2002)", opts:["Inzaghi","Ronaldo","Hakan Şükür (Turkey, 2002)","Owen"],
+    qPt:"Quem marcou o gol mais rápido da história da Copa, em apenas 11 segundos?", aPt:"Hakan Şükür (Turquia, 2002)", optsPt:["Inzaghi","Ronaldo","Hakan Şükür (Turquia, 2002)","Owen"] },
   { q:"Which country won the FIFA World Cup in 2010?", a:"Spain", opts:["Germany","Netherlands","Brazil","Spain"],
     qPt:"Qual país ganhou a Copa do Mundo da FIFA em 2010?", aPt:"Espanha", optsPt:["Alemanha","Holanda","Brasil","Espanha"] },
   { q:"Who is the all-time top scorer in World Cup history with 16 goals?", a:"Miroslav Klose", opts:["Pelé","Ronaldo Nazário","Just Fontaine","Miroslav Klose"],
     qPt:"Quem é o maior artilheiro de todos os tempos na Copa do Mundo com 16 gols?", aPt:"Miroslav Klose", optsPt:["Pelé","Ronaldo Nazário","Just Fontaine","Miroslav Klose"] },
-  { q:"Just Fontaine scored how many goals in the 1958 World Cup — a record that still stands?", a:"13 goals", opts:["8 goals","10 goals","13 goals","16 goals"],
-    qPt:"Quantos gols Just Fontaine marcou na Copa de 1958 — recorde que ainda existe?", aPt:"13 gols", optsPt:["8 gols","10 gols","13 gols","16 gols"] },
+  { q:"Just Fontaine scored how many goals in the 1958 World Cup, a record that still stands?", a:"13 goals", opts:["8 goals","10 goals","13 goals","16 goals"],
+    qPt:"Quantos gols Just Fontaine marcou na Copa de 1958, recorde que ainda existe?", aPt:"13 gols", optsPt:["8 gols","10 gols","13 gols","16 gols"] },
   { q:"By what scoreline did Germany defeat Brazil in the 2014 World Cup semi-final?", a:"7–1", opts:["5–0","6–1","7–1","4–0"],
     qPt:"Por qual placar a Alemanha derrotou o Brasil na semifinal da Copa 2014?", aPt:"7–1", optsPt:["5–0","6–1","7–1","4–0"] },
   { q:"In which year did Diego Maradona score his infamous 'Hand of God' goal against England?", a:"1986", opts:["1982","1986","1990","1994"],
     qPt:"Em que ano Diego Maradona marcou seu famoso gol de 'Mão de Deus' contra a Inglaterra?", aPt:"1986", optsPt:["1982","1986","1990","1994"] },
   { q:"Who scored the winning goal for Germany in extra time of the 2014 World Cup final?", a:"Mario Götze", opts:["Thomas Müller","Toni Kroos","Mesut Özil","Mario Götze"],
     qPt:"Quem marcou o gol da vitória da Alemanha na prorrogação da final da Copa 2014?", aPt:"Mario Götze", optsPt:["Thomas Müller","Toni Kroos","Mesut Özil","Mario Götze"] },
-  { q:"The Netherlands have appeared in 3 World Cup finals — how many did they win?", a:"None — 0 wins", opts:["1","2","3","None — 0 wins"],
-    qPt:"A Holanda disputou 3 finais de Copa do Mundo — quantas venceu?", aPt:"Nenhuma — 0 vitórias", optsPt:["1","2","3","Nenhuma — 0 vitórias"] },
+  { q:"The Netherlands have appeared in 3 World Cup finals, how many did they win?", a:"None, 0 wins", opts:["1","2","3","None, 0 wins"],
+    qPt:"A Holanda disputou 3 finais de Copa do Mundo, quantas venceu?", aPt:"Nenhuma, 0 vitórias", optsPt:["1","2","3","Nenhuma, 0 vitórias"] },
   { q:"Which player won the Best Young Player award at the 2018 World Cup?", a:"Kylian Mbappé", opts:["Pogba","Griezmann","Mbappé","Dembélé"],
     qPt:"Qual jogador ganhou o prêmio de Melhor Jovem da Copa do Mundo 2018?", aPt:"Kylian Mbappé", optsPt:["Pogba","Griezmann","Mbappé","Dembélé"] },
   { q:"The Jules Rimet Trophy was stolen in England in 1966. Who found it?", a:"A dog named Pickles", opts:["A police officer","A child in a park","A janitor","A dog named Pickles"],
     qPt:"O troféu Jules Rimet foi roubado na Inglaterra em 1966. Quem o encontrou?", aPt:"Um cachorro chamado Pickles", optsPt:["Um policial","Uma criança no parque","Um zelador","Um cachorro chamado Pickles"] },
-  { q:"Roger Milla became the oldest World Cup goal scorer in 1994 — at what age?", a:"42 years old", opts:["38 years old","40 years old","42 years old","44 years old"],
-    qPt:"Roger Milla tornou-se o artilheiro mais velho da Copa em 1994 — com quantos anos?", aPt:"42 anos", optsPt:["38 anos","40 anos","42 anos","44 anos"] },
+  { q:"Roger Milla became the oldest World Cup goal scorer in 1994, at what age?", a:"42 years old", opts:["38 years old","40 years old","42 years old","44 years old"],
+    qPt:"Roger Milla tornou-se o artilheiro mais velho da Copa em 1994, com quantos anos?", aPt:"42 anos", optsPt:["38 anos","40 anos","42 anos","44 anos"] },
   { q:"Oleg Salenko set the record for most goals by one player in a single World Cup game. How many?", a:"5 goals vs Cameroon (1994)", opts:["3","4","5 goals vs Cameroon (1994)","6"],
     qPt:"Oleg Salenko bateu o recorde de mais gols por jogador em um único jogo da Copa. Quantos?", aPt:"5 gols contra Camarões (1994)", optsPt:["3","4","5 gols contra Camarões (1994)","6"] },
   { q:"Which nation became the first African team to reach a World Cup quarter-final?", a:"Cameroon (1990)", opts:["Nigeria","Ghana","Senegal","Cameroon (1990)"],
@@ -1580,7 +2260,7 @@ function renderQuiz() {
       <div class="quiz-result-card">
         <div style="font-size:4rem">${emoji}</div>
         <div class="quiz-result-score">${quizCorrect} / ${QUIZ_QUESTIONS.length}</div>
-        <div class="quiz-result-label">${pct}% ${T('correct','correto')}${pct>=80?' — '+T('World Cup expert!','Craque da Copa!'):pct>=60?' — '+T('Good knowledge!','Bom conhecimento!'):pct>=40?' — '+T('Not bad!','Nada mau!'):' — '+T('Keep learning!','Continue aprendendo!')}</div>
+        <div class="quiz-result-label">${pct}% ${T('correct','correto')} · ${pct>=80?T('World Cup expert!','Craque da Copa!'):pct>=60?T('Good knowledge!','Bom conhecimento!'):pct>=40?T('Not bad!','Nada mau!'):T('Keep learning!','Continue aprendendo!')}</div>
         <button class="btn" style="margin-top:24px" onclick="startQuiz()">🔄 ${T('Play Again','Jogar Novamente')}</button>
       </div>`;
     return;
@@ -1682,7 +2362,7 @@ async function sendMessage() {
   input.value = '';
   const { error } = await db.from('messages').insert({
     participant_id: currentUser.id,
-    participant_name: currentUser.name,
+    participant_name: dName(currentUser),
     avatar_url: currentUser.avatar_url || null,
     body
   });
@@ -1726,12 +2406,13 @@ function flagImg(team, size=38) {
 
 function avHtml(user, size=36){
   const s=`width:${size}px;height:${size}px;font-size:${Math.round(size*.38)}px`;
-  if(!user?.name) return `<span class="av" style="${s};background:var(--border)">?</span>`;
+  if(!user?.name&&!user?.display_name) return `<span class="av" style="${s};background:var(--border)">?</span>`;
   const url=user.avatar_url;
   if(url?.startsWith('http')) return `<span class="av" style="${s}"><img src="${url}" alt=""/></span>`;
   if(url) return `<span class="av" style="${s};background:var(--mid);font-size:${Math.round(size*.55)}px">${url}</span>`;
-  const col=AV_COLORS[user.name.charCodeAt(0)%AV_COLORS.length];
-  return `<span class="av" style="${s};background:${col};color:#fff">${user.name.charAt(0).toUpperCase()}</span>`;
+  const n=dName(user);
+  const col=AV_COLORS[n.charCodeAt(0)%AV_COLORS.length];
+  return `<span class="av" style="${s};background:${col};color:#fff">${n.charAt(0).toUpperCase()}</span>`;
 }
 
 function openAvPicker(){
@@ -1795,7 +2476,7 @@ async function removeMyAv(){
 // ── HELPERS ────────────────────────────────────────────────────
 function phaseBanner(label,open,extra=''){
   return `<div class="phase-banner"><div class="phase-dot ${open?'':'off'}"></div>
-    <div>${label}: <strong>${open?T('OPEN','ABERTO'):T('CLOSED','FECHADO')}</strong>${extra?' — '+extra:''}</div></div>`;
+    <div>${label}: <strong>${open?T('OPEN','ABERTO'):T('CLOSED','FECHADO')}</strong>${extra?' · '+extra:''}</div></div>`;
 }
 function userBar(){
   if(!currentUser) return '';
