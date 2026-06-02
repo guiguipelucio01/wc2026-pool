@@ -499,18 +499,12 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <div class="hero">
     <span class="hero-trophy">🏆</span>
     <div class="hero-title" data-en="FIFA World Cup 2026" data-pt="Copa do Mundo FIFA 2026">FIFA World Cup 2026</div>
-    <div class="hero-hosts" style="display:flex;align-items:center;justify-content:center;gap:28px;margin:14px 0 10px">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-        <img src="https://flagcdn.com/w80/ca.png" width="80" style="border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,.5)" alt="Canada"/>
-        <span style="font-size:.7rem;color:var(--muted);letter-spacing:.05em;font-weight:600">CANADA</span>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-        <img src="https://flagcdn.com/w80/mx.png" width="80" style="border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,.5)" alt="Mexico"/>
-        <span style="font-size:.7rem;color:var(--muted);letter-spacing:.05em;font-weight:600">MEXICO</span>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-        <img src="https://flagcdn.com/w80/us.png" width="80" style="border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,.5)" alt="USA"/>
-        <span style="font-size:.7rem;color:var(--muted);letter-spacing:.05em;font-weight:600">USA</span>
+    <div class="hero-hosts" style="margin:10px 0 6px">
+      <img src="fifa-world-cup-mascots-2026.png" alt="WC2026 Mascots" style="width:100%;max-width:340px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))"/>
+      <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-top:8px">
+        <span style="font-size:.65rem;color:var(--muted);letter-spacing:.06em;font-weight:600">🇨🇦 CANADA</span>
+        <span style="font-size:.65rem;color:var(--muted);letter-spacing:.06em;font-weight:600">🇲🇽 MEXICO</span>
+        <span style="font-size:.65rem;color:var(--muted);letter-spacing:.06em;font-weight:600">🇺🇸 USA</span>
       </div>
     </div>
     <div class="hero-divider"></div>
@@ -1009,7 +1003,7 @@ function renderHome() {
     &nbsp;+${sc.ko_exact_score||2} ${T('pts: Exact score (bonus)','pts: Resultado exato (bônus)')}<br>
     <strong style="color:var(--text);display:block;margin-top:6px">${T('Awards','Prêmios')}</strong><br>
     &nbsp;+${sc.award_winner||5} ${T('pts: Winner, Top Scorer, Best Player, Best GK','pts: Campeão, Marcador, Jogador, GR')}<br>
-    &nbsp;+${sc.award_best_young||3} ${T('pts: Best Young Player','pts: Melhor Jovem')}`;
+    &nbsp;+${sc.award_best_young||5} ${T('pts: Best Young Player','pts: Melhor Jovem')}`;
 }
 
 // ── REGISTER ───────────────────────────────────────────────────
