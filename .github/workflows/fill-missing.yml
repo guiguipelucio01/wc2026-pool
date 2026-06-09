@@ -1,0 +1,25 @@
+name: Fill Missing Group Predictions
+
+on:
+  schedule:
+    - cron: "50 19 11 6 *"   # June 11 at 19:50 UTC — 10 min before first kickoff (20:00 UTC)
+  workflow_dispatch:           # manual trigger if needed
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Supabase client
+        run: npm install @supabase/supabase-js
+
+      - name: Fill missing predictions
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node fill-missing.js
