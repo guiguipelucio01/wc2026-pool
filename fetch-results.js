@@ -40,10 +40,23 @@ function norm(name = "") {
   return NAME_MAP[n] || n;
 }
 
+async function fetchWithRetry(url, options, retries = 3, delayMs = 2000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fetch(url, options);
+    } catch (err) {
+      if (attempt === retries) throw err;
+      console.log(`  Attempt ${attempt} failed (${err.cause?.code || err.message}), retrying in ${delayMs / 1000}s...`);
+      await new Promise(r => setTimeout(r, delayMs));
+      delayMs *= 2;
+    }
+  }
+}
+
 async function run() {
   console.log("Fetching finished WC 2026 matches from football-data.org...");
 
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://api.football-data.org/v4/competitions/${WC_COMPETITION_ID}/matches?status=FINISHED`,
     { headers: { "X-Auth-Token": API_KEY } }
   );
