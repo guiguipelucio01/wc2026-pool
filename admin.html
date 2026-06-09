@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>WC 2026 — Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--gold:#c9a84c;--dark:#0a0f1e;--mid:#111827;--card:#1a2235;--border:#2a3550;--text:#e8eaf0;--muted:#8090b0;--green:#22c55e;--red:#ef4444;--blue:#3b82f6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--dark);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+header{background:linear-gradient(135deg,#1a0808,#3a1010);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--red);position:sticky;top:0;z-index:100}
+.logo{font-size:1.2rem;font-weight:700;color:var(--red)}
+nav{display:flex;gap:4px;background:var(--mid);padding:10px 20px;border-bottom:1px solid var(--border);overflow-x:auto}
+nav button{background:none;border:none;color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;white-space:nowrap;transition:all .2s}
+nav button.active,nav button:hover{background:var(--card);color:var(--gold)}
+.container{max-width:960px;margin:0 auto;padding:20px}
+.page{display:none}.page.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+h2{font-size:1.3rem;color:var(--gold);margin-bottom:16px}
+h3{font-size:1rem;color:var(--text);margin-bottom:10px}
+.form-group{margin-bottom:14px}
+label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px;font-weight:500}
+input,select{width:100%;background:var(--mid);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:.9rem;outline:none;transition:border .2s}
+input:focus,select:focus{border-color:var(--gold)}
+.btn{background:linear-gradient(135deg,var(--gold),#e8b84b);color:var(--dark);border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.9rem;transition:all .2s}
+.btn:hover{opacity:.9}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-green{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
+.btn-outline{background:none;border:1px solid var(--gold);color:var(--gold)}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.85rem;line-height:1.5}
+.alert-success{background:rgba(34,197,94,.15);border:1px solid var(--green);color:var(--green)}
+.alert-error{background:rgba(239,68,68,.15);border:1px solid var(--red);color:var(--red)}
+.alert-warn{background:rgba(251,191,36,.15);border:1px solid #fbbf24;color:#fbbf24}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 10px;font-size:.75rem;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase}
+td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:.85rem}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:600}
+.badge-green{background:rgba(34,197,94,.2);color:var(--green)}
+.badge-red{background:rgba(239,68,68,.2);color:var(--red)}
+.badge-blue{background:rgba(59,130,246,.2);color:var(--blue)}
+.toggle{display:flex;align-items:center;gap:12px;padding:14px;background:var(--mid);border-radius:8px;margin-bottom:8px}
+.toggle-label{flex:1}.toggle-label strong{display:block}.toggle-label span{font-size:.8rem;color:var(--muted)}
+.switch{position:relative;display:inline-block;width:50px;height:26px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--border);transition:.3s;border-radius:26px}
+.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#fff;transition:.3s;border-radius:50%}
+input:checked+.slider{background:var(--green)}
+input:checked+.slider:before{transform:translateX(24px)}
+.score-row{display:grid;grid-template-columns:1fr 80px 40px;gap:10px;align-items:center;padding:10px;background:var(--mid);border-radius:8px;margin-bottom:8px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:var(--mid);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat-num{font-size:1.8rem;font-weight:700;color:var(--gold)}
+.stat-lbl{font-size:.75rem;color:var(--muted);margin-top:4px}
+.login-wrap{max-width:400px;margin:80px auto;text-align:center}
+.warn-box{background:rgba(239,68,68,.1);border:1px solid var(--red);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.85rem;color:#fca5a5;line-height:1.6}
+</style>
+</head>
+<body>
+
+<script>
+// Open admin.html locally (double-click). Never host it publicly.
+const SUPABASE_URL      = 'https://wyfomomcjevtjwqffbix.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
+</script>
+
+<!-- Login screen -->
+<div id="loginScreen" class="login-wrap">
+  <div class="card">
+    <div style="font-size:2.5rem;margin-bottom:10px">🔐</div>
+    <h2>Admin Panel</h2>
+    <p style="color:var(--muted);margin-bottom:16px;font-size:.9rem">FIFA World Cup 2026 Pool</p>
+    <div id="loginAlert"></div>
+    <div class="form-group">
+      <label>Admin Password</label>
+      <input type="password" id="adminPwd" placeholder="Enter password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    </div>
+    <button class="btn" style="width:100%" onclick="adminLogin()">Login →</button>
+  </div>
+</div>
+
+<!-- Main app (hidden until login) -->
+<div id="adminApp" style="display:none">
+<header>
+  <div class="logo">⚙️ WC 2026 Admin</div>
+  <button class="btn-outline btn" style="padding:6px 14px;font-size:.8rem" onclick="adminLogout()">Logout</button>
+</header>
+<nav>
+  <button class="active" data-page="dashboard"    onclick="showPage('dashboard',this)">📊 Dashboard</button>
+  <button               data-page="results"       onclick="showPage('results',this)">⚽ Results</button>
+  <button               data-page="phases"        onclick="showPage('phases',this)">🔓 Phases</button>
+  <button               data-page="scoring"       onclick="showPage('scoring',this)">⭐ Scoring</button>
+  <button               data-page="awards"        onclick="showPage('awards',this)">🥇 Awards</button>
+  <button               data-page="teams"         onclick="showPage('teams',this)">🌍 Teams</button>
+  <button               data-page="participants"  onclick="showPage('participants',this)">👥 Participants</button>
+  <button               data-page="recalc"        onclick="showPage('recalc',this)">🔄 Recalculate</button>
+  <button               data-page="chat"          onclick="showPage('chat',this)">💬 Chat</button>
+</nav>
+<div class="container">
+
+  <div id="page-dashboard" class="page active">
+    <h2>📊 Dashboard</h2>
+    <div class="stat-grid" id="dashStats"></div>
+    <div class="card" id="dashPhases"></div>
+  </div>
+
+  <div id="page-results" class="page">
+    <h2>⚽ Enter Match Results</h2>
+    <div id="resAlert"></div>
+    <div class="card" style="padding:14px;margin-bottom:14px">
+      <select id="roundFilter" onchange="loadResultMatches()">
+        <option value="group">Group Stage</option>
+        <option value="r32">Round of 32</option>
+        <option value="r16">Round of 16</option>
+        <option value="qf">Quarter-Finals</option>
+        <option value="sf">Semi-Finals</option>
+        <option value="third">3rd Place</option>
+        <option value="final">Final</option>
+      </select>
+    </div>
+    <div id="resList"></div>
+  </div>
+
+  <div id="page-phases" class="page">
+    <h2>🔓 Phase Control</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Changes are live immediately — all users see them instantly.</p>
+    <div id="phaseToggles"></div>
+
+    <div class="card" style="margin-top:24px">
+      <h3>🎲 Fill Missing Group Predictions</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Run this just before closing the group phase. Any participant who forgot to predict a match will get a random score filled in automatically.</p>
+      <div id="fillAlert" style="margin-bottom:12px"></div>
+      <button class="btn" id="fillMissingBtn" onclick="fillMissingPredictions()">🎲 Fill Missing Predictions</button>
+    </div>
+  </div>
+
+  <div id="page-scoring" class="page">
+    <h2>⭐ Scoring Settings</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">After saving, run Recalculate to update all scores.</p>
+    <div id="scoringList"></div>
+    <button class="btn" onclick="saveScoringSettings()">💾 Save Scoring</button>
+    <div id="scoringAlert" style="margin-top:12px"></div>
+  </div>
+
+  <div id="page-awards" class="page">
+    <h2>🥇 Award Results</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Enter actual winners after the tournament ends. Then run Recalculate.</p>
+    <div id="awdList"></div>
+    <button class="btn" onclick="saveAwardResults()">💾 Save Award Results</button>
+    <div id="awdAlert" style="margin-top:12px"></div>
+  </div>
+
+  <div id="page-teams" class="page">
+    <h2>🌍 Team Management</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Update TBD teams after playoff results (March 31, 2026). Click Save for each row.</p>
+    <div id="teamAlert"></div>
+    <div id="teamList"></div>
+  </div>
+
+  <div id="page-participants" class="page">
+    <h2>👥 Participants</h2>
+    <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn" style="width:auto" onclick="validateAll()">✅ Validate All</button>
+      <span style="color:var(--muted);font-size:.85rem">Validate players before the pool starts so they can submit predictions.</span>
+    </div>
+    <div id="participantList"></div>
+  </div>
+
+  <div id="page-chat" class="page">
+    <h2>💬 Chat Moderation</h2>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <p style="color:var(--muted);font-size:.85rem;margin:0">All messages. Click 🗑️ to delete one.</p>
+        <button class="btn btn-sm" style="background:#ef4444;color:#fff;width:auto" onclick="clearAllChat()">🗑️ Clear All Chat</button>
+      </div>
+      <div id="adminChatList"></div>
+    </div>
+  </div>
+
+  <div id="page-recalc" class="page">
+    <h2>🔄 Recalculate Scores</h2>
+    <div class="card">
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px">Recalculates every participant's score from scratch using current results and scoring settings. Run this after entering results, award winners, or changing point values.</p>
+      <div id="recalcAlert"></div>
+      <button class="btn btn-green" id="recalcBtn" onclick="recalculateAll()">▶ Recalculate All Scores Now</button>
+      <div id="recalcLog" style="display:none;margin-top:16px;font-family:monospace;font-size:.8rem;color:var(--muted);max-height:300px;overflow-y:auto;background:var(--mid);padding:12px;border-radius:8px;white-space:pre"></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /adminApp -->
+
+<script>
+const { createClient } = supabase;
+
+// Config validation on page load
+window.addEventListener('DOMContentLoaded', () => {
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+    document.getElementById('loginScreen').innerHTML = `<div class="card" style="max-width:440px;margin:0 auto;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:10px">⚙️</div>
+      <h2 style="color:var(--red);margin-bottom:10px">Configuration needed</h2>
+      <p style="color:var(--muted)">Open <code>admin.html</code> and fill in SUPABASE_URL and SUPABASE_ANON_KEY.</p>
+    </div>`;
+  }
+});
+
+// Single client with anon key — works in browser.
+// RLS must be disabled on admin-writeable tables (run the SQL in schema.sql).
+const dbPub = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Alias so all admin write calls use the same client
+const adminDb = (table) => dbPub.from(table);
+
+async function deleteStorageFile(bucket, path) {
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${encodeURIComponent(path)}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+  });
+  return { error: r.ok ? null : await r.json() };
+}
+
+let allMatches = [], allTeams = {}, scoringSettings = {}, tournamentSettings = {};
+
+const AWARD_INFO = [
+  {key:'winner',         icon:'🏆', label:'Tournament Winner'},
+  {key:'top_scorer',     icon:'⚽', label:'Top Scorer (Golden Boot)'},
+  {key:'best_player',    icon:'🌟', label:'Best Player (Golden Ball)'},
+  {key:'best_goalkeeper',icon:'🧤', label:'Best Goalkeeper (Golden Glove)'},
+  {key:'best_young',     icon:'🌱', label:'Best Young Player'},
+];
+const KO_LABELS = {r32:'Round of 32',r16:'Round of 16',qf:'Quarter-Finals',sf:'Semi-Finals',third:'3rd Place',final:'Final'};
+
+async function adminLogin() {
+  const pwd = document.getElementById('adminPwd').value;
+  const alertEl = document.getElementById('loginAlert');
+  const { data } = await dbPub.from('tournament_settings').select('value').eq('key','admin_password').single();
+  if (!data || data.value !== pwd) {
+    alertEl.innerHTML = '<div class="alert alert-error">Incorrect password.</div>';
+    return;
+  }
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'block';
+  await loadAdminData();
+  renderDashboard();
+}
+
+function adminLogout() {
+  document.getElementById('loginScreen').style.display = 'block';
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('adminPwd').value = '';
+}
+
+async function loadAdminData() {
+  const [tR, mR, sR, scR] = await Promise.all([
+    dbPub.from('teams').select('*').order('group_name').order('id'),
+    dbPub.from('matches').select('*').order('id'),
+    dbPub.from('tournament_settings').select('*'),
+    dbPub.from('scoring_settings').select('*'),
+  ]);
+  tR.data?.forEach(t => { allTeams[t.id] = t; });
+  if (mR.data) allMatches = mR.data;
+  sR.data?.forEach(s => { tournamentSettings[s.key] = s.value; });
+  scR.data?.forEach(s => { scoringSettings[s.key] = parseFloat(s.value); });
+  scoringSettings['award_best_young'] = 5;
+}
+
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name)?.classList.add('active');
+  document.querySelectorAll(`nav button[data-page="${name}"]`).forEach(b => b.classList.add('active'));
+  if (name === 'dashboard')   renderDashboard();
+  if (name === 'results')     loadResultMatches();
+  if (name === 'phases')      renderPhases();
+  if (name === 'scoring')     renderScoring();
+  if (name === 'awards')      renderAwards();
+  if (name === 'teams')       renderTeams();
+  if (name === 'participants')loadParticipants();
+  if (name === 'chat')        loadAdminChat();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+async function renderDashboard() {
+  const [pR, gR, aR] = await Promise.all([
+    dbPub.from('participants').select('id', {count:'exact', head:true}),
+    dbPub.from('group_predictions').select('id', {count:'exact', head:true}),
+    dbPub.from('award_predictions').select('id', {count:'exact', head:true}),
+  ]);
+  const done = allMatches.filter(m => m.home_goals != null).length;
+  document.getElementById('dashStats').innerHTML = [
+    {n:pR.count||0, l:'Participants', icon:'👥'},
+    {n:gR.count||0, l:'Group Predictions', icon:'⚽'},
+    {n:aR.count||0, l:'Award Predictions', icon:'🥇'},
+    {n:done,        l:'Results Entered', icon:'✅'},
+  ].map(s=>`<div class="stat-card"><div style="font-size:1.5rem">${s.icon}</div><div class="stat-num">${s.n}</div><div class="stat-lbl">${s.l}</div></div>`).join('');
+
+  document.getElementById('dashPhases').innerHTML = '<h3 style="margin-bottom:10px">Phase Status</h3>' +
+    ['group_phase_open','knockout_phase_open','awards_phase_open'].map(k => {
+      const open = tournamentSettings[k] === 'true';
+      const lbl  = {group_phase_open:'Group Stage',knockout_phase_open:'Knockout',awards_phase_open:'Awards'}[k];
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--mid);border-radius:8px;margin-bottom:6px">
+        <span>${lbl}</span><span class="badge badge-${open?'green':'red'}">${open?'OPEN':'CLOSED'}</span></div>`;
+    }).join('');
+}
+
+// ── RESULTS ───────────────────────────────────────────────────
+async function loadResultMatches() {
+  const round = document.getElementById('roundFilter').value;
+  const ms    = allMatches.filter(m => m.round === round);
+  const c     = document.getElementById('resList');
+  if (!ms.length) { c.innerHTML = '<div class="card" style="text-align:center;color:var(--muted);padding:30px">No matches for this round yet.</div>'; return; }
+  const isKO  = round !== 'group';
+
+  c.innerHTML = ms.map(m => {
+    const h  = allTeams[m.home_team_id], a = allTeams[m.away_team_id];
+    const hn = h ? `${h.flag} ${h.name_en}` : 'TBD';
+    const an = a ? `${a.flag} ${a.name_en}` : 'TBD';
+    const hg = m.home_goals != null ? m.home_goals : '';
+    const ag = m.away_goals != null ? m.away_goals : '';
+    const hp = m.home_penalties != null ? m.home_penalties : '';
+    const ap = m.away_penalties != null ? m.away_penalties : '';
+    const d  = m.match_date ? new Date(m.match_date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '';
+    const lbl= m.group_name ? 'Group '+m.group_name : KO_LABELS[round]||round;
+
+    return `<div class="card" style="padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:.8rem;color:var(--muted)">#${m.id} · ${d} · ${lbl}</span>
+        <span class="badge badge-${m.home_goals!=null?'green':'blue'}">${m.home_goals!=null?'✅ Done':'⏳ Pending'}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="text-align:right;font-weight:600">${hn}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="number" min="0" max="20" id="rh${m.id}" value="${hg}" placeholder="0" style="width:55px;text-align:center;font-size:1.1rem;font-weight:700"/>
+          <span style="color:var(--muted);font-weight:700">:</span>
+          <input type="number" min="0" max="20" id="ra${m.id}" value="${ag}" placeholder="0" style="width:55px;text-align:center;font-size:1.1rem;font-weight:700"/>
+        </div>
+        <div style="font-weight:600">${an}</div>
+      </div>
+      ${isKO ? `
+      <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin-bottom:10px">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Penalties — leave blank if none</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:.8rem;color:var(--muted)">${hn}</span>
+          <input type="number" min="0" max="20" id="rph${m.id}" value="${hp}" placeholder="—" style="width:50px;text-align:center"/>
+          <span style="color:var(--muted)">:</span>
+          <input type="number" min="0" max="20" id="rpa${m.id}" value="${ap}" placeholder="—" style="width:50px;text-align:center"/>
+          <span style="font-size:.8rem;color:var(--muted)">${an}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><label style="font-size:.75rem;color:var(--muted)">Home Team</label><select id="rht${m.id}" style="margin-top:4px">${teamOpts(m.home_team_id)}</select></div>
+        <div><label style="font-size:.75rem;color:var(--muted)">Away Team</label><select id="rat${m.id}" style="margin-top:4px">${teamOpts(m.away_team_id)}</select></div>
+      </div>` : ''}
+      <button class="btn btn-sm" onclick="saveMatchResult(${m.id},${isKO})">💾 Save Result</button>
+    </div>`;
+  }).join('');
+}
+
+function teamOpts(selId) {
+  const gs = [...new Set(Object.values(allTeams).map(t => t.group_name))].sort();
+  let o = '<option value="">— Select team —</option>';
+  gs.forEach(g => {
+    o += `<optgroup label="Group ${g}">`;
+    Object.values(allTeams).filter(t => t.group_name === g).forEach(t => {
+      o += `<option value="${t.id}"${t.id===selId?' selected':''}>${t.flag} ${t.name_en}</option>`;
+    });
+    o += '</optgroup>';
+  });
+  return o;
+}
+
+async function saveMatchResult(id, isKO) {
+  const hg = document.getElementById('rh'+id)?.value;
+  const ag = document.getElementById('ra'+id)?.value;
+  const alertEl = document.getElementById('resAlert');
+  if (hg === '' || ag === '') { showAlert(alertEl, 'Enter both goal values.', 'error'); return; }
+
+  const update = { home_goals:parseInt(hg), away_goals:parseInt(ag), status:'finished' };
+  if (isKO) {
+    const hp = document.getElementById('rph'+id)?.value;
+    const ap = document.getElementById('rpa'+id)?.value;
+    const ht = document.getElementById('rht'+id)?.value;
+    const at = document.getElementById('rat'+id)?.value;
+    if (hp !== '' && ap !== '') { update.home_penalties=parseInt(hp); update.away_penalties=parseInt(ap); }
+    if (ht) update.home_team_id = parseInt(ht);
+    if (at) update.away_team_id = parseInt(at);
+  }
+
+  const { error } = await adminDb('matches').update(update).eq('id', id);
+  if (error) { showAlert(alertEl, 'Error: '+error.message, 'error'); return; }
+  const idx = allMatches.findIndex(m => m.id === id);
+  if (idx >= 0) Object.assign(allMatches[idx], update);
+  showAlert(alertEl, `✅ Match #${id} saved! Go to 🔄 Recalculate to update scores.`, 'success');
+  loadResultMatches();
+}
+
+// ── PHASES ────────────────────────────────────────────────────
+function renderPhases() {
+  const defs = [
+    {key:'group_phase_open',    label:'Group Stage Predictions',   desc:'Allow participants to submit/edit group match scores'},
+    {key:'knockout_phase_open', label:'Knockout Stage Predictions', desc:'Allow participants to submit/edit knockout predictions'},
+    {key:'awards_phase_open',   label:'Award Predictions',          desc:'Allow participants to submit/edit award picks'},
+  ];
+  document.getElementById('phaseToggles').innerHTML = defs.map(p => {
+    const open = tournamentSettings[p.key] === 'true';
+    return `<div class="toggle">
+      <div class="toggle-label"><strong>${p.label}</strong><span>${p.desc}</span></div>
+      <label class="switch"><input type="checkbox" ${open?'checked':''} onchange="togglePhase('${p.key}',this.checked)"/><span class="slider"></span></label>
+      <span class="badge badge-${open?'green':'red'}" id="badge_${p.key}">${open?'OPEN':'CLOSED'}</span>
+    </div>`;
+  }).join('');
+}
+
+async function togglePhase(key, val) {
+  const { error } = await adminDb('tournament_settings').update({value:val?'true':'false'}).eq('key',key);
+  if (error) { alert('Error: '+error.message); return; }
+  tournamentSettings[key] = val ? 'true' : 'false';
+  const b = document.getElementById('badge_'+key);
+  if (b) { b.textContent=val?'OPEN':'CLOSED'; b.className='badge badge-'+(val?'green':'red'); }
+}
+
+// ── SCORING ───────────────────────────────────────────────────
+function renderScoring() {
+  const groups = [
+    {title:'Group Stage', keys:['group_correct_result','group_correct_goal_diff','group_exact_score']},
+    {title:'Knockout Rounds', keys:['ko_correct_result','ko_correct_goal_diff','ko_exact_score','ko_correct_team']},
+    {title:'Award Predictions', keys:['award_winner','award_top_scorer','award_best_player','award_best_goalkeeper','award_best_young']},
+  ];
+  const labels = {group_correct_result:'Correct W/D/L result',group_correct_goal_diff:'Correct goal difference',group_exact_score:'Exact score (bonus)',ko_correct_result:'Correct W/D/L result',ko_correct_goal_diff:'Correct goal difference',ko_exact_score:'Exact score (bonus)',ko_correct_team:'Correct advancing team (bonus)',award_winner:'Tournament winner',award_top_scorer:'Top scorer',award_best_player:'Best player',award_best_goalkeeper:'Best goalkeeper',award_best_young:'Best young player'};
+  document.getElementById('scoringList').innerHTML = groups.map(g =>
+    `<div class="card"><h3>${g.title}</h3>${g.keys.map(k=>`<div class="score-row"><span>${labels[k]||k}</span><input type="number" min="0" max="20" id="sc_${k}" value="${scoringSettings[k]??0}" style="width:70px;text-align:center"/><span style="color:var(--muted);font-size:.8rem">pts</span></div>`).join('')}</div>`
+  ).join('');
+}
+
+async function saveScoringSettings() {
+  const allKeys = ['group_correct_result','group_correct_goal_diff','group_exact_score','ko_correct_result','ko_correct_goal_diff','ko_exact_score','ko_correct_team','award_winner','award_top_scorer','award_best_player','award_best_goalkeeper','award_best_young'];
+  const results = await Promise.all(allKeys.map(k => {
+    const el = document.getElementById('sc_'+k);
+    if (!el) return Promise.resolve({error:null});
+    scoringSettings[k] = parseFloat(el.value);
+    return adminDb('scoring_settings').upsert({key:k, value:String(parseFloat(el.value))},{onConflict:'key'});
+  }));
+  const errors = results.filter(r => r?.error).map(r => r.error.message);
+  if (errors.length) {
+    showAlert(document.getElementById('scoringAlert'), '❌ Error: ' + errors[0], 'error');
+  } else {
+    showAlert(document.getElementById('scoringAlert'), '✅ Scoring saved! Run Recalculate to update scores.', 'success');
+  }
+}
+
+// ── AWARDS ────────────────────────────────────────────────────
+async function renderAwards() {
+  const { data } = await dbPub.from('award_results').select('*');
+  const r = {}; data?.forEach(x => { r[x.award_type] = x.result||''; });
+  document.getElementById('awdList').innerHTML = `<div class="card">${AWARD_INFO.map(a=>`<div class="form-group"><label>${a.icon} ${a.label}</label><input type="text" id="ar_${a.key}" value="${r[a.key]||''}" placeholder="Enter winner name…"/></div>`).join('')}</div>`;
+}
+
+async function saveAwardResults() {
+  await Promise.all(AWARD_INFO.map(a => {
+    const el = document.getElementById('ar_'+a.key);
+    return el ? adminDb('award_results').update({result:el.value.trim()||null}).eq('award_type',a.key) : Promise.resolve();
+  }));
+  showAlert(document.getElementById('awdAlert'), '✅ Award results saved! Run Recalculate.', 'success');
+}
+
+// ── TEAMS ─────────────────────────────────────────────────────
+function renderTeams() {
+  const gs = [...new Set(Object.values(allTeams).map(t => t.group_name))].sort();
+  document.getElementById('teamList').innerHTML = gs.map(g => {
+    const gts = Object.values(allTeams).filter(t => t.group_name === g);
+    return `<div class="card"><h3>Group ${g}</h3><table><thead><tr><th>Flag</th><th>English Name</th><th>Portuguese Name</th><th></th></tr></thead><tbody>
+      ${gts.map(t=>`<tr>
+        <td><input type="text" id="tf${t.id}" value="${t.flag}" style="width:55px;text-align:center"/></td>
+        <td><input type="text" id="te${t.id}" value="${t.name_en}"/></td>
+        <td><input type="text" id="tp${t.id}" value="${t.name_pt}"/></td>
+        <td><button class="btn btn-sm" onclick="saveTeam(${t.id})">Save</button></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  }).join('');
+}
+
+async function saveTeam(id) {
+  const flag   = document.getElementById('tf'+id)?.value;
+  const nameEn = document.getElementById('te'+id)?.value;
+  const namePt = document.getElementById('tp'+id)?.value;
+  const { error } = await adminDb('teams').update({flag,name_en:nameEn,name_pt:namePt}).eq('id',id);
+  const alertEl = document.getElementById('teamAlert');
+  if (error) showAlert(alertEl, 'Error: '+error.message, 'error');
+  else { allTeams[id] = {...allTeams[id],flag,name_en:nameEn,name_pt:namePt}; showAlert(alertEl,'✅ Team updated!','success'); }
+}
+
+// ── PARTICIPANTS ──────────────────────────────────────────────
+async function loadParticipants() {
+  const [{ data, error }, { count: totalGroupMatches }, { data: predCounts }] = await Promise.all([
+    dbPub.from('participants').select('*, scores(total_points,group_points,ko_points,award_points)').order('created_at',{ascending:false}),
+    dbPub.from('matches').select('id', { count: 'exact', head: true }).eq('round', 'group'),
+    dbPub.from('group_predictions').select('participant_id'),
+  ]);
+  if (error) { document.getElementById('participantList').innerHTML = `<div class="alert alert-error">Error loading participants: ${error.message}</div>`; return; }
+  if (!data || !data.length) { document.getElementById('participantList').innerHTML = '<div class="card"><p>No participants yet.</p></div>'; return; }
+  const predByP = {};
+  (predCounts || []).forEach(r => { predByP[r.participant_id] = (predByP[r.participant_id] || 0) + 1; });
+  const validated = data.filter(p=>p.is_validated).length;
+  const allDone = data.filter(p => (predByP[p.id]||0) >= (totalGroupMatches||0)).length;
+  document.getElementById('participantList').innerHTML = `
+    <div style="margin-bottom:8px;font-size:.82rem;color:var(--muted)">${validated} / ${data.length} validated &nbsp;·&nbsp; ${allDone} / ${data.length} with all group predictions</div>
+    <div class="card"><table><thead><tr>
+      <th>Avatar</th><th>Name</th><th>Email</th><th>Registered</th><th>Status</th><th>Preds</th><th>Total</th><th>Groups</th><th>KO</th><th>Awards</th><th>Actions</th>
+    </tr></thead><tbody>${data.map(p => {
+      const s = (Array.isArray(p.scores) ? p.scores[0] : p.scores) || {};
+      const av = p.avatar_url;
+      const isVal = p.is_validated;
+      const pCount = predByP[p.id] || 0;
+      const predDone = pCount >= (totalGroupMatches || 0);
+      let avCell;
+      if(av?.startsWith('http')) avCell = `<img src="${av}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)" onerror="this.style.display='none'"/>`;
+      else if(av) avCell = `<span style="width:36px;height:36px;border-radius:50%;background:var(--mid);display:inline-flex;align-items:center;justify-content:center;font-size:1.3rem;border:2px solid var(--gold)">${av}</span>`;
+      else { const cols=['#e11d48','#7c3aed','#1d4ed8','#0891b2','#059669','#b45309']; const col=cols[p.name.charCodeAt(0)%cols.length]; avCell=`<span style="width:36px;height:36px;border-radius:50%;background:${col};display:inline-flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:#fff">${p.name.charAt(0).toUpperCase()}</span>`; }
+      return `<tr>
+        <td>${avCell}</td>
+        <td><strong>${p.name}</strong></td>
+        <td style="color:var(--muted)">${p.email}</td>
+        <td style="color:var(--muted)">${new Date(p.created_at).toLocaleDateString()}</td>
+        <td><span style="font-size:.8rem;font-weight:700;color:${isVal?'#30d158':'#ff453a'}">${isVal?'✅ Valid':'⏳ Pending'}</span></td>
+        <td style="font-weight:700;color:${predDone?'#30d158':'#ff9f0a'}">${pCount}/${totalGroupMatches||'?'}</td>
+        <td style="color:var(--gold);font-weight:700">${s.total_points||0}</td>
+        <td>${s.group_points||0}</td><td>${s.ko_points||0}</td><td>${s.award_points||0}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sm" style="width:auto;background:${isVal?'#ff453a':'#30d158'};color:#fff" onclick="validateParticipant('${p.id}','${p.name.replace(/'/g,"\\'")}',${isVal})">${isVal?'❌ Unvalidate':'✅ Validate'}</button>
+          <button class="btn btn-sm btn-outline" onclick="resetPassword('${p.id}','${p.name.replace(/'/g,"\\'")}')">🔑 Pwd</button>
+          ${av?`<button class="btn btn-sm btn-outline" style="border-color:#ef4444;color:#ef4444" onclick="removeAvatar('${p.id}','${p.name.replace(/'/g,"\\'")}','${av}')">✕ Av</button>`:''}
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+async function validateParticipant(id, name, currentStatus) {
+  const newStatus = !currentStatus;
+  const { error } = await adminDb('participants').update({ is_validated: newStatus }).eq('id', id);
+  if (error) { alert('Error: ' + (error.message || JSON.stringify(error))); return; }
+  loadParticipants();
+}
+
+async function validateAll() {
+  if (!confirm('Validate ALL registered participants? They will all be able to submit predictions.')) return;
+  const { error } = await adminDb('participants').update({ is_validated: true }).not('id', 'is', null);
+  if (error) { alert('Error: ' + (error.message || JSON.stringify(error))); return; }
+  alert('✅ All participants validated!');
+  loadParticipants();
+}
+
+async function resetPassword(id, name) {
+  const newPwd = prompt(`Set new password for ${name}:`);
+  if (!newPwd || !newPwd.trim()) return;
+  const { error } = await adminDb('participants').update({ password: newPwd.trim() }).eq('id', id);
+  if (error) alert('Error: ' + (error.message || JSON.stringify(error)));
+  else alert(`✅ Password reset for ${name}`);
+}
+
+async function removeAvatar(id, name, avatarUrl) {
+  if (!confirm(`Remove avatar for ${name}?`)) return;
+  // Delete from storage if it's a photo URL
+  if (avatarUrl.startsWith('http')) {
+    const parts = avatarUrl.split('/avatars/');
+    if (parts[1]) await deleteStorageFile('avatars', decodeURIComponent(parts[1]));
+  }
+  const { error } = await adminDb('participants').update({ avatar_url: null }).eq('id', id);
+  if (error) alert('Error: ' + (error.message || JSON.stringify(error)));
+  else { alert(`✅ Avatar removed for ${name}`); loadParticipants(); }
+}
+
+// ── CHAT MODERATION ───────────────────────────────────────────
+async function loadAdminChat() {
+  const el = document.getElementById('adminChatList');
+  el.innerHTML = '<div class="card"><span class="spinner"></span></div>';
+  const { data, error } = await dbPub.from('messages').select('*').order('created_at', { ascending: false }).limit(200);
+  if (error) { el.innerHTML = `<div class="alert alert-error">${error.message}</div>`; return; }
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--muted)">No messages yet.</p>'; return; }
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">User</th>
+      <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">Message</th>
+      <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">Time</th>
+      <th style="padding:8px 10px;border-bottom:1px solid var(--border)"></th>
+    </tr></thead><tbody>${data.map(m => `
+    <tr id="acmsg-${m.id}">
+      <td style="padding:10px;font-weight:600;white-space:nowrap">${m.participant_name}</td>
+      <td style="padding:10px;font-size:.9rem">${m.body.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td>
+      <td style="padding:10px;color:var(--muted);font-size:.8rem;white-space:nowrap">${new Date(m.created_at).toLocaleString()}</td>
+      <td style="padding:10px"><button class="btn btn-sm" style="background:#ef4444;color:#fff;width:auto;padding:5px 10px" onclick="deleteMessage('${m.id}')">🗑️</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function clearAllChat() {
+  if (!confirm('⚠️ Delete ALL chat messages? This cannot be undone.')) return;
+  const { error } = await adminDb('messages').delete().not('id', 'is', null);
+  if (error) { alert('Error clearing chat: ' + (error.message || JSON.stringify(error))); return; }
+  document.getElementById('adminChatList').innerHTML = '<p style="color:var(--muted)">Chat cleared.</p>';
+}
+
+async function deleteMessage(id) {
+  if (!confirm('Delete this message?')) return;
+  const { error } = await adminDb('messages').delete().eq('id', id);
+  if (error) { alert('Error deleting message: ' + (error.message || JSON.stringify(error))); return; }
+  document.getElementById('acmsg-' + id)?.remove();
+}
+
+// ── RECALCULATE ───────────────────────────────────────────────
+async function recalculateAll() {
+  const btn     = document.getElementById('recalcBtn');
+  const alertEl = document.getElementById('recalcAlert');
+  const logEl   = document.getElementById('recalcLog');
+  btn.disabled  = true; btn.innerHTML = '<span class="spinner"></span>Calculating…';
+  logEl.style.display = 'block'; logEl.textContent = '';
+
+  const log = msg => { logEl.textContent += msg + '\n'; logEl.scrollTop = logEl.scrollHeight; };
+  log('Loading all data…');
+
+  const [pR, gR, kR, aR, mR, arR, scR] = await Promise.all([
+    dbPub.from('participants').select('id,name'),
+    dbPub.from('group_predictions').select('*'),
+    dbPub.from('knockout_predictions').select('*'),
+    dbPub.from('award_predictions').select('*'),
+    dbPub.from('matches').select('*'),
+    dbPub.from('award_results').select('*'),
+    dbPub.from('scoring_settings').select('*'),
+  ]);
+
+  const sc = {}; scR.data?.forEach(s => { sc[s.key] = parseFloat(s.value); });
+  const awards = {}; arR.data?.forEach(a => { awards[a.award_type] = a.result?.toLowerCase().trim() || null; });
+  const mm = {}; mR.data?.forEach(m => { mm[m.id] = m; });
+  const res = (h, a) => h > a ? 'H' : h < a ? 'A' : 'D';
+
+  log(`Participants: ${pR.data?.length || 0}`);
+
+  const scores = (pR.data || []).map(p => {
+    let g = 0, k = 0, aw = 0;
+
+    for (const pr of (gR.data || []).filter(x => x.participant_id === p.id)) {
+      const m = mm[pr.match_id]; if (!m || m.home_goals == null) continue;
+      if (res(pr.home_goals, pr.away_goals) === res(m.home_goals, m.away_goals)) g += (sc.group_correct_result    || 3);
+      if (pr.home_goals - pr.away_goals === m.home_goals - m.away_goals)          g += (sc.group_correct_goal_diff || 1);
+      if (pr.home_goals === m.home_goals && pr.away_goals === m.away_goals)        g += (sc.group_exact_score       || 1);
+    }
+
+    for (const pr of (kR.data || []).filter(x => x.participant_id === p.id)) {
+      const m = mm[pr.match_id]; if (!m || m.home_goals == null) continue;
+      const prRes = res(pr.home_goals, pr.away_goals);
+      const mRes  = res(m.home_goals,  m.away_goals);
+      if (prRes === mRes)                                                           k += (sc.ko_correct_result    || 5);
+      if (pr.home_goals - pr.away_goals === m.home_goals - m.away_goals)           k += (sc.ko_correct_goal_diff || 5);
+      if (pr.home_goals === m.home_goals && pr.away_goals === m.away_goals)         k += (sc.ko_exact_score       || 10);
+      // Correct advancing team bonus: awarded when predicted winner (H or A) matches actual (no draw in KO)
+      if (prRes !== 'D' && mRes !== 'D' && prRes === mRes)                          k += (sc.ko_correct_team      || 10);
+    }
+
+    for (const pr of (aR.data || []).filter(x => x.participant_id === p.id)) {
+      const actual = awards[pr.award_type];
+      if (actual && pr.prediction && actual === pr.prediction.toLowerCase().trim())
+        aw += (sc[`award_${pr.award_type}`] || 5);
+    }
+
+    log(`  ${p.name}: Group=${g} KO=${k} Awards=${aw} → Total=${g+k+aw}`);
+    return { participant_id:p.id, group_points:g, ko_points:k, award_points:aw,
+             total_points:g+k+aw, last_updated:new Date().toISOString() };
+  });
+
+  const { error } = await adminDb('scores').upsert(scores, { onConflict: 'participant_id' });
+  if (error) showAlert(alertEl, 'Error: '+(error.message||JSON.stringify(error)), 'error');
+  else       showAlert(alertEl, `✅ Done! Recalculated ${scores.length} participants.`, 'success');
+
+  btn.disabled = false; btn.textContent = '▶ Recalculate All Scores Now';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function showAlert(el, msg, type) {
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { if (el) el.innerHTML = ''; }, 7000);
+}
+
+function randGoal() {
+  const pool = [0,0,0,1,1,1,1,2,2,2,3,3,4,5];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function fillMissingPredictions() {
+  const btn = document.getElementById('fillMissingBtn');
+  const alertEl = document.getElementById('fillAlert');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+  alertEl.innerHTML = '';
+
+  const [{ data: participants }, { data: matches }, { data: existing }] = await Promise.all([
+    dbPub.from('participants').select('id').eq('is_validated', true),
+    dbPub.from('matches').select('id').eq('round', 'group'),
+    dbPub.from('group_predictions').select('participant_id, match_id'),
+  ]);
+
+  if (!participants?.length || !matches?.length) {
+    showAlert(alertEl, 'No validated participants or group matches found.', 'error');
+    btn.disabled = false; btn.textContent = '🎲 Fill Missing Predictions';
+    return;
+  }
+
+  const existingSet = new Set(existing.map(e => `${e.participant_id}_${e.match_id}`));
+  const toInsert = [];
+  for (const p of participants) {
+    for (const m of matches) {
+      if (!existingSet.has(`${p.id}_${m.id}`)) {
+        toInsert.push({ participant_id: p.id, match_id: m.id, home_goals: randGoal(), away_goals: randGoal() });
+      }
+    }
+  }
+
+  if (!toInsert.length) {
+    showAlert(alertEl, '✅ All participants already have predictions for every group match!', 'success');
+    btn.disabled = false; btn.textContent = '🎲 Fill Missing Predictions';
+    return;
+  }
+
+  const { error } = await adminDb('group_predictions').insert(toInsert);
+  btn.disabled = false; btn.textContent = '🎲 Fill Missing Predictions';
+  if (error) { showAlert(alertEl, 'Error: ' + error.message, 'error'); return; }
+  showAlert(alertEl, `✅ Filled ${toInsert.length} missing predictions across ${participants.length} participants.`, 'success');
+}
+</script>
+</body>
+</html>
