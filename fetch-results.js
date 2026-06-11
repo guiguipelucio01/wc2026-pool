@@ -71,6 +71,9 @@ async function run() {
   const { matches: apiMatches = [] } = await res.json();
   console.log(`API returned ${apiMatches.length} match(es) (live + finished)`);
   if (!apiMatches.length) { console.log("Nothing to update."); return; }
+  // Debug: show first API match details
+  const dbg = apiMatches[0];
+  console.log(`  [dbg] First match: ${dbg.homeTeam?.name} vs ${dbg.awayTeam?.name}, status=${dbg.status}, utcDate=${dbg.utcDate}, score=${JSON.stringify(dbg.score?.fullTime)}`);
 
   // Load our matches WITH team names via join
   const { data: ourMatches, error: mErr } = await db
@@ -102,7 +105,11 @@ async function run() {
     });
 
     if (!our) {
-      if (isFinished) console.log(`  No match found for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate}`);
+      console.log(`  No DB match for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate} (status=${api.status})`);
+      if (ourMatches?.length) {
+        const sample = ourMatches[0];
+        console.log(`  [dbg] Sample DB match: id=${sample.id}, match_date=${sample.match_date}, home=${sample.home?.name_en}, away=${sample.away?.name_en}, status=${sample.status}`);
+      }
       continue;
     }
 
