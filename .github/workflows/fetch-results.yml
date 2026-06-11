@@ -2,9 +2,8 @@ name: Fetch WC 2026 Results
 
 on:
   schedule:
-    - cron: "0,10,20,30,40,50 * * * *"   # every 10 min — two entries force GitHub to run both
-    - cron: "5,15,25,35,45,55 * * * *"   # offset 5 min — combined = every 5 min
-  workflow_dispatch:          # manual trigger: GitHub -> Actions -> Run workflow
+    - cron: "0,15,30,45 * * * *"   # every 15 min — stays within 100 req/day free tier
+  workflow_dispatch:                 # manual trigger: GitHub -> Actions -> Run workflow
 
 jobs:
   fetch:
@@ -23,5 +22,5 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+          APIFOOTBALL_KEY: ${{ secrets.APIFOOTBALL_KEY }}
         run: node fetch-results.js

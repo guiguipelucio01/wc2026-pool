@@ -1,42 +1,45 @@
 // ============================================================
-// WC 2026 — Auto Results Fetcher
-// Runs via GitHub Actions every 5 minutes during the tournament.
-// Node 22+ has built-in fetch and WebSocket — no extra packages needed beyond @supabase/supabase-js.
+// WC 2026 — Auto Results Fetcher (API-Football)
+// Runs via GitHub Actions every 15 minutes during the tournament.
+// Free tier: 100 req/day — every-15-min cron uses 96/day.
 // ============================================================
 
 const { createClient } = require("@supabase/supabase-js");
 
 const SUPABASE_URL     = process.env.SUPABASE_URL;
 const SUPABASE_SVC_KEY = process.env.SUPABASE_SERVICE_KEY;
-const API_KEY          = process.env.FOOTBALL_DATA_API_KEY;
+const API_KEY          = process.env.APIFOOTBALL_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_SVC_KEY || !API_KEY) {
-  console.error("Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY, FOOTBALL_DATA_API_KEY");
+  console.error("Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY, APIFOOTBALL_KEY");
   process.exit(1);
 }
 
 const db = createClient(SUPABASE_URL, SUPABASE_SVC_KEY);
 
-// football-data.org competition ID for FIFA World Cup.
-// Verify at: https://api.football-data.org/v4/competitions (once 2026 season is live)
-const WC_COMPETITION_ID = 2000;
+// API-Football league ID for FIFA World Cup
+const WC_LEAGUE_ID = 1;
 
-// Name normalisation map — add entries as needed when the 2026 API goes live.
-// Maps football-data.org team names → our team names (both lowercased).
+// Maps API-Football team names (lowercased, accent-stripped) → our DB name_en (lowercased)
 const NAME_MAP = {
-  "united states":       "usa",
-  "korea republic":      "south korea",
-  "republic of ireland": "ireland",
-  "iran (islamic republic of)": "iran",
-  "turkiye":             "turkey",
-  "türkiye":             "turkey",
-  "cote d'ivoire":       "ivory coast",
-  "côte d'ivoire":       "ivory coast",
-  "czechia":             "czech republic",
+  "united states":                    "usa",
+  "korea republic":                   "south korea",
+  "republic of korea":                "south korea",
+  "ir iran":                          "iran",
+  "turkiye":                          "turkey",
+  "cote d'ivoire":                    "ivory coast",
+  "ivory coast":                      "ivory coast",
+  "czechia":                          "czech republic",
+  "dr congo":                         "dr congo",
+  "congo dr":                         "dr congo",
+  "democratic republic of the congo": "dr congo",
+  "bosnia and herzegovina":           "bosnia & herzegovina",
+  "bosnia & herzegovina":             "bosnia & herzegovina",
 };
 
 function norm(name = "") {
-  const n = name.toLowerCase().trim().replace(/\s+/g, " ");
+  const stripped = name.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const n = stripped.toLowerCase().trim().replace(/\s+/g, " ");
   return NAME_MAP[n] || n;
 }
 
@@ -54,52 +57,56 @@ async function fetchWithRetry(url, options, retries = 3, delayMs = 2000) {
 }
 
 async function run() {
-  console.log("Fetching live + finished WC 2026 matches from football-data.org...");
+  console.log("Fetching live + finished WC 2026 matches from API-Football...");
 
+  // FT/AET/PEN = finished; 1H/HT/2H/ET/BT/P = in progress
+  const statuses = "FT-AET-PEN-1H-HT-2H-ET-BT-P";
   const res = await fetchWithRetry(
-    `https://api.football-data.org/v4/competitions/${WC_COMPETITION_ID}/matches?status=IN_PLAY,PAUSED,FINISHED&season=2026`,
-    { headers: { "X-Auth-Token": API_KEY } }
+    `https://v3.football.api-sports.io/fixtures?league=${WC_LEAGUE_ID}&season=2026&status=${statuses}`,
+    { headers: { "x-apisports-key": API_KEY } }
   );
 
   if (!res.ok) {
     const body = await res.text();
-    console.log(`API returned ${res.status} — competition data not available yet. Nothing to update.`);
-    console.log(body.slice(0, 300));
-    return; // exit 0 — not our fault, just no data yet
+    console.log(`API returned ${res.status}. Body: ${body.slice(0, 300)}`);
+    return;
   }
 
-  const { matches: apiMatches = [] } = await res.json();
-  console.log(`API returned ${apiMatches.length} match(es) (live + finished)`);
-  if (!apiMatches.length) { console.log("Nothing to update."); return; }
-  // Debug: show first API match details
-  const dbg = apiMatches[0];
-  console.log(`  [dbg] First match: ${dbg.homeTeam?.name} vs ${dbg.awayTeam?.name}, status=${dbg.status}, utcDate=${dbg.utcDate}, score=${JSON.stringify(dbg.score)}`);
+  const json = await res.json();
+  const fixtures = json.response || [];
+  console.log(`API returned ${fixtures.length} fixture(s)`);
 
-  // Load our matches WITH team names via join
+  if (!fixtures.length) { console.log("Nothing to update."); return; }
+
+  const f0 = fixtures[0];
+  console.log(`  [dbg] First: ${f0.teams?.home?.name} vs ${f0.teams?.away?.name}, status=${f0.fixture?.status?.short}, goals=${JSON.stringify(f0.goals)}`);
+
   const { data: ourMatches, error: mErr } = await db
     .from("matches")
     .select("id, match_date, home_goals, status, round, home_team_id, away_team_id, home:teams!home_team_id(name_en), away:teams!away_team_id(name_en)");
-  if (mErr) { console.error("DB error loading matches:", mErr.message); process.exit(1); }
+  if (mErr) { console.error("DB error:", mErr.message); process.exit(1); }
 
   let updated = 0;
 
-  for (const api of apiMatches) {
-    const isFinished = api.status === "FINISHED";
-    const isLive     = ["IN_PLAY", "PAUSED", "HALFTIME"].includes(api.status);
+  for (const fix of fixtures) {
+    const st = fix.fixture?.status?.short;
+    const isFinished = ["FT", "AET", "PEN"].includes(st);
+    const isLive     = ["1H", "HT", "2H", "ET", "BT", "P"].includes(st);
 
-    const hg = api.score?.fullTime?.home ?? api.score?.regularTime?.home ?? (isLive ? (api.score?.halfTime?.home ?? 0) : null);
-    const ag = api.score?.fullTime?.away ?? api.score?.regularTime?.away ?? (isLive ? (api.score?.halfTime?.away ?? 0) : null);
+    const hg = fix.goals?.home ?? null;
+    const ag = fix.goals?.away ?? null;
+
     if (hg == null || ag == null) {
-      if (isFinished) console.log(`  ⏳ FINISHED but score not yet available: ${norm(api.homeTeam?.name)} vs ${norm(api.awayTeam?.name)}`);
+      if (isFinished) console.log(`  ⏳ FINISHED but goals null: ${fix.teams?.home?.name} vs ${fix.teams?.away?.name}`);
       continue;
     }
 
-    const apiHomeNorm = norm(api.homeTeam?.name);
-    const apiAwayNorm = norm(api.awayTeam?.name);
-    const apiDate     = api.utcDate?.substring(0, 10);
+    const apiHomeNorm = norm(fix.teams?.home?.name);
+    const apiAwayNorm = norm(fix.teams?.away?.name);
+    const apiDate     = fix.fixture?.date?.substring(0, 10);
 
     const our = ourMatches?.find(m => {
-      if (m.status === "finished") return false; // never overwrite a finalised result
+      if (m.status === "finished") return false;
       if (!m.match_date) return false;
       const ourDate     = m.match_date.substring(0, 10);
       const ourHomeNorm = norm(m.home?.name_en);
@@ -108,29 +115,25 @@ async function run() {
     });
 
     if (!our) {
-      console.log(`  No DB match for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate} (status=${api.status})`);
-      if (ourMatches?.length) {
-        const sample = ourMatches[0];
-        console.log(`  [dbg] Sample DB match: id=${sample.id}, match_date=${sample.match_date}, home=${sample.home?.name_en}, away=${sample.away?.name_en}, status=${sample.status}`);
-      }
+      console.log(`  No DB match for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate} (${st})`);
       continue;
     }
 
     if (isFinished) {
-      const hp = api.score?.penalties?.home ?? null;
-      const ap = api.score?.penalties?.away ?? null;
+      const hp = fix.score?.penalty?.home ?? null;
+      const ap = fix.score?.penalty?.away ?? null;
       const { error } = await db.from("matches").update({
         home_goals: hg, away_goals: ag,
         home_penalties: hp, away_penalties: ap,
         status: "finished",
       }).eq("id", our.id);
-      if (error) console.error(`  Error match #${our.id}:`, error.message);
+      if (error) console.error(`  Error #${our.id}:`, error.message);
       else { console.log(`  ✅ Final #${our.id}: ${apiHomeNorm} ${hg}-${ag} ${apiAwayNorm}`); updated++; }
     } else {
       const { error } = await db.from("matches").update({
         home_goals: hg, away_goals: ag, status: "in_play",
       }).eq("id", our.id);
-      if (error) console.error(`  Error live match #${our.id}:`, error.message);
+      if (error) console.error(`  Error live #${our.id}:`, error.message);
       else console.log(`  🔴 Live  #${our.id}: ${apiHomeNorm} ${hg}-${ag} ${apiAwayNorm}`);
     }
   }
