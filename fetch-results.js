@@ -54,10 +54,10 @@ async function fetchWithRetry(url, options, retries = 3, delayMs = 2000) {
 }
 
 async function run() {
-  console.log("Fetching finished WC 2026 matches from football-data.org...");
+  console.log("Fetching live + finished WC 2026 matches from football-data.org...");
 
   const res = await fetchWithRetry(
-    `https://api.football-data.org/v4/competitions/${WC_COMPETITION_ID}/matches?status=FINISHED`,
+    `https://api.football-data.org/v4/competitions/${WC_COMPETITION_ID}/matches?status=IN_PLAY,PAUSED,FINISHED`,
     { headers: { "X-Auth-Token": API_KEY } }
   );
 
@@ -81,18 +81,20 @@ async function run() {
   let updated = 0;
 
   for (const api of apiMatches) {
-    const hg = api.score?.fullTime?.home;
-    const ag = api.score?.fullTime?.away;
+    const isFinished = api.status === "FINISHED";
+    const isLive     = ["IN_PLAY", "PAUSED", "HALFTIME"].includes(api.status);
+
+    const hg = api.score?.fullTime?.home ?? (isLive ? (api.score?.halfTime?.home ?? 0) : null);
+    const ag = api.score?.fullTime?.away ?? (isLive ? (api.score?.halfTime?.away ?? 0) : null);
     if (hg == null || ag == null) continue;
 
     const apiHomeNorm = norm(api.homeTeam?.name);
     const apiAwayNorm = norm(api.awayTeam?.name);
-    const apiDate     = api.utcDate?.substring(0, 10); // YYYY-MM-DD
+    const apiDate     = api.utcDate?.substring(0, 10);
 
-    // Match by BOTH date AND team names — prevents same-day confusion
     const our = ourMatches?.find(m => {
-      if (m.home_goals != null) return false; // already has result — skip
-      if (!m.match_date)        return false;
+      if (m.status === "finished") return false; // never overwrite a finalised result
+      if (!m.match_date) return false;
       const ourDate     = m.match_date.substring(0, 10);
       const ourHomeNorm = norm(m.home?.name_en);
       const ourAwayNorm = norm(m.away?.name_en);
@@ -100,26 +102,30 @@ async function run() {
     });
 
     if (!our) {
-      console.log(`  No match found for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate}`);
+      if (isFinished) console.log(`  No match found for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate}`);
       continue;
     }
 
-    const hp = api.score?.penalties?.home ?? null;
-    const ap = api.score?.penalties?.away ?? null;
-
-    const { error } = await db.from("matches").update({
-      home_goals:     hg,
-      away_goals:     ag,
-      home_penalties: hp,
-      away_penalties: ap,
-      status:         "finished",
-    }).eq("id", our.id);
-
-    if (error) console.error(`  Error match #${our.id}:`, error.message);
-    else { console.log(`  Updated match #${our.id}: ${apiHomeNorm} ${hg}-${ag} ${apiAwayNorm}`); updated++; }
+    if (isFinished) {
+      const hp = api.score?.penalties?.home ?? null;
+      const ap = api.score?.penalties?.away ?? null;
+      const { error } = await db.from("matches").update({
+        home_goals: hg, away_goals: ag,
+        home_penalties: hp, away_penalties: ap,
+        status: "finished",
+      }).eq("id", our.id);
+      if (error) console.error(`  Error match #${our.id}:`, error.message);
+      else { console.log(`  ✅ Final #${our.id}: ${apiHomeNorm} ${hg}-${ag} ${apiAwayNorm}`); updated++; }
+    } else {
+      const { error } = await db.from("matches").update({
+        home_goals: hg, away_goals: ag, status: "in_play",
+      }).eq("id", our.id);
+      if (error) console.error(`  Error live match #${our.id}:`, error.message);
+      else console.log(`  🔴 Live  #${our.id}: ${apiHomeNorm} ${hg}-${ag} ${apiAwayNorm}`);
+    }
   }
 
-  console.log(`\n${updated} match(es) updated.`);
+  console.log(`\n${updated} finished match(es) updated.`);
   if (updated > 0) { console.log("Recalculating scores..."); await recalc(); }
   console.log("Done.");
 }
