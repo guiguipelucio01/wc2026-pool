@@ -1,40 +1,34 @@
 // ============================================================
-// WC 2026 — Auto Results Fetcher (API-Football)
+// WC 2026 — Auto Results Fetcher (ESPN public API — no key needed)
 // Runs via GitHub Actions every 15 minutes during the tournament.
-// Free tier: 100 req/day — every-15-min cron uses 96/day.
 // ============================================================
 
 const { createClient } = require("@supabase/supabase-js");
 
 const SUPABASE_URL     = process.env.SUPABASE_URL;
 const SUPABASE_SVC_KEY = process.env.SUPABASE_SERVICE_KEY;
-const API_KEY          = process.env.APIFOOTBALL_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_SVC_KEY || !API_KEY) {
-  console.error("Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY, APIFOOTBALL_KEY");
+if (!SUPABASE_URL || !SUPABASE_SVC_KEY) {
+  console.error("Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY");
   process.exit(1);
 }
 
 const db = createClient(SUPABASE_URL, SUPABASE_SVC_KEY);
 
-// API-Football league ID for FIFA World Cup
-const WC_LEAGUE_ID = 1;
-
-// Maps API-Football team names (lowercased, accent-stripped) → our DB name_en (lowercased)
+// Maps ESPN team names (lowercased, accent-stripped) → our DB name_en (lowercased)
 const NAME_MAP = {
   "united states":                    "usa",
+  "usa":                              "usa",
   "korea republic":                   "south korea",
   "republic of korea":                "south korea",
   "ir iran":                          "iran",
   "turkiye":                          "turkey",
   "cote d'ivoire":                    "ivory coast",
-  "ivory coast":                      "ivory coast",
   "czechia":                          "czech republic",
   "dr congo":                         "dr congo",
   "congo dr":                         "dr congo",
   "democratic republic of the congo": "dr congo",
   "bosnia and herzegovina":           "bosnia & herzegovina",
-  "bosnia & herzegovina":             "bosnia & herzegovina",
 };
 
 function norm(name = "") {
@@ -43,10 +37,22 @@ function norm(name = "") {
   return NAME_MAP[n] || n;
 }
 
-async function fetchWithRetry(url, options, retries = 3, delayMs = 2000) {
+// ESPN statuses that mean the match is finished
+const FINISHED_STATUSES = new Set([
+  "STATUS_FULL_TIME", "STATUS_FINAL", "STATUS_FULL_PEN",
+  "STATUS_FT", "STATUS_FINAL_AET", "STATUS_FINAL_PEN",
+]);
+// ESPN statuses that mean the match is in progress
+const LIVE_STATUSES = new Set([
+  "STATUS_IN_PROGRESS", "STATUS_HALF_TIME", "STATUS_EXTRA_TIME",
+  "STATUS_FIRST_HALF", "STATUS_SECOND_HALF", "STATUS_OVERTIME",
+  "STATUS_SHOOTOUT",
+]);
+
+async function fetchWithRetry(url, retries = 3, delayMs = 2000) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      return await fetch(url, options);
+      return await fetch(url);
     } catch (err) {
       if (attempt === retries) throw err;
       console.log(`  Attempt ${attempt} failed (${err.cause?.code || err.message}), retrying in ${delayMs / 1000}s...`);
@@ -56,30 +62,48 @@ async function fetchWithRetry(url, options, retries = 3, delayMs = 2000) {
   }
 }
 
+async function fetchScoreboardForDate(dateStr) {
+  // dateStr: "YYYYMMDD"
+  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateStr}`;
+  const res = await fetchWithRetry(url);
+  if (!res.ok) { console.log(`  ESPN ${dateStr}: HTTP ${res.status}`); return []; }
+  const json = await res.json();
+  return json.events || [];
+}
+
 async function run() {
-  console.log("Fetching live + finished WC 2026 matches from API-Football...");
+  console.log("Fetching live + finished WC 2026 matches from ESPN...");
 
-  // FT/AET/PEN = finished; 1H/HT/2H/ET/BT/P = in progress
-  const statuses = "FT-AET-PEN-1H-HT-2H-ET-BT-P";
-  const res = await fetchWithRetry(
-    `https://v3.football.api-sports.io/fixtures?league=${WC_LEAGUE_ID}&season=2026&status=${statuses}`,
-    { headers: { "x-apisports-key": API_KEY } }
-  );
+  // Fetch today and yesterday (covers matches that finished just after midnight UTC)
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10).replace(/-/g, "");
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10).replace(/-/g, "");
 
-  if (!res.ok) {
-    const body = await res.text();
-    console.log(`API returned ${res.status}. Body: ${body.slice(0, 300)}`);
-    return;
+  const [todayEvts, yestEvts] = await Promise.all([
+    fetchScoreboardForDate(today),
+    fetchScoreboardForDate(yesterday),
+  ]);
+
+  // Deduplicate by event ID
+  const seen = new Set();
+  const allEvents = [];
+  for (const ev of [...todayEvts, ...yestEvts]) {
+    if (!seen.has(ev.id)) { seen.add(ev.id); allEvents.push(ev); }
   }
 
-  const json = await res.json();
-  const fixtures = json.response || [];
-  console.log(`API returned ${fixtures.length} fixture(s)`);
+  const relevant = allEvents.filter(ev => {
+    const st = ev.status?.type?.name;
+    return FINISHED_STATUSES.has(st) || LIVE_STATUSES.has(st);
+  });
 
-  if (!fixtures.length) { console.log("Nothing to update."); return; }
+  console.log(`ESPN: ${allEvents.length} total event(s), ${relevant.length} live/finished`);
+  if (!relevant.length) { console.log("Nothing to update."); return; }
 
-  const f0 = fixtures[0];
-  console.log(`  [dbg] First: ${f0.teams?.home?.name} vs ${f0.teams?.away?.name}, status=${f0.fixture?.status?.short}, goals=${JSON.stringify(f0.goals)}`);
+  const ev0 = relevant[0];
+  const comp0 = ev0.competitions?.[0];
+  const home0 = comp0?.competitors?.find(c => c.homeAway === "home");
+  const away0 = comp0?.competitors?.find(c => c.homeAway === "away");
+  console.log(`  [dbg] First: ${home0?.team?.displayName} vs ${away0?.team?.displayName}, status=${ev0.status?.type?.name}, score=${home0?.score}-${away0?.score}`);
 
   const { data: ourMatches, error: mErr } = await db
     .from("matches")
@@ -88,22 +112,28 @@ async function run() {
 
   let updated = 0;
 
-  for (const fix of fixtures) {
-    const st = fix.fixture?.status?.short;
-    const isFinished = ["FT", "AET", "PEN"].includes(st);
-    const isLive     = ["1H", "HT", "2H", "ET", "BT", "P"].includes(st);
+  for (const ev of relevant) {
+    const statusName = ev.status?.type?.name;
+    const isFinished = FINISHED_STATUSES.has(statusName);
+    const isLive     = LIVE_STATUSES.has(statusName);
+    const comp = ev.competitions?.[0];
+    if (!comp) continue;
 
-    const hg = fix.goals?.home ?? null;
-    const ag = fix.goals?.away ?? null;
+    const homeComp = comp.competitors?.find(c => c.homeAway === "home");
+    const awayComp = comp.competitors?.find(c => c.homeAway === "away");
+    if (!homeComp || !awayComp) continue;
 
-    if (hg == null || ag == null) {
-      if (isFinished) console.log(`  ⏳ FINISHED but goals null: ${fix.teams?.home?.name} vs ${fix.teams?.away?.name}`);
+    const hg = homeComp.score != null ? parseInt(homeComp.score, 10) : null;
+    const ag = awayComp.score != null ? parseInt(awayComp.score, 10) : null;
+
+    if (hg == null || ag == null || isNaN(hg) || isNaN(ag)) {
+      if (isFinished) console.log(`  ⏳ FINISHED but score null: ${homeComp.team?.displayName} vs ${awayComp.team?.displayName}`);
       continue;
     }
 
-    const apiHomeNorm = norm(fix.teams?.home?.name);
-    const apiAwayNorm = norm(fix.teams?.away?.name);
-    const apiDate     = fix.fixture?.date?.substring(0, 10);
+    const apiHomeNorm = norm(homeComp.team?.displayName);
+    const apiAwayNorm = norm(awayComp.team?.displayName);
+    const apiDate     = comp.date?.substring(0, 10); // "2026-06-11"
 
     const our = ourMatches?.find(m => {
       if (m.status === "finished") return false;
@@ -115,13 +145,17 @@ async function run() {
     });
 
     if (!our) {
-      console.log(`  No DB match for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate} (${st})`);
+      console.log(`  No DB match for: ${apiHomeNorm} vs ${apiAwayNorm} on ${apiDate} (${statusName})`);
       continue;
     }
 
     if (isFinished) {
-      const hp = fix.score?.penalty?.home ?? null;
-      const ap = fix.score?.penalty?.away ?? null;
+      // Check for penalty shootout scores
+      const hp = isFinished && statusName === "STATUS_FULL_PEN"
+        ? (comp.shootoutScores?.home ?? null) : null;
+      const ap = isFinished && statusName === "STATUS_FULL_PEN"
+        ? (comp.shootoutScores?.away ?? null) : null;
+
       const { error } = await db.from("matches").update({
         home_goals: hg, away_goals: ag,
         home_penalties: hp, away_penalties: ap,
