@@ -57,7 +57,7 @@ async function run() {
   console.log("Fetching live + finished WC 2026 matches from football-data.org...");
 
   const res = await fetchWithRetry(
-    `https://api.football-data.org/v4/competitions/${WC_COMPETITION_ID}/matches?status=IN_PLAY,PAUSED,FINISHED`,
+    `https://api.football-data.org/v4/competitions/${WC_COMPETITION_ID}/matches?status=IN_PLAY,PAUSED,FINISHED&season=2026`,
     { headers: { "X-Auth-Token": API_KEY } }
   );
 
@@ -69,7 +69,7 @@ async function run() {
   }
 
   const { matches: apiMatches = [] } = await res.json();
-  console.log(`API returned ${apiMatches.length} finished matches`);
+  console.log(`API returned ${apiMatches.length} match(es) (live + finished)`);
   if (!apiMatches.length) { console.log("Nothing to update."); return; }
 
   // Load our matches WITH team names via join

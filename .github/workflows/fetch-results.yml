@@ -2,7 +2,8 @@ name: Fetch WC 2026 Results
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes (GitHub Actions minimum — cannot go faster)
+    - cron: "0,10,20,30,40,50 * * * *"   # every 10 min — two entries force GitHub to run both
+    - cron: "5,15,25,35,45,55 * * * *"   # offset 5 min — combined = every 5 min
   workflow_dispatch:          # manual trigger: GitHub -> Actions -> Run workflow
 
 jobs:
