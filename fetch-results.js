@@ -87,9 +87,12 @@ async function run() {
     const isFinished = api.status === "FINISHED";
     const isLive     = ["IN_PLAY", "PAUSED", "HALFTIME"].includes(api.status);
 
-    const hg = api.score?.fullTime?.home ?? (isLive ? (api.score?.halfTime?.home ?? 0) : null);
-    const ag = api.score?.fullTime?.away ?? (isLive ? (api.score?.halfTime?.away ?? 0) : null);
-    if (hg == null || ag == null) continue;
+    const hg = api.score?.fullTime?.home ?? api.score?.regularTime?.home ?? (isLive ? (api.score?.halfTime?.home ?? 0) : null);
+    const ag = api.score?.fullTime?.away ?? api.score?.regularTime?.away ?? (isLive ? (api.score?.halfTime?.away ?? 0) : null);
+    if (hg == null || ag == null) {
+      if (isFinished) console.log(`  ⏳ FINISHED but score not yet available: ${norm(api.homeTeam?.name)} vs ${norm(api.awayTeam?.name)}`);
+      continue;
+    }
 
     const apiHomeNorm = norm(api.homeTeam?.name);
     const apiAwayNorm = norm(api.awayTeam?.name);
