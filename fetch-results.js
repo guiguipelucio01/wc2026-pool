@@ -73,12 +73,12 @@ async function run() {
   if (!apiMatches.length) { console.log("Nothing to update."); return; }
   // Debug: show first API match details
   const dbg = apiMatches[0];
-  console.log(`  [dbg] First match: ${dbg.homeTeam?.name} vs ${dbg.awayTeam?.name}, status=${dbg.status}, utcDate=${dbg.utcDate}, score=${JSON.stringify(dbg.score?.fullTime)}`);
+  console.log(`  [dbg] First match: ${dbg.homeTeam?.name} vs ${dbg.awayTeam?.name}, status=${dbg.status}, utcDate=${dbg.utcDate}, score=${JSON.stringify(dbg.score)}`);
 
   // Load our matches WITH team names via join
   const { data: ourMatches, error: mErr } = await db
     .from("matches")
-    .select("id, match_date, home_goals, round, home_team_id, away_team_id, home:teams!home_team_id(name_en), away:teams!away_team_id(name_en)");
+    .select("id, match_date, home_goals, status, round, home_team_id, away_team_id, home:teams!home_team_id(name_en), away:teams!away_team_id(name_en)");
   if (mErr) { console.error("DB error loading matches:", mErr.message); process.exit(1); }
 
   let updated = 0;
