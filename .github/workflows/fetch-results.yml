@@ -2,7 +2,7 @@ name: Fetch WC 2026 Results
 
 on:
   schedule:
-    - cron: "0,15,30,45 * * * *"   # every 15 minutes
+    - cron: "*/5 * * * *"   # every 5 minutes (fallback for edge function)
   workflow_dispatch:                 # manual trigger: GitHub -> Actions -> Run workflow
 
 jobs:

@@ -1,22 +1,15 @@
-// ============================================================
-// WC 2026 — Auto Results Fetcher (ESPN public API — no key needed)
-// Runs via Supabase Edge Function every 2 min; GitHub Actions every 5 min as fallback.
-// ============================================================
+// WC 2026 — Auto Results Fetcher (Supabase Edge Function, Deno runtime)
+// Scheduled via pg_cron every 2 minutes for reliable live + finished score updates.
+// GitHub Actions (fetch-results.js) runs every 5 min as a fallback.
 
-const { createClient } = require("@supabase/supabase-js");
+import { createClient } from "npm:@supabase/supabase-js@2";
 
-const SUPABASE_URL     = process.env.SUPABASE_URL;
-const SUPABASE_SVC_KEY = process.env.SUPABASE_SERVICE_KEY;
-
-if (!SUPABASE_URL || !SUPABASE_SVC_KEY) {
-  console.error("Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY");
-  process.exit(1);
-}
+const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SVC_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const db = createClient(SUPABASE_URL, SUPABASE_SVC_KEY);
 
-// Maps ESPN team names (lowercased, accent-stripped) → our DB name_en (lowercased)
-const NAME_MAP = {
+const NAME_MAP: Record<string, string> = {
   "united states":                    "usa",
   "usa":                              "usa",
   "korea republic":                   "south korea",
@@ -37,33 +30,32 @@ function norm(name = "") {
   return NAME_MAP[n] || n;
 }
 
-// ESPN statuses that mean the match is finished
 const FINISHED_STATUSES = new Set([
   "STATUS_FULL_TIME", "STATUS_FINAL", "STATUS_FULL_PEN",
   "STATUS_FT", "STATUS_FINAL_AET", "STATUS_FINAL_PEN",
 ]);
-// ESPN statuses that mean the match is in progress
 const LIVE_STATUSES = new Set([
   "STATUS_IN_PROGRESS", "STATUS_HALF_TIME", "STATUS_EXTRA_TIME",
   "STATUS_FIRST_HALF", "STATUS_SECOND_HALF", "STATUS_OVERTIME",
   "STATUS_SHOOTOUT",
 ]);
 
-async function fetchWithRetry(url, retries = 3, delayMs = 2000) {
+async function fetchWithRetry(url: string, retries = 3, delayMs = 2000): Promise<Response> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       return await fetch(url);
     } catch (err) {
       if (attempt === retries) throw err;
-      console.log(`  Attempt ${attempt} failed (${err.cause?.code || err.message}), retrying in ${delayMs / 1000}s...`);
+      console.log(`  Attempt ${attempt} failed, retrying in ${delayMs / 1000}s...`);
       await new Promise(r => setTimeout(r, delayMs));
       delayMs *= 2;
     }
   }
+  throw new Error("unreachable");
 }
 
-async function fetchScoreboardForDate(dateStr) {
-  // dateStr: "YYYYMMDD"
+// deno-lint-ignore no-explicit-any
+async function fetchScoreboardForDate(dateStr: string): Promise<any[]> {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateStr}`;
   const res = await fetchWithRetry(url);
   if (!res.ok) { console.log(`  ESPN ${dateStr}: HTTP ${res.status}`); return []; }
@@ -71,12 +63,11 @@ async function fetchScoreboardForDate(dateStr) {
   return json.events || [];
 }
 
-async function run() {
+async function run(): Promise<string> {
   console.log("Fetching live + finished WC 2026 matches from ESPN...");
 
-  // Fetch today and yesterday (covers matches that finished just after midnight UTC)
   const now = new Date();
-  const today = now.toISOString().slice(0, 10).replace(/-/g, "");
+  const today     = now.toISOString().slice(0, 10).replace(/-/g, "");
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10).replace(/-/g, "");
 
   const [todayEvts, yestEvts] = await Promise.all([
@@ -84,9 +75,9 @@ async function run() {
     fetchScoreboardForDate(yesterday),
   ]);
 
-  // Deduplicate by event ID
-  const seen = new Set();
-  const allEvents = [];
+  const seen = new Set<string>();
+  // deno-lint-ignore no-explicit-any
+  const allEvents: any[] = [];
   for (const ev of [...todayEvts, ...yestEvts]) {
     if (!seen.has(ev.id)) { seen.add(ev.id); allEvents.push(ev); }
   }
@@ -97,18 +88,12 @@ async function run() {
   });
 
   console.log(`ESPN: ${allEvents.length} total event(s), ${relevant.length} live/finished`);
-  if (!relevant.length) { console.log("Nothing to update."); return; }
-
-  const ev0 = relevant[0];
-  const comp0 = ev0.competitions?.[0];
-  const home0 = comp0?.competitors?.find(c => c.homeAway === "home");
-  const away0 = comp0?.competitors?.find(c => c.homeAway === "away");
-  console.log(`  [dbg] First: ${home0?.team?.displayName} vs ${away0?.team?.displayName}, status=${ev0.status?.type?.name}, score=${home0?.score}-${away0?.score}`);
+  if (!relevant.length) { console.log("Nothing to update."); return "Nothing to update."; }
 
   const { data: ourMatches, error: mErr } = await db
     .from("matches")
     .select("id, match_date, home_goals, status, round, home_team_id, away_team_id, home:teams!home_team_id(name_en), away:teams!away_team_id(name_en)");
-  if (mErr) { console.error("DB error:", mErr.message); process.exit(1); }
+  if (mErr) throw new Error(`DB error: ${mErr.message}`);
 
   let updated = 0;
 
@@ -119,8 +104,8 @@ async function run() {
     const comp = ev.competitions?.[0];
     if (!comp) continue;
 
-    const homeComp = comp.competitors?.find(c => c.homeAway === "home");
-    const awayComp = comp.competitors?.find(c => c.homeAway === "away");
+    const homeComp = comp.competitors?.find((c: { homeAway: string }) => c.homeAway === "home");
+    const awayComp = comp.competitors?.find((c: { homeAway: string }) => c.homeAway === "away");
     if (!homeComp || !awayComp) continue;
 
     const hg = homeComp.score != null ? parseInt(homeComp.score, 10) : null;
@@ -133,9 +118,10 @@ async function run() {
 
     const apiHomeNorm = norm(homeComp.team?.displayName);
     const apiAwayNorm = norm(awayComp.team?.displayName);
-    const apiDate     = comp.date?.substring(0, 10); // "2026-06-11"
+    const apiDate     = comp.date?.substring(0, 10);
 
-    const our = ourMatches?.find(m => {
+    // deno-lint-ignore no-explicit-any
+    const our = (ourMatches as any[])?.find(m => {
       if (m.status === "finished") return false;
       if (!m.match_date) return false;
       const ourDate     = m.match_date.substring(0, 10);
@@ -150,11 +136,8 @@ async function run() {
     }
 
     if (isFinished) {
-      // Check for penalty shootout scores
-      const hp = isFinished && statusName === "STATUS_FULL_PEN"
-        ? (comp.shootoutScores?.home ?? null) : null;
-      const ap = isFinished && statusName === "STATUS_FULL_PEN"
-        ? (comp.shootoutScores?.away ?? null) : null;
+      const hp = statusName === "STATUS_FULL_PEN" ? (comp.shootoutScores?.home ?? null) : null;
+      const ap = statusName === "STATUS_FULL_PEN" ? (comp.shootoutScores?.away ?? null) : null;
 
       const { error } = await db.from("matches").update({
         home_goals: hg, away_goals: ag,
@@ -163,7 +146,7 @@ async function run() {
       }).eq("id", our.id);
       if (error) console.error(`  Error #${our.id}:`, error.message);
       else { console.log(`  ✅ Final #${our.id}: ${apiHomeNorm} ${hg}-${ag} ${apiAwayNorm}`); updated++; }
-    } else {
+    } else if (isLive) {
       const { error } = await db.from("matches").update({
         home_goals: hg, away_goals: ag, status: "in_play",
       }).eq("id", our.id);
@@ -175,6 +158,7 @@ async function run() {
   console.log(`\n${updated} finished match(es) updated.`);
   if (updated > 0) { console.log("Recalculating scores..."); await recalc(); }
   console.log("Done.");
+  return `${updated} finished match(es) updated. ${relevant.length} live/finished in ESPN feed.`;
 }
 
 async function recalc() {
@@ -188,30 +172,40 @@ async function recalc() {
     db.from("scoring_settings").select("*"),
   ]);
 
-  const sc = {};  scR.data?.forEach(s => { sc[s.key] = parseFloat(s.value); });
-  const awards = {}; arR.data?.forEach(a => { awards[a.award_type] = a.result?.toLowerCase().trim() || null; });
-  const mm = {};  mR.data?.forEach(m => { mm[m.id] = m; });
+  const sc: Record<string, number> = {};
+  scR.data?.forEach((s: { key: string; value: string }) => { sc[s.key] = parseFloat(s.value); });
+  const awards: Record<string, string | null> = {};
+  arR.data?.forEach((a: { award_type: string; result?: string }) => {
+    awards[a.award_type] = a.result?.toLowerCase().trim() || null;
+  });
+  // deno-lint-ignore no-explicit-any
+  const mm: Record<string, any> = {};
+  mR.data?.forEach((m: { id: string }) => { mm[m.id] = m; });
 
-  const res = (h, a) => h > a ? "H" : h < a ? "A" : "D";
+  const res = (h: number, a: number) => h > a ? "H" : h < a ? "A" : "D";
 
-  const scores = (pR.data || []).map(p => {
+  // deno-lint-ignore no-explicit-any
+  const scores = (pR.data || []).map((p: any) => {
     let g = 0, k = 0, aw = 0;
 
-    for (const pr of (gR.data || []).filter(x => x.participant_id === p.id)) {
+    // deno-lint-ignore no-explicit-any
+    for (const pr of (gR.data || []).filter((x: any) => x.participant_id === p.id)) {
       const m = mm[pr.match_id]; if (!m || m.home_goals == null) continue;
       if (res(pr.home_goals, pr.away_goals) === res(m.home_goals, m.away_goals)) g += (sc.group_correct_result    || 3);
       if (pr.home_goals - pr.away_goals === m.home_goals - m.away_goals)          g += (sc.group_correct_goal_diff || 1);
       if (pr.home_goals === m.home_goals && pr.away_goals === m.away_goals)        g += (sc.group_exact_score       || 1);
     }
 
-    for (const pr of (kR.data || []).filter(x => x.participant_id === p.id)) {
+    // deno-lint-ignore no-explicit-any
+    for (const pr of (kR.data || []).filter((x: any) => x.participant_id === p.id)) {
       const m = mm[pr.match_id]; if (!m || m.home_goals == null) continue;
       if (res(pr.home_goals, pr.away_goals) === res(m.home_goals, m.away_goals)) k += (sc.ko_correct_result    || 4);
       if (pr.home_goals - pr.away_goals === m.home_goals - m.away_goals)          k += (sc.ko_correct_goal_diff || 1);
       if (pr.home_goals === m.home_goals && pr.away_goals === m.away_goals)        k += (sc.ko_exact_score       || 2);
     }
 
-    for (const pr of (aR.data || []).filter(x => x.participant_id === p.id)) {
+    // deno-lint-ignore no-explicit-any
+    for (const pr of (aR.data || []).filter((x: any) => x.participant_id === p.id)) {
       const actual = awards[pr.award_type];
       if (actual && pr.prediction && actual === pr.prediction.toLowerCase().trim())
         aw += (sc[`award_${pr.award_type}`] || 5);
@@ -226,4 +220,17 @@ async function recalc() {
   else       console.log(`Scores updated for ${scores.length} participants.`);
 }
 
-run().catch(err => { console.error("Fatal:", err); process.exit(1); });
+Deno.serve(async () => {
+  try {
+    const result = await run();
+    return new Response(JSON.stringify({ ok: true, result }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    console.error("Fatal:", err);
+    return new Response(JSON.stringify({ ok: false, error: String(err) }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+});
