@@ -17,20 +17,42 @@ const db = createClient(SUPABASE_URL, SUPABASE_SVC_KEY);
 
 // Maps ESPN team names (lowercased, accent-stripped) → our DB name_en (lowercased)
 const NAME_MAP = {
+  // USA
   "united states":                    "usa",
   "usa":                              "usa",
+  "u.s.a.":                           "usa",
+  // South Korea
   "korea republic":                   "south korea",
   "republic of korea":                "south korea",
+  // Iran
   "ir iran":                          "iran",
+  "islamic republic of iran":         "iran",
+  // Turkey
   "turkiye":                          "turkey",
+  "turkey":                           "turkey",
+  // Ivory Coast
   "cote d'ivoire":                    "ivory coast",
+  "ivory coast":                      "ivory coast",
+  // Czech Republic
   "czechia":                          "czech republic",
+  "czech republic":                   "czech republic",
+  // DR Congo
   "dr congo":                         "dr congo",
   "congo dr":                         "dr congo",
   "democratic republic of the congo": "dr congo",
+  "congo, dem. rep.":                 "dr congo",
+  // Bosnia
   "bosnia and herzegovina":           "bosnia & herzegovina",
   "bosnia-herzegovina":               "bosnia & herzegovina",
   "bosnia & herzegovina":             "bosnia & herzegovina",
+  "bih":                              "bosnia & herzegovina",
+  // Netherlands
+  "holland":                          "netherlands",
+  // Saudi Arabia
+  "ksa":                              "saudi arabia",
+  // New Zealand
+  "new zealand":                      "new zealand",
+  "nzl":                              "new zealand",
 };
 
 function norm(name = "") {
@@ -137,13 +159,17 @@ async function run() {
     const apiAwayNorm = norm(awayComp.team?.displayName);
     const apiDate     = comp.date?.substring(0, 10); // "2026-06-11"
 
+    const apiDateMs = new Date(apiDate + "T00:00:00Z").getTime();
     const our = ourMatches?.find(m => {
       if (m.status === "finished") return false;
       if (!m.match_date) return false;
-      const ourDate     = m.match_date.substring(0, 10);
       const ourHomeNorm = norm(m.home?.name_en);
       const ourAwayNorm = norm(m.away?.name_en);
-      return ourDate === apiDate && ourHomeNorm === apiHomeNorm && ourAwayNorm === apiAwayNorm;
+      if (ourHomeNorm !== apiHomeNorm || ourAwayNorm !== apiAwayNorm) return false;
+      // Allow ±1 day: times stored with local tz offset (e.g. 23:00-04 EDT) roll
+      // into the next UTC date, so ESPN's date and the DB's UTC date can differ by 1.
+      const ourDateMs = new Date(m.match_date.substring(0, 10) + "T00:00:00Z").getTime();
+      return Math.abs(ourDateMs - apiDateMs) <= 86400000;
     });
 
     if (!our) {
