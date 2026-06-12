@@ -48,6 +48,8 @@ const NAME_MAP = {
   "bih":                              "bosnia & herzegovina",
   // Netherlands
   "holland":                          "netherlands",
+  // Cape Verde
+  "cabo verde":                       "cape verde",
   // Saudi Arabia
   "ksa":                              "saudi arabia",
   // New Zealand

@@ -41,6 +41,8 @@ const NAME_MAP: Record<string, string> = {
   "bih":                              "bosnia & herzegovina",
   // Netherlands
   "holland":                          "netherlands",
+  // Cape Verde
+  "cabo verde":                       "cape verde",
   // Saudi Arabia
   "ksa":                              "saudi arabia",
   // New Zealand
