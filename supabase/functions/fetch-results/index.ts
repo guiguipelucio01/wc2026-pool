@@ -22,6 +22,8 @@ const NAME_MAP: Record<string, string> = {
   "congo dr":                         "dr congo",
   "democratic republic of the congo": "dr congo",
   "bosnia and herzegovina":           "bosnia & herzegovina",
+  "bosnia-herzegovina":               "bosnia & herzegovina",
+  "bosnia & herzegovina":             "bosnia & herzegovina",
 };
 
 function norm(name = "") {

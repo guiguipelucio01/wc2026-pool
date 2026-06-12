@@ -893,8 +893,8 @@ async function loadInitialData() {
       catch(e) { localStorage.removeItem('wc2026_user'); currentUser = null; }
     }
     // Auto-navigate to today's matches if any exist
-    const today = new Date().toISOString().slice(0,10);
-    const todayMatches = matches.filter(m=>m.d&&m.d.slice(0,10)===today);
+    const today = localDate();
+    const todayMatches = matches.filter(m=>m.d&&localDate(m.d)===today);
     if (currentUser && todayMatches.length) {
       showPage('groups', document.querySelector('nav button[data-page=groups]'));
       setTimeout(()=>{ setGroupView('date'); document.getElementById('matchDateInput').value=today; renderDateMatches(); }, 200);
@@ -1084,8 +1084,8 @@ async function loginByEmail() {
   setTimeout(()=>{
     showPage('groups',document.querySelector('nav button[data-page=groups]'));
     // If there are matches today, switch to date view on today
-    const today = new Date().toISOString().slice(0,10);
-    const todayMatches = matches.filter(m=>m.d&&m.d.slice(0,10)===today);
+    const today = localDate();
+    const todayMatches = matches.filter(m=>m.d&&localDate(m.d)===today);
     if (todayMatches.length) {
       setTimeout(()=>{
         setGroupView('date');
@@ -1159,7 +1159,7 @@ function setGroupView(mode) {
   document.getElementById('grpTabs').style.display='none';
   document.getElementById('datePicker').style.display = mode==='date' ? '' : 'none';
   if (mode==='date') {
-    const today = new Date().toISOString().slice(0,10);
+    const today = localDate();
     const matchDays = getMatchDays();
     const input = document.getElementById('matchDateInput');
     if (!input.value) {
@@ -1372,8 +1372,15 @@ function renderGroupStandings(containerId) {
     </div>${legendHtml}${html}`;
 }
 
+// Returns YYYY-MM-DD in the user's local timezone (not UTC), so late-night games
+// stay on the correct calendar day for the user rather than rolling into tomorrow.
+function localDate(ts) {
+  const d = ts ? new Date(ts) : new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
 function getMatchDays() {
-  const days = [...new Set(matches.filter(m=>m.d).map(m=>m.d.slice(0,10)))].sort();
+  const days = [...new Set(matches.filter(m=>m.d).map(m=>localDate(m.d)))].sort();
   return days;
 }
 
@@ -1384,7 +1391,7 @@ function renderDateMatches() {
   const kOpen = settings.knockout_phase_open==='true';
   const btn = document.getElementById('saveGrpBtn');
   if (btn && currentUser) btn.style.display=(gOpen||kOpen)?'block':'none';
-  const dayMatches = matches.filter(m => m.d && m.d.slice(0,10) === date);
+  const dayMatches = matches.filter(m => m.d && localDate(m.d) === date);
 
   if (!dayMatches.length) {
     document.getElementById('grpMatches').innerHTML = `<div class="card empty-state"><div class="icon">📅</div><p>${T('No matches on this date.','Sem jogos nesta data.')}</p></div>`;
