@@ -1373,12 +1373,12 @@ function renderGroupStandings(containerId) {
 }
 
 // Returns YYYY-MM-DD for a match timestamp.
-// When a match time is provided, we use UTC-6 (Central US time) as the anchor
-// so that midnight-Eastern kickoffs (04:00 UTC) group with the previous calendar
-// day rather than rolling into the next. For "today" (no arg) we use local time.
+// Use UTC-4 (EDT) as the anchor: games at midnight ET (04:00 UTC) stay on the
+// same calendar day, while 9pm ET games (01:00 UTC) correctly fall on the
+// previous day. For "today" (no arg) we use local browser time.
 function localDate(ts) {
   if (ts) {
-    const d = new Date(new Date(ts).getTime() - 6 * 3600000);
+    const d = new Date(new Date(ts).getTime() - 4 * 3600000);
     return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
   }
   const d = new Date();
