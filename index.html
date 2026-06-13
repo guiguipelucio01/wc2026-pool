@@ -1397,7 +1397,8 @@ function renderDateMatches() {
   const kOpen = settings.knockout_phase_open==='true';
   const btn = document.getElementById('saveGrpBtn');
   if (btn && currentUser) btn.style.display=(gOpen||kOpen)?'block':'none';
-  const dayMatches = matches.filter(m => m.d && localDate(m.d) === date);
+  const dayMatches = matches.filter(m => m.d && localDate(m.d) === date)
+    .sort((a, b) => new Date(a.d) - new Date(b.d));
 
   if (!dayMatches.length) {
     document.getElementById('grpMatches').innerHTML = `<div class="card empty-state"><div class="icon">📅</div><p>${T('No matches on this date.','Sem jogos nesta data.')}</p></div>`;
