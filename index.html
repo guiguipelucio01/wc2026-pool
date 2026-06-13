@@ -2163,10 +2163,7 @@ async function loadLeaderboard() {
     </div>`;
   }).join('');
 
-  // Show all predictions only after group phase closes
-  const groupClosed = !isGroupPhaseOpen();
   const card = document.getElementById('allPredsCard');
-  if (!groupClosed) { card.style.display='none'; return; }
   card.style.display='block';
 
   allParticipants = scores.map(s=>s.participants).filter(Boolean);
