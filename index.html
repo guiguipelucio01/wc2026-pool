@@ -413,12 +413,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:20px 0}
 .quiz-result-card{text-align:center;padding:24px 16px}
 .quiz-result-score{font-size:3rem;font-weight:800;color:var(--gold)}
 .quiz-result-label{font-size:1rem;color:var(--text2);margin-top:6px}
-/* ── CHAT ────────────────────────────────────────────────────── */
-.msg-row{display:flex;gap:10px;align-items:flex-start}
-.msg-bubble{max-width:75%;min-width:60px;background:var(--glass);border:1px solid var(--border);border-radius:18px;border-top-left-radius:4px;padding:10px 16px;font-size:.9rem;line-height:1.55;word-break:break-word;backdrop-filter:blur(10px);white-space:pre-wrap}
-.msg-row.mine .msg-bubble{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.25);border-top-left-radius:18px}
-.msg-name{font-size:.72rem;color:var(--muted);margin-bottom:3px;font-weight:600}
-.msg-time{font-size:.66rem;color:var(--muted);margin-top:4px}
 
 /* ── MOBILE ──────────────────────────────────────────────────── */
 @media(max-width:600px){
@@ -474,7 +468,6 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <button               data-page="awards"      onclick="showPage('awards',this)"     data-en="🥇 Awards"     data-pt="🥇 Prêmios">🥇 Awards</button>
   <button               data-page="results"     onclick="showPage('results',this)"    data-en="🏁 Results"    data-pt="🏁 Resultados">🏁 Results</button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"data-en="📊 Standings"  data-pt="📊 Classificação">📊 Standings</button>
-  <button               data-page="chat"        onclick="showPage('chat',this)"        data-en="💬 Chat"       data-pt="💬 Chat">💬 Chat</button>
   <button               data-page="trivia"      onclick="showPage('trivia',this)"      data-en="🧠 Trivia"     data-pt="🧠 Curiosidades">🧠 Trivia</button>
 </nav>
 <nav class="bottom-nav">
@@ -485,7 +478,6 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   <button               data-page="awards"      onclick="showPage('awards',this)">     <span class="bn-icon">🥇</span><span data-en="Awards"    data-pt="Prêmios">Awards</span></button>
   <button               data-page="results"     onclick="showPage('results',this)">    <span class="bn-icon">🏁</span><span data-en="Results"   data-pt="Resultados">Results</span></button>
   <button               data-page="leaderboard" onclick="showPage('leaderboard',this)"><span class="bn-icon">📊</span><span data-en="Standings" data-pt="Classif.">Standings</span></button>
-  <button               data-page="chat"        onclick="showPage('chat',this)">        <span class="bn-icon">💬</span><span data-en="Chat"       data-pt="Chat">Chat</span></button>
   <button               data-page="trivia"      onclick="showPage('trivia',this)">      <span class="bn-icon">🧠</span><span data-en="Trivia"     data-pt="Trivia">Trivia</span></button>
 </nav>
 
@@ -724,20 +716,6 @@ const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
   </div>
 </div>
 
-<div id="page-chat" class="page">
-  <div class="card" style="padding:0;display:flex;flex-direction:column;height:70vh;min-height:400px">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-      <h2 style="margin:0" data-en="💬 Group Chat" data-pt="💬 Chat do Grupo">💬 Group Chat</h2>
-      <span id="chatStatus" style="font-size:.75rem;color:var(--green)">● live</span>
-    </div>
-    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px" id="chatInputArea">
-      <input id="chatInput" type="text" maxlength="500" placeholder="Type a message…" style="flex:1"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"/>
-      <button class="btn" style="width:auto;padding:10px 20px" onclick="sendMessage()">➤</button>
-    </div>
-  </div>
-</div>
 
 </div>
 
@@ -832,7 +810,6 @@ function renderActive(name) {
   if (n==='knockout')    renderKOPage();
   if (n==='awards')      renderAwardsPage();
   if (n==='leaderboard') loadLeaderboard();
-  if (n==='chat')        initChat();
   if (n==='trivia')      initTrivia();
 }
 
@@ -853,6 +830,19 @@ async function refreshMatchData() {
   } catch(e) { return false; }
 }
 
+// ── PREDICTION DEADLINE ────────────────────────────────────────
+// Predictions are open every day until 4:20 PM Toronto time (EDT = UTC-4).
+function isGroupPhaseOpen() {
+  const now = new Date();
+  // 4:20 PM EDT = 20:20 UTC
+  const deadline = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 20, 20, 0));
+  return now < deadline;
+}
+function deadlineLabel() {
+  // Returns a human-readable deadline string for today
+  return T('4:20 PM Toronto time (EDT)', '16h20 horário de Toronto (EDT)');
+}
+
 // ── LOAD DATA ──────────────────────────────────────────────────
 async function loadInitialData() {
   // Seed static data immediately so UI works even before DB responds
@@ -868,11 +858,9 @@ async function loadInitialData() {
     scR.data?.forEach(s => { scoring[s.key] = parseFloat(s.value); });
     scoring['award_best_young'] = 5;
 
-    // Auto-lock group phase once the first group match has kicked off
-    const firstGroupMatch = matches.find(m => m.r === 'group' && m.d);
-    if (firstGroupMatch && Date.now() >= new Date(firstGroupMatch.d).getTime()) {
-      settings.group_phase_open = 'false';
-    }
+    // Force predictions open; deadline-based closing is handled by isGroupPhaseOpen()
+    settings.group_phase_open = 'true';
+    settings.awards_phase_open = 'true';
 
     // Sync match results from DB (in case some are already entered)
     const { data: dbMatches } = await db.from('matches').select('id,home_goals,away_goals,home_penalties,away_penalties,status,home_team_id,away_team_id');
@@ -931,7 +919,7 @@ async function loadUserPredictions() {
 
 // ── HOME ───────────────────────────────────────────────────────
 function renderHome() {
-  const gOpen = settings.group_phase_open==='true';
+  const gOpen = isGroupPhaseOpen();
   const kOpen = settings.knockout_phase_open==='true';
   const gMs   = matches.filter(m=>m.r==='group');
   const gDone = gMs.filter(m=>groupPreds[m.id]).length;
@@ -940,6 +928,7 @@ function renderHome() {
     <div class="phase-banner">
       <div class="phase-dot ${gOpen?'':'off'}"></div>
       <div><strong>${T('Group Stage','Fase de Grupos')}:</strong> ${gOpen?T('OPEN ✅','ABERTO ✅'):T('CLOSED 🔒','FECHADO 🔒')}
+      ${gOpen?` · <span style="color:var(--muted);font-size:.82rem">${T('Closes today at 4:20 PM Toronto (EDT)','Fecha hoje às 16h20 Toronto (EDT)')}</span>`:''}
       ${currentUser?` · ${gDone}/${gMs.length} ${T('predicted','previstos')}`:''}
       </div></div>
     <div class="phase-banner" style="margin-top:-2px">
@@ -1098,9 +1087,10 @@ async function loginByEmail() {
 
 // ── GROUP STAGE ────────────────────────────────────────────────
 function renderGroupPage() {
-  const open = settings.group_phase_open==='true';
+  const open = isGroupPhaseOpen();
   const kOpen = settings.knockout_phase_open==='true';
-  document.getElementById('grpBanner').innerHTML = phaseBanner(T('Group stage predictions','Previsões fase de grupos'),open);
+  document.getElementById('grpBanner').innerHTML = phaseBanner(T('Group stage predictions','Previsões fase de grupos'),open,
+    open ? T('Closes today at 4:20 PM Toronto time (EDT) · Finished matches are locked','Fecha hoje às 16h20 (EDT) · Jogos encerrados não editáveis') : T('Closed for today — opens again tomorrow before 4:20 PM EDT','Fechado por hoje — abre amanhã antes das 16h20 EDT'));
   const saveBtn = document.getElementById('saveGrpBtn');
   const randomAllBtn = document.getElementById('randomAllBtn');
   const clearAllBtn = document.getElementById('clearAllBtn');
@@ -1393,7 +1383,7 @@ function getMatchDays() {
 function renderDateMatches() {
   const date = document.getElementById('matchDateInput').value;
   if (!date) return;
-  const gOpen = settings.group_phase_open==='true';
+  const gOpen = isGroupPhaseOpen();
   const kOpen = settings.knockout_phase_open==='true';
   const btn = document.getElementById('saveGrpBtn');
   if (btn && currentUser) btn.style.display=(gOpen||kOpen)?'block':'none';
@@ -1447,9 +1437,10 @@ function renderDateMatches() {
 async function saveDateViewPredictions() {
   if (!currentUser) return;
   if (currentUser.is_validated===false) { alert(T('Your account is pending admin approval.','A sua conta aguarda aprovação do admin.')); return; }
+  if (!isGroupPhaseOpen()) { alert(T('The prediction deadline (4:20 PM Toronto time) has passed for today.','O prazo para previsões (16h20 Toronto) já passou por hoje.')); return; }
   const btn = document.getElementById('saveGrpBtn');
   btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','Salvando…')}`;
-  const gOpen = settings.group_phase_open==='true';
+  const gOpen = isGroupPhaseOpen();
   const kOpen = settings.knockout_phase_open==='true';
   const toGroup=[], toKO=[];
   matches.forEach(m=>{
@@ -1483,7 +1474,7 @@ function selectGroup(g) {
 }
 
 function renderGroupMatches() {
-  const open=settings.group_phase_open==='true';
+  const open=isGroupPhaseOpen();
   const ms=matches.filter(m=>m.r==='group'&&m.g===currentGroup);
   document.getElementById('grpMatches').innerHTML=ms.map(m=>{
     const h=teams[m.h], a=teams[m.a];
@@ -1518,6 +1509,7 @@ function renderGroupMatches() {
 async function saveGroupPredictions() {
   if (!currentUser) return;
   if (currentUser.is_validated===false) { alert(T('Your account is pending admin approval.','A sua conta aguarda aprovação do admin.')); return; }
+  if (!isGroupPhaseOpen()) { alert(T('The prediction deadline (4:20 PM Toronto time) has passed for today.','O prazo para previsões (16h20 Toronto) já passou por hoje.')); return; }
   const btn=document.getElementById('saveGrpBtn');
   btn.disabled=true; btn.innerHTML=`<span class="spinner"></span>${T('Saving…','Salvando…')}`;
   const toUpsert=matches.filter(m=>m.r==='group'&&m.home_goals==null).reduce((acc,m)=>{
@@ -1559,7 +1551,8 @@ function stepInput(id, delta) {
   el.dispatchEvent(new Event('input', {bubbles:true}));
 }
 function randGoal() {
-  const pool=[0,0,0,1,1,1,1,2,2,2,3,3,4,5];
+  // Max 2 goals: realistic low-scoring football results
+  const pool=[0,0,0,1,1,1,2,2];
   return pool[Math.floor(Math.random()*pool.length)];
 }
 function randomizeMatch(id) {
@@ -1577,13 +1570,13 @@ function randomizeGroup(g) {
   updatePredStandings(g);
 }
 function randomizeAll() {
-  const gOpen=settings.group_phase_open==='true';
+  const gOpen=isGroupPhaseOpen();
   const kOpen=settings.knockout_phase_open==='true';
   matches.filter(m=>m.home_goals==null&&((m.r==='group'&&gOpen)||(m.r!=='group'&&kOpen)))
     .forEach(m=>randomizeMatch(m.id));
 }
 function clearAll() {
-  const gOpen=settings.group_phase_open==='true';
+  const gOpen=isGroupPhaseOpen();
   matches.filter(m=>m.r==='group'&&m.home_goals==null&&gOpen).forEach(m=>{
     const h=document.getElementById('g'+m.id+'h'),a=document.getElementById('g'+m.id+'a');
     if(h&&a){h.value='';a.value='';}
@@ -1591,9 +1584,21 @@ function clearAll() {
   });
 }
 function updatePredBadge() {
-  if(!currentUser||currentUser.is_validated===false||settings.group_phase_open!=='true') {
+  const phaseOpen = isGroupPhaseOpen();
+  // Prêmio reminder — always visible for logged-in validated users
+  const premioReminder = (currentUser && currentUser.is_validated !== false)
+    ? `<div class="nudge-card" onclick="showPage('awards',document.querySelector('[data-page=awards]'))" style="cursor:pointer;margin-bottom:10px;border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.07)">
+        <span class="nudge-arrow">🏆</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.92rem">${T("Don't forget to pick the best players in the prêmio section!","Não se esqueça de escolher os melhores jogadores na seção prêmio!")}</div>
+          <div style="color:var(--muted);font-size:.78rem;margin-top:2px">${T('Tap to go to Awards →','Toque para ir para Prêmios →')}</div>
+        </div>
+      </div>`
+    : '';
+  if(!currentUser||currentUser.is_validated===false||!phaseOpen) {
     ['navBadgeTop','navBadgeBtm'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-    const nudge=document.getElementById('predNudge');if(nudge)nudge.innerHTML='';
+    const nudge=document.getElementById('predNudge');
+    if(nudge) nudge.innerHTML=premioReminder;
     return;
   }
   const gMs=matches.filter(m=>m.r==='group');
@@ -1606,16 +1611,16 @@ function updatePredBadge() {
   const nudge=document.getElementById('predNudge');
   if(!nudge) return;
   if(missing>0){
-    nudge.innerHTML=`<div class="nudge-card" onclick="showPage('groups',document.querySelector('[data-page=groups]'))">
+    nudge.innerHTML=`${premioReminder}<div class="nudge-card" onclick="showPage('groups',document.querySelector('[data-page=groups]'))">
       <span class="nudge-arrow">👉</span>
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;font-size:.92rem">${missing} ${T('group predictions missing','previsões de grupos em falta')}</div>
-        <div style="color:var(--muted);font-size:.78rem;margin-top:2px">${T('Submit before Jun 11 to score points. Tap to fill in.','Submeta antes de 11 Jun para pontuar. Toque para preencher.')}</div>
+        <div style="color:var(--muted);font-size:.78rem;margin-top:2px">${T('Closes today at 4:20 PM Toronto (EDT). Tap to fill in.','Fecha hoje às 16h20 Toronto (EDT). Toque para preencher.')}</div>
       </div>
       <span style="color:var(--gold);font-size:.85rem;font-weight:700;flex-shrink:0">${T('Go →','Ir →')}</span>
     </div>`;
   } else {
-    nudge.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:rgba(48,209,88,.07);border:1px solid rgba(48,209,88,.25);margin-bottom:14px">
+    nudge.innerHTML=`${premioReminder}<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:rgba(48,209,88,.07);border:1px solid rgba(48,209,88,.25);margin-bottom:14px">
       <span style="font-size:1.4rem">✅</span>
       <span style="font-size:.88rem;font-weight:600;color:var(--green)">${T('All group predictions submitted!','Todas as previsões de grupos submetidas!')}</span>
     </div>`;
@@ -1860,7 +1865,7 @@ function renderPredQualifiers() {
 }
 
 function renderAllGroupsGrid() {
-  const open=settings.group_phase_open==='true';
+  const open=isGroupPhaseOpen();
   const {allRows, top8}=calcAllPredStandings();
   const legendHtml=`<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:.75rem;color:var(--text2)">
     <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--green);margin-right:4px;vertical-align:middle"></span>${T('Qualifies','Classifica')}</span>
@@ -2025,7 +2030,8 @@ async function saveKOPredictions() {
 // ── AWARDS ─────────────────────────────────────────────────────
 function renderAwardsPage() {
   const open=settings.awards_phase_open==='true';
-  document.getElementById('awdBanner').innerHTML=phaseBanner(T('Award predictions','Previsões de prêmios'),open);
+  document.getElementById('awdBanner').innerHTML=phaseBanner(T('Award predictions','Previsões de prêmios'),open)
+    + (open ? `<div class="alert alert-info" style="margin-top:10px;font-size:.88rem">🏆 ${T("Don't forget to pick the best players in the prêmio section! Enter your picks below.","Não se esqueça de escolher os melhores jogadores na seção prêmio! Insira suas escolhas abaixo.")}</div>` : '');
   if (!currentUser){document.getElementById('awdGrid').innerHTML=`<div class="empty-state" style="grid-column:1/-1">${loginPrompt()}</div>`;document.getElementById('saveAwdBtn').style.display='none';document.getElementById('awdUserBar').innerHTML='';return;}
   document.getElementById('awdUserBar').innerHTML=userBar();
   document.getElementById('awdAlert').innerHTML='';
@@ -2158,7 +2164,7 @@ async function loadLeaderboard() {
   }).join('');
 
   // Show all predictions only after group phase closes
-  const groupClosed = settings.group_phase_open !== 'true';
+  const groupClosed = !isGroupPhaseOpen();
   const card = document.getElementById('allPredsCard');
   if (!groupClosed) { card.style.display='none'; return; }
   card.style.display='block';
@@ -2439,65 +2445,6 @@ function nextQuizQ() {
   renderQuiz();
 }
 
-// ── CHAT ───────────────────────────────────────────────────────
-let chatChannel = null;
-
-async function initChat() {
-  const el = document.getElementById('chatMessages');
-  el.innerHTML = `<div class="empty-state"><span class="spinner"></span></div>`;
-
-  // Load last 100 messages
-  const { data, error } = await db.from('messages').select('*').order('created_at', { ascending: true }).limit(100);
-  if (error) { el.innerHTML = `<div class="alert alert-error">${error.message}</div>`; return; }
-  el.innerHTML = '';
-  (data || []).forEach(m => appendMessage(m));
-  el.scrollTop = el.scrollHeight;
-
-  // Subscribe to new messages in real-time
-  if (chatChannel) chatChannel.unsubscribe();
-  chatChannel = db.channel('messages-live')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-      appendMessage(payload.new);
-      el.scrollTop = el.scrollHeight;
-    })
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, payload => {
-      document.getElementById('msg-' + payload.old.id)?.remove();
-    })
-    .subscribe();
-}
-
-function appendMessage(m) {
-  const el = document.getElementById('chatMessages');
-  const isMe = currentUser && m.participant_id === currentUser.id;
-  const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const av = avHtml({ name: m.participant_name, avatar_url: m.avatar_url }, 38);
-  const div = document.createElement('div');
-  div.id = 'msg-' + m.id;
-  div.className = 'msg-row' + (isMe ? ' mine' : '');
-  div.innerHTML = `
-    ${av}
-    <div>
-      <div class="msg-name">${m.participant_name}</div>
-      <div class="msg-bubble">${m.body.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-      <div class="msg-time">${time}</div>
-    </div>`;
-  el.appendChild(div);
-}
-
-async function sendMessage() {
-  if (!currentUser) { alert(T('Please login first.', 'Por favor faça login primeiro.')); return; }
-  const input = document.getElementById('chatInput');
-  const body = input.value.trim();
-  if (!body) return;
-  input.value = '';
-  const { error } = await db.from('messages').insert({
-    participant_id: currentUser.id,
-    participant_name: dName(currentUser),
-    avatar_url: currentUser.avatar_url || null,
-    body
-  });
-  if (error) { input.value = body; alert('Error sending message: ' + error.message); }
-}
 
 // ── AVATAR ─────────────────────────────────────────────────────
 const AV_EMOJIS=[

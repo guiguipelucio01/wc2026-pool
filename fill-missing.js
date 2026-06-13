@@ -14,7 +14,8 @@ if (!SUPABASE_URL || !SUPABASE_SVC_KEY) {
 const db = createClient(SUPABASE_URL, SUPABASE_SVC_KEY);
 
 function randGoal() {
-  const pool = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5];
+  // Max 2 goals: realistic low-scoring football results (2x0, 2x1, 2x2, 1x0, etc.)
+  const pool = [0, 0, 0, 1, 1, 1, 2, 2];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
