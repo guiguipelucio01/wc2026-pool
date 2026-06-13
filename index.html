@@ -1372,10 +1372,16 @@ function renderGroupStandings(containerId) {
     </div>${legendHtml}${html}`;
 }
 
-// Returns YYYY-MM-DD in the user's local timezone (not UTC), so late-night games
-// stay on the correct calendar day for the user rather than rolling into tomorrow.
+// Returns YYYY-MM-DD for a match timestamp.
+// When a match time is provided, we use UTC-6 (Central US time) as the anchor
+// so that midnight-Eastern kickoffs (04:00 UTC) group with the previous calendar
+// day rather than rolling into the next. For "today" (no arg) we use local time.
 function localDate(ts) {
-  const d = ts ? new Date(ts) : new Date();
+  if (ts) {
+    const d = new Date(new Date(ts).getTime() - 6 * 3600000);
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+  }
+  const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
