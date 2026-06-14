@@ -2107,7 +2107,7 @@ function renderPrizeCard(scores) {
       <span class="prize-medal ${m.cls}">${m.label}</span>
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${names}</div>
-        ${tied ? `<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${T('Tie','Empate')} · ${T('split equally','divisão igual')}</div>` : ''}
+        ${tied ? `<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${T('Tie · each gets','Empate · cada um recebe')}</div>` : ''}
       </div>
       <div class="prize-amount">R$ ${eachAmount.toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
     </div>`;
