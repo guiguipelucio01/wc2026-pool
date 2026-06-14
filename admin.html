@@ -65,6 +65,8 @@ input:checked+.slider:before{transform:translateX(24px)}
 // Open admin.html locally (double-click). Never host it publicly.
 const SUPABASE_URL      = 'https://wyfomomcjevtjwqffbix.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_rBtDmIo-1BlQDhncJpQefw_c5beVSjR';
+// Get this from Supabase Dashboard → Project Settings → API → service_role key
+const SUPABASE_SERVICE_KEY = 'YOUR_SERVICE_ROLE_KEY';
 </script>
 
 <!-- Login screen -->
@@ -205,14 +207,24 @@ window.addEventListener('DOMContentLoaded', () => {
       <p style="color:var(--muted)">Open <code>admin.html</code> and fill in SUPABASE_URL and SUPABASE_ANON_KEY.</p>
     </div>`;
   }
+  if (SUPABASE_SERVICE_KEY === 'YOUR_SERVICE_ROLE_KEY') {
+    const warn = document.createElement('div');
+    warn.className = 'warn-box';
+    warn.style = 'margin:12px 0;font-size:.82rem';
+    warn.innerHTML = '⚠️ <strong>Service role key not set.</strong> Writes to match results, phases, and awards will fail.<br>Get it from Supabase Dashboard → Project Settings → API → <code>service_role</code>.';
+    document.querySelector('#loginScreen .card')?.prepend(warn);
+  }
 });
 
-// Single client with anon key — works in browser.
-// RLS must be disabled on admin-writeable tables (run the SQL in schema.sql).
+// Read-only client (anon key) for public data
 const dbPub = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Alias so all admin write calls use the same client
-const adminDb = (table) => dbPub.from(table);
+// Admin client (service role key) — bypasses RLS for all write operations
+const dbAdmin = SUPABASE_SERVICE_KEY !== 'YOUR_SERVICE_ROLE_KEY'
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+  : dbPub; // fallback to anon (writes will fail if RLS blocks them)
+
+const adminDb = (table) => dbAdmin.from(table);
 
 async function deleteStorageFile(bucket, path) {
   const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${encodeURIComponent(path)}`, {

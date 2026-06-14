@@ -831,16 +831,11 @@ async function refreshMatchData() {
 }
 
 // ── PREDICTION DEADLINE ────────────────────────────────────────
-// Predictions are open every day until 4:20 PM Toronto time (EDT = UTC-4).
 function isGroupPhaseOpen() {
-  const now = new Date();
-  // 4:20 PM EDT = 20:20 UTC
-  const deadline = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 20, 20, 0));
-  return now < deadline;
+  return false; // Tournament started June 11 — group predictions permanently closed
 }
 function deadlineLabel() {
-  // Returns a human-readable deadline string for today
-  return T('4:20 PM Toronto time (EDT)', '16h20 horário de Toronto (EDT)');
+  return T('closed', 'encerrado');
 }
 
 // ── LOAD DATA ──────────────────────────────────────────────────
@@ -858,9 +853,9 @@ async function loadInitialData() {
     scR.data?.forEach(s => { scoring[s.key] = parseFloat(s.value); });
     scoring['award_best_young'] = 5;
 
-    // Force predictions open; deadline-based closing is handled by isGroupPhaseOpen()
-    settings.group_phase_open = 'true';
-    settings.awards_phase_open = 'true';
+    // Group and award predictions closed permanently — tournament started June 11
+    settings.group_phase_open = 'false';
+    settings.awards_phase_open = 'false';
 
     // Sync match results from DB (in case some are already entered)
     const { data: dbMatches } = await db.from('matches').select('id,home_goals,away_goals,home_penalties,away_penalties,status,home_team_id,away_team_id');
